@@ -7,8 +7,6 @@
   "dev": "cross-env NODE_ENV=development tsx server/index.ts",
   "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
   "start": "cross-env NODE_ENV=production node dist/index.js",
-"engines": {
-  "node": ">=20.0.0"}
 "check": "tsc",
     "db:push": "drizzle-kit push"
   },
@@ -105,4 +103,6 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
   }
+  "engines": {
+  "node": ">=20.0.0"}
 }
