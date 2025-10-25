@@ -65,6 +65,10 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+  // Catch-all route: let React handle frontend routes like /admin-nrsa-dashboard
+app.get("*", (req, res) => {
+  res.sendFile("index.html", { root: "dist/public" });
+});
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
