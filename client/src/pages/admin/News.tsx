@@ -15,61 +15,184 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+type News = {
+  id: number;
+  title: string;
+  excerpt: string;
+  content: string;
+  imageUrl?: string;
+  isFeatured?: boolean;
+  publishedAt: string;
+};
 
 export default function AdminNews() {
-  const [newsItems] = useState([]);
+  const queryClient = useQueryClient();
+  const { data: newsItems = [] } = useQuery<News[]>({
+    queryKey: ["/api/news"],
+  });
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editItem, setEditItem] = useState<News | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    excerpt: "",
+    content: "",
+    imageUrl: "",
+    isFeatured: false,
+  });
+
+  // 🔹 Create or Update
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const method = editItem ? "PUT" : "POST";
+      const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Failed to save news");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      setDialogOpen(false);
+      setEditItem(null);
+      resetForm();
+    },
+  });
+
+  // 🔹 Delete
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/news"] }),
+  });
+
+  const handleSave = () => {
+    if (!formData.title || !formData.excerpt || !formData.content) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    saveMutation.mutate();
+  };
+
+  const handleEdit = (item: News) => {
+    setEditItem(item);
+    setFormData({
+      title: item.title,
+      excerpt: item.excerpt,
+      content: item.content,
+      imageUrl: item.imageUrl || "",
+      isFeatured: item.isFeatured || false,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this article?")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const resetForm = () =>
+    setFormData({
+      title: "",
+      excerpt: "",
+      content: "",
+      imageUrl: "",
+      isFeatured: false,
+    });
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">News Management</h1>
           <p className="text-muted-foreground mt-2">Create and manage news articles</p>
         </div>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90" data-testid="button-add-news">
+            <Button
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => {
+                setEditItem(null);
+                resetForm();
+              }}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add News
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add News Article</DialogTitle>
+              <DialogTitle>{editItem ? "Edit News Article" : "Add News Article"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
                 <Label>Title *</Label>
-                <Input placeholder="Article title" data-testid="input-title" />
+                <Input
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Article title"
+                />
               </div>
               <div>
                 <Label>Excerpt *</Label>
-                <Textarea placeholder="Brief summary..." className="min-h-[80px]" data-testid="input-excerpt" />
+                <Textarea
+                  value={formData.excerpt}
+                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                  placeholder="Brief summary..."
+                  className="min-h-[80px]"
+                />
               </div>
               <div>
                 <Label>Content *</Label>
-                <Textarea placeholder="Full article content..." className="min-h-[200px]" data-testid="input-content" />
+                <Textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="Full article content..."
+                  className="min-h-[200px]"
+                />
               </div>
               <div>
                 <Label>Image URL</Label>
-                <Input placeholder="https://example.com/image.jpg" data-testid="input-image" />
+                <Input
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
               </div>
               <div className="flex items-center gap-2">
-                <Switch data-testid="switch-featured" />
+                <Switch
+                  checked={formData.isFeatured}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                />
                 <Label>Featured Article</Label>
               </div>
-              <Button className="w-full bg-primary hover:bg-primary/90" data-testid="button-save-news">
-                Save Article
+              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleSave}>
+                {editItem ? "Update Article" : "Save Article"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* News Table */}
       {newsItems.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No news articles yet. Click "Add News" to create one.</p>
+            <p className="text-muted-foreground">
+              No news articles yet. Click "Add News" to create one.
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -84,7 +207,30 @@ export default function AdminNews() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* News items will be listed here */}
+              {newsItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.title}</TableCell>
+                  <TableCell>{new Date(item.publishedAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{item.isFeatured ? "Yes" : "No"}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(item)}
+                      className="hover:bg-primary/10"
+                    >
+                      <Edit className="w-4 h-4 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash className="w-4 h-4 mr-1" /> Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </Card>

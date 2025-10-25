@@ -1,3 +1,4 @@
+// src/pages/Clubs.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,55 +37,53 @@ export default function Clubs() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {clubs.map((club) => (
-              <Card 
-                key={club.id} 
-                className="hover-elevate active-elevate-2 transition-all h-full flex flex-col"
-                data-testid={`card-club-${club.id}`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <span className="text-3xl font-bold text-primary">
-                        {club.name.charAt(0)}
-                      </span>
+                <Card
+                  key={club.id}
+                  className="hover-elevate active-elevate-2 transition-all h-full flex flex-col"
+                  data-testid={`card-club-${club.id}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-3xl font-bold text-primary">
+                          {club.name.charAt(0)}
+                        </span>
+                      </div>
+                      {club.isRegistered && (
+                        <Badge className="bg-primary text-primary-foreground">Registered</Badge>
+                      )}
                     </div>
-                    {club.isRegistered && (
-                      <Badge className="bg-primary text-primary-foreground">Registered</Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-2xl">{club.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-4">
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-foreground">{club.city}, {club.state}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-primary flex-shrink-0" />
-                      <div>
-                        <div className="text-xs text-muted-foreground">Manager</div>
-                        <div className="font-medium text-foreground">{club.managerName}</div>
+                    <CardTitle className="text-2xl">{club.name}</CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="flex-grow space-y-4">
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-foreground">{club.city}, {club.state}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-primary flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Manager</div>
+                          <div className="font-medium text-foreground">{club.managerName}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground break-all">{club.contactEmail}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-muted-foreground">{club.contactPhone}</span>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground break-all">{club.contactEmail}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-muted-foreground">{club.contactPhone}</span>
-                    </div>
-                  </div>
 
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
-                    data-testid={`button-contact-${club.id}`}
-                  >
-                    Contact Club
-                  </Button>
-                </CardContent>
-              </Card>
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                      Contact Club
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}

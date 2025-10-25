@@ -1,6 +1,7 @@
-import type { Express } from "express";
+import { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { requireAdmin } from "./authMiddleware"; // You should implement this middleware
 import {
   insertHeroSlideSchema,
   insertNewsSchema,
@@ -11,546 +12,186 @@ import {
   insertMediaSchema,
   insertAffiliationSchema,
   insertContactSchema,
-  insertSiteSettingSchema,
+  insertSiteSettingSchema
 } from "@shared/schema";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Hero Slides
-  app.get("/api/hero-slides", async (req, res) => {
-    try {
-      const slides = await storage.getAllHeroSlides();
-      res.json(slides);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+export function registerRoutes(app: Express): Server {
 
+  // ---------- HERO SLIDES ----------
+  app.get("/api/hero-slides", async (req, res) => {
+    try { res.json(await storage.getAllHeroSlides()); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
+  });
   app.get("/api/hero-slides/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const slide = await storage.getHeroSlide(id);
-      if (!slide) {
-        return res.status(404).json({ error: "Slide not found" });
-      }
+      const slide = await storage.getHeroSlide(parseInt(req.params.id));
+      if (!slide) return res.status(404).json({ error: "Slide not found" });
       res.json(slide);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
-  app.post("/api/hero-slides", async (req, res) => {
+  app.post("/api/hero-slides", requireAdmin, async (req, res) => {
     try {
-      const validated = insertHeroSlideSchema.parse(req.body);
-      const slide = await storage.createHeroSlide(validated);
+      const slide = await storage.createHeroSlide(insertHeroSlideSchema.parse(req.body));
       res.status(201).json(slide);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
   });
-
-  app.patch("/api/hero-slides/:id", async (req, res) => {
+  app.patch("/api/hero-slides/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const slide = await storage.updateHeroSlide(id, req.body);
-      if (!slide) {
-        return res.status(404).json({ error: "Slide not found" });
-      }
+      const slide = await storage.updateHeroSlide(parseInt(req.params.id), req.body);
+      if (!slide) return res.status(404).json({ error: "Slide not found" });
       res.json(slide);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
+  });
+  app.delete("/api/hero-slides/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteHeroSlide(parseInt(req.params.id)); res.status(204).send(); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
 
-  app.delete("/api/hero-slides/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteHeroSlide(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // News
+  // ---------- NEWS ----------
   app.get("/api/news", async (req, res) => {
-    try {
-      const newsItems = await storage.getAllNews();
-      res.json(newsItems);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    try { res.json(await storage.getAllNews()); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
   app.get("/api/news/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const article = await storage.getNews(id);
-      if (!article) {
-        return res.status(404).json({ error: "News not found" });
-      }
+      const article = await storage.getNews(parseInt(req.params.id));
+      if (!article) return res.status(404).json({ error: "News not found" });
       res.json(article);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
-  app.post("/api/news", async (req, res) => {
+  app.post("/api/news", requireAdmin, async (req, res) => {
     try {
-      const validated = insertNewsSchema.parse(req.body);
-      const article = await storage.createNews(validated);
+      const article = await storage.createNews(insertNewsSchema.parse(req.body));
       res.status(201).json(article);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
   });
-
-  app.patch("/api/news/:id", async (req, res) => {
+  app.patch("/api/news/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const article = await storage.updateNews(id, req.body);
-      if (!article) {
-        return res.status(404).json({ error: "News not found" });
-      }
+      const article = await storage.updateNews(parseInt(req.params.id), req.body);
+      if (!article) return res.status(404).json({ error: "News not found" });
       res.json(article);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
+  });
+  app.delete("/api/news/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteNews(parseInt(req.params.id)); res.status(204).send(); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
 
-  app.delete("/api/news/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteNews(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Events
+  // ---------- EVENTS ----------
   app.get("/api/events", async (req, res) => {
-    try {
-      const eventsList = await storage.getAllEvents();
-      res.json(eventsList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    try { res.json(await storage.getAllEvents()); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
   app.get("/api/events/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const event = await storage.getEvent(id);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
+      const event = await storage.getEvent(parseInt(req.params.id));
+      if (!event) return res.status(404).json({ error: "Event not found" });
       res.json(event);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
-  app.post("/api/events", async (req, res) => {
+  app.post("/api/events", requireAdmin, async (req, res) => {
     try {
-      const validated = insertEventSchema.parse(req.body);
-      const event = await storage.createEvent(validated);
+      const event = await storage.createEvent(insertEventSchema.parse(req.body));
       res.status(201).json(event);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
   });
-
-  app.patch("/api/events/:id", async (req, res) => {
+  app.patch("/api/events/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const event = await storage.updateEvent(id, req.body);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
-      }
+      const event = await storage.updateEvent(parseInt(req.params.id), req.body);
+      if (!event) return res.status(404).json({ error: "Event not found" });
       res.json(event);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
+  });
+  app.delete("/api/events/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteEvent(parseInt(req.params.id)); res.status(204).send(); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
 
-  app.delete("/api/events/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteEvent(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Players
+  // ---------- PLAYERS ----------
   app.get("/api/players", async (req, res) => {
-    try {
-      const playersList = await storage.getAllPlayers();
-      res.json(playersList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    try { res.json(await storage.getAllPlayers()); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
   app.get("/api/players/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const player = await storage.getPlayer(id);
-      if (!player) {
-        return res.status(404).json({ error: "Player not found" });
-      }
+      const player = await storage.getPlayer(parseInt(req.params.id));
+      if (!player) return res.status(404).json({ error: "Player not found" });
       res.json(player);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
-  app.post("/api/players", async (req, res) => {
+  app.post("/api/players", requireAdmin, async (req, res) => {
     try {
-      const validated = insertPlayerSchema.parse(req.body);
-      const player = await storage.createPlayer(validated);
+      const player = await storage.createPlayer(insertPlayerSchema.parse(req.body));
       res.status(201).json(player);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
   });
-
-  app.patch("/api/players/:id", async (req, res) => {
+  app.patch("/api/players/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const player = await storage.updatePlayer(id, req.body);
-      if (!player) {
-        return res.status(404).json({ error: "Player not found" });
-      }
+      const player = await storage.updatePlayer(parseInt(req.params.id), req.body);
+      if (!player) return res.status(404).json({ error: "Player not found" });
       res.json(player);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
+  });
+  app.delete("/api/players/:id", requireAdmin, async (req, res) => {
+    try { await storage.deletePlayer(parseInt(req.params.id)); res.status(204).send(); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
 
-  app.delete("/api/players/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deletePlayer(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Clubs
+  // ---------- CLUBS ----------
   app.get("/api/clubs", async (req, res) => {
-    try {
-      const clubsList = await storage.getAllClubs();
-      res.json(clubsList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    try { res.json(await storage.getAllClubs()); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
   app.get("/api/clubs/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const club = await storage.getClub(id);
-      if (!club) {
-        return res.status(404).json({ error: "Club not found" });
-      }
+      const club = await storage.getClub(parseInt(req.params.id));
+      if (!club) return res.status(404).json({ error: "Club not found" });
       res.json(club);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(500).json({ error: e.message }); }
   });
-
-  app.post("/api/clubs", async (req, res) => {
+  app.post("/api/clubs", requireAdmin, async (req, res) => {
     try {
-      const validated = insertClubSchema.parse(req.body);
-      const club = await storage.createClub(validated);
+      const club = await storage.createClub(insertClubSchema.parse(req.body));
       res.status(201).json(club);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
   });
-
-  app.patch("/api/clubs/:id", async (req, res) => {
+  app.patch("/api/clubs/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const club = await storage.updateClub(id, req.body);
-      if (!club) {
-        return res.status(404).json({ error: "Club not found" });
-      }
+      const club = await storage.updateClub(parseInt(req.params.id), req.body);
+      if (!club) return res.status(404).json({ error: "Club not found" });
       res.json(club);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
+    } catch (e:any) { res.status(400).json({ error: e.message }); }
+  });
+  app.delete("/api/clubs/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteClub(parseInt(req.params.id)); res.status(204).send(); }
+    catch (e:any) { res.status(500).json({ error: e.message }); }
   });
 
-  app.delete("/api/clubs/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteClub(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // ---------- LEADERS ----------
+  app.get("/api/leaders", async (req, res) => { try { res.json(await storage.getAllLeaders()); } catch(e:any){ res.status(500).json({ error:e.message }); } });
+  app.get("/api/leaders/:id", async (req,res)=>{ try{ const leader = await storage.getLeader(parseInt(req.params.id)); if(!leader) return res.status(404).json({error:"Leader not found"}); res.json(leader); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.post("/api/leaders", requireAdmin, async (req,res)=>{ try{ const leader = await storage.createLeader(insertLeaderSchema.parse(req.body)); res.status(201).json(leader); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.patch("/api/leaders/:id", requireAdmin, async (req,res)=>{ try{ const leader = await storage.updateLeader(parseInt(req.params.id), req.body); if(!leader) return res.status(404).json({error:"Leader not found"}); res.json(leader); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.delete("/api/leaders/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteLeader(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
 
-  // Leaders
-  app.get("/api/leaders", async (req, res) => {
-    try {
-      const leadersList = await storage.getAllLeaders();
-      res.json(leadersList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // ---------- MEDIA ----------
+  app.get("/api/media", async (req,res)=>{ try{ res.json(await storage.getAllMedia()); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.get("/api/media/:id", async (req,res)=>{ try{ const item = await storage.getMediaItem(parseInt(req.params.id)); if(!item) return res.status(404).json({error:"Media not found"}); res.json(item); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.post("/api/media", requireAdmin, async (req,res)=>{ try{ const item = await storage.createMedia(insertMediaSchema.parse(req.body)); res.status(201).json(item); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.patch("/api/media/:id", requireAdmin, async (req,res)=>{ try{ const item = await storage.updateMedia(parseInt(req.params.id), req.body); if(!item) return res.status(404).json({error:"Media not found"}); res.json(item); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.delete("/api/media/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteMedia(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
 
-  app.get("/api/leaders/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const leader = await storage.getLeader(id);
-      if (!leader) {
-        return res.status(404).json({ error: "Leader not found" });
-      }
-      res.json(leader);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // ---------- AFFILIATIONS ----------
+  app.get("/api/affiliations", async (req,res)=>{ try{ res.json(await storage.getAllAffiliations()); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.post("/api/affiliations", requireAdmin, async (req,res)=>{ try{ const aff = await storage.createAffiliation(insertAffiliationSchema.parse(req.body)); res.status(201).json(aff); } catch(e:any){ res.status(400).json({error:e.message}); } });
 
-  app.post("/api/leaders", async (req, res) => {
-    try {
-      const validated = insertLeaderSchema.parse(req.body);
-      const leader = await storage.createLeader(validated);
-      res.status(201).json(leader);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
+  // ---------- CONTACTS ----------
+  app.get("/api/contacts", async (req,res)=>{ try{ res.json(await storage.getAllContacts()); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.post("/api/contacts", async (req,res)=>{ try{ const contact = await storage.createContact(insertContactSchema.parse(req.body)); res.status(201).json(contact); } catch(e:any){ res.status(400).json({error:e.message}); } });
 
-  app.patch("/api/leaders/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const leader = await storage.updateLeader(id, req.body);
-      if (!leader) {
-        return res.status(404).json({ error: "Leader not found" });
-      }
-      res.json(leader);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
+  // ---------- SITE SETTINGS ----------
+  app.get("/api/site-settings", async (req,res)=>{ try{ res.json(await storage.getAllSiteSettings()); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.post("/api/site-settings", requireAdmin, async (req,res)=>{ try{ const setting = await storage.createSiteSetting(insertSiteSettingSchema.parse(req.body)); res.status(201).json(setting); } catch(e:any){ res.status(400).json({error:e.message}); } });
 
-  app.delete("/api/leaders/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteLeader(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Media
-  app.get("/api/media", async (req, res) => {
-    try {
-      const mediaList = await storage.getAllMedia();
-      res.json(mediaList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/media/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const item = await storage.getMediaItem(id);
-      if (!item) {
-        return res.status(404).json({ error: "Media not found" });
-      }
-      res.json(item);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/media", async (req, res) => {
-    try {
-      const validated = insertMediaSchema.parse(req.body);
-      const item = await storage.createMedia(validated);
-      res.status(201).json(item);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/media/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const item = await storage.updateMedia(id, req.body);
-      if (!item) {
-        return res.status(404).json({ error: "Media not found" });
-      }
-      res.json(item);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/media/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteMedia(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Affiliations
-  app.get("/api/affiliations", async (req, res) => {
-    try {
-      const affiliationsList = await storage.getAllAffiliations();
-      res.json(affiliationsList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/affiliations/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const affiliation = await storage.getAffiliation(id);
-      if (!affiliation) {
-        return res.status(404).json({ error: "Affiliation not found" });
-      }
-      res.json(affiliation);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/affiliations", async (req, res) => {
-    try {
-      const validated = insertAffiliationSchema.parse(req.body);
-      const affiliation = await storage.createAffiliation(validated);
-      res.status(201).json(affiliation);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/affiliations/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const affiliation = await storage.updateAffiliation(id, req.body);
-      if (!affiliation) {
-        return res.status(404).json({ error: "Affiliation not found" });
-      }
-      res.json(affiliation);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/affiliations/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteAffiliation(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Contacts
-  app.get("/api/contacts", async (req, res) => {
-    try {
-      const contactsList = await storage.getAllContacts();
-      res.json(contactsList);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/contacts/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const contact = await storage.getContact(id);
-      if (!contact) {
-        return res.status(404).json({ error: "Contact not found" });
-      }
-      res.json(contact);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/contacts", async (req, res) => {
-    try {
-      const validated = insertContactSchema.parse(req.body);
-      const contact = await storage.createContact(validated);
-      res.status(201).json(contact);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/contacts/:id/read", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const contact = await storage.markContactAsRead(id);
-      if (!contact) {
-        return res.status(404).json({ error: "Contact not found" });
-      }
-      res.json(contact);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/contacts/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteContact(id);
-      res.status(204).send();
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Site Settings
-  app.get("/api/settings", async (req, res) => {
-    try {
-      const settings = await storage.getAllSettings();
-      res.json(settings);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/settings/:key", async (req, res) => {
-    try {
-      const setting = await storage.getSetting(req.params.key);
-      if (!setting) {
-        return res.status(404).json({ error: "Setting not found" });
-      }
-      res.json(setting);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/settings", async (req, res) => {
-    try {
-      const validated = insertSiteSettingSchema.parse(req.body);
-      const setting = await storage.setSetting(validated);
-      res.json(setting);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  const httpServer = createServer(app);
-  return httpServer;
+  return createServer(app);
 }
