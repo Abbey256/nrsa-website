@@ -214,10 +214,10 @@ export default function Contact() {
                       <Button 
                         type="submit" 
                         className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                        disabled={createContact.isLoading}
+                        disabled={createContact.isPending}
                         data-testid="button-submit"
                       >
-                        {createContact.isLoading ? "Sending..." : "Send Message"}
+                        {createContact.isPending ? "Sending..." : "Send Message"}
                       </Button>
                     </form>
                   </Form>
