@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+
 export function registerAuthRoutes(app: Express) {
   // First admin setup
   app.post("/api/admin/setup", async (req, res) => {
@@ -24,7 +26,7 @@ export function registerAuthRoutes(app: Express) {
     const match = await bcrypt.compare(password, admin.passwordHash);
     if (!match) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ adminId: admin.id }, process.env.JWT_SECRET!, { expiresIn: "8h" });
+    const token = jwt.sign({ adminId: admin.id }, JWT_SECRET, { expiresIn: "8h" });
     res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email } });
   });
 }
