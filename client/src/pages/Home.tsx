@@ -17,7 +17,7 @@ export default function Home() {
             {/* Text Content */}
             <div className="lg:col-span-3">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                About the <span className="text-primary">Federation</span>
+                About the <span className="text-primary">Association</span>
               </h2>
               
               <div className="space-y-6 text-foreground/80 leading-relaxed">

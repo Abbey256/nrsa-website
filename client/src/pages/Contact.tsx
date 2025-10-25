@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 const contactFormSchema = insertContactSchema.extend({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
   subject: z.string().min(3, "Subject must be at least 3 characters"),
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
@@ -96,7 +97,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-sm text-muted-foreground">info@nrsa.ng</p>
+                      <p className="text-sm text-muted-foreground">rsfederationng@gmail.com</p>
                     </div>
                   </div>
 
@@ -116,7 +117,7 @@ export default function Contact() {
                 <CardContent className="pt-6">
                   <h3 className="font-bold text-lg mb-2">Office Hours</h3>
                   <p className="text-sm opacity-90">Monday - Friday</p>
-                  <p className="text-sm opacity-90">9:00 AM - 5:00 PM WAT</p>
+                  <p className="text-sm opacity-90">8:00 AM - 5:00 PM WAT</p>
                 </CardContent>
               </Card>
             </div>
@@ -213,10 +214,10 @@ export default function Contact() {
                       <Button 
                         type="submit" 
                         className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                        disabled={createContact.isPending}
+                        disabled={createContact.isLoading}
                         data-testid="button-submit"
                       >
-                        {createContact.isPending ? "Sending..." : "Send Message"}
+                        {createContact.isLoading ? "Sending..." : "Send Message"}
                       </Button>
                     </form>
                   </Form>
