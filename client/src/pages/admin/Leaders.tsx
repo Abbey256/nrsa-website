@@ -13,11 +13,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+interface LeaderForm {
+  name: string;
+  position: string;
+  photo: string;
+  bio: string;
+  order: number;
+}
+
 export default function AdminLeaders() {
-  const [leaders, setLeaders] = useState([]);
+  const [leaders, setLeaders] = useState<LeaderForm[]>([]);
   const [open, setOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
-  const [form, setForm] = useState({
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [form, setForm] = useState<LeaderForm>({
     name: "",
     position: "",
     photo: "",
@@ -25,7 +33,7 @@ export default function AdminLeaders() {
     order: 0,
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -44,13 +52,13 @@ export default function AdminLeaders() {
     setOpen(false);
   };
 
-  const handleEdit = (index) => {
+  const handleEdit = (index: number) => {
     setEditIndex(index);
     setForm(leaders[index]);
     setOpen(true);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = (index: number) => {
     if (window.confirm("Are you sure you want to delete this leader?")) {
       setLeaders(leaders.filter((_, i) => i !== index));
     }

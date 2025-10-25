@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import type { Club } from "@shared/schema";
+import type { Club, InsertClub } from "@shared/schema";
 
 /**
  * AdminClubs — Admin UI for Clubs with Add / Edit / Delete
@@ -35,7 +35,7 @@ export default function AdminClubs() {
 
   // --- Add Club mutation ---
   const addClub = useMutation({
-    mutationFn: async (newClub: Omit<Club, "id">) => {
+    mutationFn: async (newClub: InsertClub) => {
       const res = await fetch("/api/clubs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -224,8 +224,8 @@ export default function AdminClubs() {
                 <Label>Registered</Label>
               </div>
 
-              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90" disabled={addClub.isLoading}>
-                {addClub.isLoading ? "Saving..." : "Save Club"}
+              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90" disabled={addClub.isPending}>
+                {addClub.isPending ? "Saving..." : "Save Club"}
               </Button>
             </div>
           </DialogContent>
@@ -251,7 +251,7 @@ export default function AdminClubs() {
                   size="icon"
                   variant="ghost"
                   onClick={() => startEdit(club)}
-                  disabled={updateClub.isLoading}
+                  disabled={updateClub.isPending}
                   aria-label={`Edit ${club.name}`}
                 >
                   <Edit3 className="w-4 h-4" />
@@ -266,7 +266,7 @@ export default function AdminClubs() {
                       deleteClub.mutate((club as any).id);
                     }
                   }}
-                  disabled={deleteClub.isLoading}
+                  disabled={deleteClub.isPending}
                   aria-label={`Delete ${club.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -338,8 +338,8 @@ export default function AdminClubs() {
 
               <div className="flex gap-2">
                 <Button onClick={() => { setEditOpen(false); setEditingClubId(null); setEditForm(null); }} variant="ghost">Cancel</Button>
-                <Button onClick={handleSubmitEdit} disabled={updateClub.isLoading} className="bg-primary hover:bg-primary/90">
-                  {updateClub.isLoading ? "Saving..." : "Save Changes"}
+                <Button onClick={handleSubmitEdit} disabled={updateClub.isPending} className="bg-primary hover:bg-primary/90">
+                  {updateClub.isPending ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </div>

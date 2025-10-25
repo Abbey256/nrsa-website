@@ -92,7 +92,9 @@ export default function AdminEvents() {
 
   // Handle Form Changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const target = e.target as HTMLInputElement;
+    const { name, value, type } = target;
+    const checked = 'checked' in target ? target.checked : false;
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -107,9 +109,9 @@ export default function AdminEvents() {
       venue: event.venue,
       city: event.city,
       state: event.state,
-      eventDate: event.eventDate ? event.eventDate.slice(0, 16) : "",
+      eventDate: event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 16) : "",
       registrationDeadline: event.registrationDeadline
-        ? event.registrationDeadline.slice(0, 16)
+        ? new Date(event.registrationDeadline).toISOString().slice(0, 16)
         : "",
       imageUrl: event.imageUrl || "",
       isFeatured: event.isFeatured,
@@ -148,25 +150,25 @@ export default function AdminEvents() {
 
             <div className="space-y-4 mt-4">
               {[
-                { label: "Event Title *", name: "title", type: "text" },
-                { label: "Description *", name: "description", type: "textarea" },
-                { label: "Venue *", name: "venue", type: "text" },
-                { label: "City *", name: "city", type: "text" },
-                { label: "State *", name: "state", type: "text" },
+                { label: "Event Title *", name: "title" as const, type: "text" },
+                { label: "Description *", name: "description" as const, type: "textarea" },
+                { label: "Venue *", name: "venue" as const, type: "text" },
+                { label: "City *", name: "city" as const, type: "text" },
+                { label: "State *", name: "state" as const, type: "text" },
               ].map((field, idx) => (
                 <div key={idx}>
                   <Label>{field.label}</Label>
                   {field.type === "textarea" ? (
                     <Textarea
                       name={field.name}
-                      value={form[field.name as keyof typeof form]}
+                      value={form[field.name] as string}
                       onChange={handleChange}
                       className="min-h-[120px]"
                     />
                   ) : (
                     <Input
                       name={field.name}
-                      value={form[field.name as keyof typeof form]}
+                      value={form[field.name] as string}
                       onChange={handleChange}
                     />
                   )}
