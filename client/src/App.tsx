@@ -25,6 +25,7 @@ import AdminMedia from "@/pages/admin/Media";
 import AdminAffiliations from "@/pages/admin/Affiliations";
 import AdminContacts from "@/pages/admin/Contacts";
 import AdminSettings from "@/pages/admin/Settings";
+import AdminLogin from "@/pages/admin/Login";
 import NotFound from "@/pages/not-found";
 
 function PublicRoutes() {
@@ -74,6 +75,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Switch>
+          {/* Admin Login Route (no layout) */}
+          <Route path="/admin/login" component={AdminLogin} />
+          
           {/* Admin Routes */}
           <Route path="/admin-nrsa-dashboard/:rest*">
             {() => <AdminRoutes />}
