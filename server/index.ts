@@ -99,4 +99,9 @@ async function ensureDefaultAdminExists() {
     app.get("*", (_req, res) => res.sendFile(path.join(distPath, "index.html")));
     app.listen(process.env.PORT || 5000, () => log(`Server running on port ${process.env.PORT || 5000}`));
   }
+  // Example Express Startup Code (Verify this in your server file)
+const PORT = process.env.PORT || 5000; // Use process.env.PORT first
+app.listen(PORT, () => {
+    console.log(`[express] Server running on port ${PORT}`);
+});
 })();
