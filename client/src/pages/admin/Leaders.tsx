@@ -12,55 +12,93 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import type { Leader } from "@shared/schema";
 
-interface LeaderForm {
-  name: string;
-  position: string;
-  photo: string;
-  bio: string;
-  order: number;
-}
-
+/**
+ * Leaders Admin Page
+ * 
+ * CRITICAL FIX: Connected to actual API endpoints instead of local state
+ * Leaders are now saved to the database and appear on the live site
+ * 
+ * Features:
+ * - Image upload with drag-and-drop
+ * - Full CRUD operations connected to /api/leaders
+ * - Automatic refresh of live site when changes are made
+ */
 export default function AdminLeaders() {
-  const [leaders, setLeaders] = useState<LeaderForm[]>([]);
+  const queryClient = useQueryClient();
+  
+  // Fetch leaders from API
+  const { data: leaders = [] } = useQuery<Leader[]>({
+    queryKey: ["/api/leaders"],
+  });
+
   const [open, setOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [form, setForm] = useState<LeaderForm>({
+  const [editingLeader, setEditingLeader] = useState<Leader | null>(null);
+  const [form, setForm] = useState({
     name: "",
     position: "",
-    photo: "",
+    photoUrl: "",
     bio: "",
     order: 0,
   });
 
+  // Create or Update Leader
+  const saveLeader = useMutation({
+    mutationFn: async () => {
+      const method = editingLeader ? "PATCH" : "POST";
+      const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
+      await apiRequest(method, url, form);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+      setOpen(false);
+      setEditingLeader(null);
+      setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
+    },
+  });
+
+  // Delete Leader
+  const deleteLeader = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/leaders/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+    },
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: name === "order" ? Number(value) : value }));
   };
 
   const handleSave = () => {
-    if (!form.name || !form.position) return alert("Name and position are required!");
-    let updated = [...leaders];
-    if (editIndex !== null) {
-      updated[editIndex] = form;
-    } else {
-      updated.push(form);
+    if (!form.name || !form.position) {
+      alert("Name and position are required!");
+      return;
     }
-    setLeaders(updated);
-    setForm({ name: "", position: "", photo: "", bio: "", order: 0 });
-    setEditIndex(null);
-    setOpen(false);
+    saveLeader.mutate();
   };
 
-  const handleEdit = (index: number) => {
-    setEditIndex(index);
-    setForm(leaders[index]);
+  const handleEdit = (leader: Leader) => {
+    setEditingLeader(leader);
+    setForm({
+      name: leader.name,
+      position: leader.position,
+      photoUrl: leader.photoUrl || "",
+      bio: leader.bio || "",
+      order: leader.order,
+    });
     setOpen(true);
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = (id: number) => {
     if (window.confirm("Are you sure you want to delete this leader?")) {
-      setLeaders(leaders.filter((_, i) => i !== index));
+      deleteLeader.mutate(id);
     }
   };
 
@@ -78,17 +116,17 @@ export default function AdminLeaders() {
               className="bg-primary hover:bg-primary/90"
               data-testid="button-add-leader"
               onClick={() => {
-                setEditIndex(null);
-                setForm({ name: "", position: "", photo: "", bio: "", order: 0 });
+                setEditingLeader(null);
+                setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Leader
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editIndex !== null ? "Edit Leader" : "Add Leader"}</DialogTitle>
+              <DialogTitle>{editingLeader ? "Edit Leader" : "Add Leader"}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 mt-4">
@@ -110,15 +148,11 @@ export default function AdminLeaders() {
                   onChange={handleChange}
                 />
               </div>
-              <div>
-                <Label>Photo URL</Label>
-                <Input
-                  name="photo"
-                  placeholder="https://example.com/photo.jpg"
-                  value={form.photo}
-                  onChange={handleChange}
-                />
-              </div>
+              <ImageUpload
+                label="Leader Photo"
+                value={form.photoUrl}
+                onChange={(url) => setForm({ ...form, photoUrl: url })}
+              />
               <div>
                 <Label>Bio</Label>
                 <Textarea
@@ -142,8 +176,13 @@ export default function AdminLeaders() {
               <Button
                 className="w-full bg-primary hover:bg-primary/90"
                 onClick={handleSave}
+                disabled={saveLeader.isPending}
               >
-                {editIndex !== null ? "Update Leader" : "Save Leader"}
+                {saveLeader.isPending
+                  ? "Saving..."
+                  : editingLeader
+                  ? "Update Leader"
+                  : "Save Leader"}
               </Button>
             </div>
           </DialogContent>
@@ -162,33 +201,30 @@ export default function AdminLeaders() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {leaders
             .sort((a, b) => a.order - b.order)
-            .map((leader, index) => (
-              <Card key={index} className="relative p-4">
-                {leader.photo && (
+            .map((leader) => (
+              <Card key={leader.id} className="relative p-4">
+                {leader.photoUrl && (
                   <img
-                    src={leader.photo}
+                    src={leader.photoUrl}
                     alt={leader.name}
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                 )}
                 <h2 className="text-xl font-bold">{leader.name}</h2>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {leader.position}
-                </p>
-                <p className="text-sm">{leader.bio}</p>
-
-                <div className="flex gap-2 mt-4">
+                <p className="text-sm text-muted-foreground mb-2">{leader.position}</p>
+                {leader.bio && <p className="text-sm mb-4">{leader.bio}</p>}
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="w-full"
-                    onClick={() => handleEdit(index)}
+                    size="sm"
+                    onClick={() => handleEdit(leader)}
                   >
                     <Pencil className="w-4 h-4 mr-1" /> Edit
                   </Button>
                   <Button
                     variant="destructive"
-                    className="w-full"
-                    onClick={() => handleDelete(index)}
+                    size="sm"
+                    onClick={() => handleDelete(leader.id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>

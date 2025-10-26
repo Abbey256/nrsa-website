@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash, Edit2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Media } from "@shared/schema";
@@ -91,13 +92,11 @@ export default function AdminMedia() {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
               </div>
-              <div>
-                <Label>Image URL *</Label>
-                <Input
-                  value={form.imageUrl}
-                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                />
-              </div>
+              <ImageUpload
+                label="Media Image *"
+                value={form.imageUrl}
+                onChange={(url) => setForm({ ...form, imageUrl: url })}
+              />
               <div>
                 <Label>Category *</Label>
                 <Input

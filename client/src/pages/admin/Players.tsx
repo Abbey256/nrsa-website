@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Edit2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 
+/**
+ * Player Interface - Updated with new fields
+ * - awardsWon: Number of awards/titles won
+ * - gamesPlayed: Total games played  
+ * - biography: Player biography and background
+ */
 interface Player {
   id?: number;
   name: string;
@@ -23,6 +30,9 @@ interface Player {
   category: string;
   totalPoints: number;
   achievements?: string;
+  awardsWon?: number;
+  gamesPlayed?: number;
+  biography?: string;
 }
 
 export default function AdminPlayers() {
@@ -37,6 +47,9 @@ export default function AdminPlayers() {
     category: "",
     totalPoints: 0,
     achievements: "",
+    awardsWon: 0,
+    gamesPlayed: 0,
+    biography: "",
   });
 
   const [open, setOpen] = useState(false);
@@ -82,6 +95,9 @@ export default function AdminPlayers() {
         category: "",
         totalPoints: 0,
         achievements: "",
+        awardsWon: 0,
+        gamesPlayed: 0,
+        biography: "",
       });
       setEditingPlayer(null);
       setOpen(false);
@@ -154,15 +170,11 @@ export default function AdminPlayers() {
                   onChange={handleChange}
                 />
               </div>
-              <div>
-                <Label>Photo URL</Label>
-                <Input
-                  name="photoUrl"
-                  placeholder="https://example.com/photo.jpg"
-                  value={form.photoUrl}
-                  onChange={handleChange}
-                />
-              </div>
+              <ImageUpload
+                label="Player Photo"
+                value={form.photoUrl || ""}
+                onChange={(url) => setForm({ ...form, photoUrl: url })}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Club *</Label>
@@ -210,6 +222,38 @@ export default function AdminPlayers() {
                   placeholder="List of achievements..."
                   value={form.achievements}
                   onChange={handleChange}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Awards Won</Label>
+                  <Input
+                    type="number"
+                    name="awardsWon"
+                    value={form.awardsWon || 0}
+                    onChange={handleChange}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <Label>Games Played</Label>
+                  <Input
+                    type="number"
+                    name="gamesPlayed"
+                    value={form.gamesPlayed || 0}
+                    onChange={handleChange}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Biography</Label>
+                <Textarea
+                  name="biography"
+                  placeholder="Player biography and background..."
+                  value={form.biography || ""}
+                  onChange={handleChange}
+                  className="min-h-[100px]"
                 />
               </div>
               <Button

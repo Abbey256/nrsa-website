@@ -113,7 +113,15 @@ export const insertEventSchema = createInsertSchema(events, {
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Event = typeof events.$inferSelect;
 
-// Players
+/**
+ * Players Table
+ * Stores scrabble player profiles with statistics and information
+ * 
+ * New fields added:
+ * - awardsWon: Number of awards/titles won by the player
+ * - gamesPlayed: Total number of games played
+ * - biography: Detailed player biography and background
+ */
 export const players = pgTable("players", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -123,6 +131,9 @@ export const players = pgTable("players", {
   category: text("category").notNull(),
   totalPoints: integer("total_points").notNull().default(0),
   achievements: text("achievements"),
+  awardsWon: integer("awards_won").default(0),
+  gamesPlayed: integer("games_played").default(0),
+  biography: text("biography"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

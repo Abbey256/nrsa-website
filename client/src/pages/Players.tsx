@@ -67,9 +67,39 @@ export default function Players() {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <div className="text-sm text-muted-foreground mb-1">Total Points</div>
-                    <div className="text-2xl font-bold text-primary">{player.totalPoints}</div>
+                  <div className="pt-4 border-t space-y-3">
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Total Points</div>
+                      <div className="text-2xl font-bold text-primary">{player.totalPoints}</div>
+                    </div>
+                    
+                    {(player.awardsWon !== undefined && player.awardsWon !== null && player.awardsWon > 0) && (
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">Awards Won</div>
+                        <div className="text-lg font-semibold text-foreground">{player.awardsWon}</div>
+                      </div>
+                    )}
+                    
+                    {(player.gamesPlayed !== undefined && player.gamesPlayed !== null && player.gamesPlayed > 0) && (
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">Games Played</div>
+                        <div className="text-lg font-semibold text-foreground">{player.gamesPlayed}</div>
+                      </div>
+                    )}
+                    
+                    {player.biography && (
+                      <div className="text-left">
+                        <div className="text-sm text-muted-foreground mb-1">About</div>
+                        <p className="text-sm text-foreground/80 line-clamp-3">{player.biography}</p>
+                      </div>
+                    )}
+                    
+                    {player.achievements && (
+                      <div className="text-left">
+                        <div className="text-sm text-muted-foreground mb-1">Achievements</div>
+                        <p className="text-sm text-foreground/80 line-clamp-2">{player.achievements}</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

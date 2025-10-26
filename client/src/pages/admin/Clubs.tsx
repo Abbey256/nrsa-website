@@ -16,6 +16,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { Club, InsertClub } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 /**
  * AdminClubs — Admin UI for Clubs with Add / Edit / Delete
@@ -168,10 +169,11 @@ export default function AdminClubs() {
                 <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} />
               </div>
 
-              <div>
-                <Label>Logo URL</Label>
-                <Input value={form.logoUrl} onChange={(e) => handleChange("logoUrl", e.target.value)} />
-              </div>
+              <ImageUpload
+                label="Club Logo"
+                value={form.logoUrl}
+                onChange={(url) => handleChange("logoUrl", url)}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -280,10 +282,11 @@ export default function AdminClubs() {
                 <Input value={editForm.name} onChange={(e) => handleEditChange("name", e.target.value)} />
               </div>
 
-              <div>
-                <Label>Logo URL</Label>
-                <Input value={editForm.logoUrl} onChange={(e) => handleEditChange("logoUrl", e.target.value)} />
-              </div>
+              <ImageUpload
+                label="Club Logo"
+                value={editForm.logoUrl}
+                onChange={(url) => handleEditChange("logoUrl", url)}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

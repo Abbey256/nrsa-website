@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   Dialog,
   DialogContent,
@@ -196,15 +197,11 @@ export default function AdminEvents() {
                 </div>
               </div>
 
-              <div>
-                <Label>Image URL</Label>
-                <Input
-                  name="imageUrl"
-                  placeholder="https://example.com/image.jpg"
-                  value={form.imageUrl}
-                  onChange={handleChange}
-                />
-              </div>
+              <ImageUpload
+                label="Event Image"
+                value={form.imageUrl}
+                onChange={(url) => setForm((prev) => ({ ...prev, imageUrl: url }))}
+              />
 
               <div className="flex items-center gap-2">
                 <Switch
