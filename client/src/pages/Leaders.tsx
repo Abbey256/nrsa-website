@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Loader2, Zap, UserCheck } from "lucide-react";
+import { Loader2, Zap, UserCheck, MapPin } from "lucide-react";
 import { useRoute } from "wouter"; 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,14 +12,14 @@ interface Leader {
   position: string; 
   bio: string;
   photoUrl: string;
+  order: number; // Include 'order' for sorting, as confirmed by Admin code
+  state?: string; // Adding optional state for consistency with Players card
 }
 
-// NOTE: All Firebase/Firestore logic has been removed to align with the Admin API structure.
 const API_URL = "/api/leaders";
 
 export default function Leaders() {
-  // CORRECT: Use useRoute to get the navigate function for programmatic navigation
-  // We don't need the match or params, just the navigate function
+  // Use useRoute to get the navigate function for programmatic navigation
   const [, , navigate] = useRoute("/leaders/:id"); 
   
   const [leaders, setLeaders] = useState<Leader[]>([]);
@@ -38,7 +38,7 @@ export default function Leaders() {
             
             const data: Leader[] = await response.json();
             
-            // Assuming the API returns a list, and we sort it based on the 'order' field from the Admin portal.
+            // Sort based on the 'order' field from the Admin portal.
             data.sort((a, b) => a.order - b.order); 
             
             setLeaders(data);
@@ -46,7 +46,7 @@ export default function Leaders() {
             
         } catch (e) {
             console.error("Error fetching leaders list:", e);
-            setError("Could not load leadership data.");
+            setError("Could not load leadership data. Please check the API connection.");
         } finally {
             setIsLoading(false);
         }
@@ -90,13 +90,16 @@ export default function Leaders() {
     }
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      // Using 4 columns for consistency with Players
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"> 
         {leaders.map((leader) => (
+          // Make the entire card clickable for better UX, like the Players page
           <Card 
             key={leader.id} 
-            className="group overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl border-t-8 border-primary/70 rounded-xl"
+            className="group overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl border-t-8 border-primary/70 rounded-xl cursor-pointer hover-elevate active-elevate-2"
+            onClick={() => handleReadBio(leader.id)}
           >
-            <div className="h-64 w-full overflow-hidden bg-gray-100">
+            <div className="h-48 w-full overflow-hidden bg-gray-100">
                 <img 
                     src={leader.photoUrl} 
                     alt={`Photo of ${leader.name}`} 
@@ -109,18 +112,32 @@ export default function Leaders() {
             </div>
             <CardContent className="pt-6 text-center">
               <h3 className="text-xl font-extrabold text-gray-900 leading-snug tracking-tight">{leader.name}</h3>
-              <p className="text-primary font-semibold mt-1 text-md flex items-center justify-center gap-1">
+              
+              <p className="text-primary font-semibold mt-1 text-md flex items-center justify-center gap-1 mb-3">
                 <UserCheck className="w-4 h-4" />
                 {leader.position}
               </p>
               
-              <Button 
-                variant="outline" 
-                className="mt-4 w-full bg-primary text-white hover:bg-primary/90 hover:text-white"
-                onClick={() => handleReadBio(leader.id)}
-              >
-                Read Bio
-              </Button>
+              {leader.state && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span>{leader.state}</span>
+                </div>
+              )}
+
+              {/* Show a brief snippet of the bio for consistency with the Players card structure */}
+              {leader.bio && (
+                  <div className="text-left pt-4 border-t space-y-3">
+                    <div className="text-sm text-muted-foreground mb-1">About</div>
+                    <p className="text-sm text-foreground/80 line-clamp-3">{leader.bio}</p>
+                  </div>
+              )}
+              
+              {/* Optional: Use a hidden button or simpler text for the link, as the card is clickable */}
+              <div className="mt-4 text-primary font-semibold text-sm hover:underline">
+                  Click for Full Bio
+              </div>
+
             </CardContent>
           </Card>
         ))}
@@ -133,22 +150,22 @@ export default function Leaders() {
       <Helmet>
         <title>Leadership Team - NRSA</title>
       </Helmet>
-      <div className="bg-gray-50 py-16 sm:py-24">
+      {/* Reusing the Hero Section style from Players.tsx */}
+      <section className="bg-primary text-primary-foreground py-20">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Our Visionary Leaders</h1>
+          <p className="text-xl md:text-2xl opacity-90 max-w-3xl">
+            Meet the dedicated team guiding the Nigerian Rope Skipping Association.
+          </p>
+        </div>
+      </section>
+
+      {/* Leaders Grid/Content */}
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          {/* Header Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
-              <span className="text-primary">Meet</span> Our Visionary Leaders
-            </h1>
-            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-600">
-              The Nigerian Rope Skipping Association is guided by a dedicated team ensuring the growth and success of the sport nationwide.
-            </p>
-          </div>
-          
-          {/* Leaders Grid/Content */}
           {renderContent()}
         </div>
-      </div>
+      </section>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Loader2, ArrowLeft, UserCheck } from "lucide-react";
+import { Loader2, ArrowLeft, UserCheck, MapPin } from "lucide-react";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,23 +12,19 @@ interface Leader {
   position: string; 
   bio: string;
   photoUrl: string;
+  state?: string; // Optional state information
 }
 
-// NOTE: All Firebase/Firestore imports and setup have been removed,
-// as the Admin component confirms the data source is a standard REST API.
-
 export default function LeaderDetail() {
-  // 1. Get ID from URL and navigation function
   const [match, params] = useRoute("/leaders/:id");
   const [, navigate] = useLocation();
   const leaderId = params?.id || null;
 
-  // 2. State management
   const [leader, setLeader] = useState<Leader | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 3. Data Fetching Effect (using standard API fetch)
+  // Data Fetching Effect (using standard API fetch)
   useEffect(() => {
     if (!leaderId) {
       setIsLoading(false);
@@ -39,11 +35,10 @@ export default function LeaderDetail() {
     setIsLoading(true);
     setError(null);
 
-    // Fetch data from the standard API endpoint, consistent with the Admin portal
     const fetchLeader = async () => {
       try {
+        // Fetch data from the standard API endpoint: /api/leaders/:id
         const apiUrl = `/api/leaders/${leaderId}`;
-        console.log(`Fetching leader from: ${apiUrl}`);
 
         const response = await fetch(apiUrl);
         
@@ -59,7 +54,8 @@ export default function LeaderDetail() {
                 name: data.name || "Untitled Leader",
                 position: data.position || "Position Pending",
                 bio: data.bio || "No biography provided.",
-                photoUrl: data.photoUrl || "https://placehold.co/600x600/009739/ffffff?text=NRSA", 
+                photoUrl: data.photoUrl || "https://placehold.co/600x600/009739/ffffff?text=NRSA",
+                state: data.state || undefined, 
             };
             setLeader(fetchedLeader);
         } else {
@@ -78,7 +74,7 @@ export default function LeaderDetail() {
 
   }, [leaderId]); 
 
-  // 4. Render States
+  // --- Render States ---
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen -mt-20">
@@ -136,10 +132,20 @@ export default function LeaderDetail() {
               {/* Leader Bio and Details Section */}
               <div className="lg:col-span-2">
                 <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-2">{leader.name}</h1>
-                <p className="text-2xl font-semibold text-primary mb-6 flex items-center gap-2">
+                
+                {/* Position */}
+                <p className="text-2xl font-semibold text-primary mb-3 flex items-center gap-2">
                     <UserCheck className="w-6 h-6" />
                     {leader.position}
                 </p>
+
+                {/* State/Location (for consistency with Player details) */}
+                {leader.state && (
+                    <p className="text-lg font-medium text-gray-600 mb-6 flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary/70" />
+                        Represents: {leader.state}
+                    </p>
+                )}
 
                 <div className="prose prose-lg max-w-none text-gray-700">
                     <h2 className="text-3xl font-bold text-gray-800 border-b border-primary/50 pb-2 mb-6 mt-6">Full Biography</h2>
@@ -148,9 +154,8 @@ export default function LeaderDetail() {
                         <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>
                     ))}
                     
-                    {/* Optional footer */}
                     <p className="mt-10 text-sm italic text-gray-500 border-t pt-4">
-                        The leadership of the NRSA is committed to advancing the sport of rope skipping in Nigeria.
+                        Leadership information provided by the NRSA Administrative Team.
                     </p>
                 </div>
               </div>
