@@ -2,10 +2,12 @@ import express, { type Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import bcrypt from "bcrypt";
 
 import { registerRoutes } from "./registerRoutes";
 import { registerAuthRoutes } from "./auth";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 
 dotenv.config();
 
@@ -58,7 +60,41 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Automatically creates the default admin user on startup if it doesn't exist.
+ * This ensures there's always an admin user available for the admin portal.
+ * 
+ * Default Admin Credentials:
+ * - Email: admin1@nrsa.com.ng
+ * - Password: adminpassme2$
+ */
+async function ensureDefaultAdminExists() {
+  try {
+    const adminEmail = "admin1@nrsa.com.ng";
+    const adminPassword = "adminpassme2$";
+    
+    const existingAdmin = await storage.getAdminByEmail(adminEmail);
+    
+    if (!existingAdmin) {
+      const passwordHash = await bcrypt.hash(adminPassword, 10);
+      await storage.createAdmin({
+        name: "Main Admin",
+        email: adminEmail,
+        passwordHash
+      });
+      log("✓ Default admin user created successfully");
+    } else {
+      log("✓ Default admin user already exists");
+    }
+  } catch (error) {
+    log(`Warning: Could not create default admin user - ${error}`);
+  }
+}
+
 (async () => {
+  // Ensure default admin exists before starting the server
+  await ensureDefaultAdminExists();
+  
   if (app.get("env") === "development") {
     const httpServer = require("http").createServer(app);
     await setupVite(app, httpServer);

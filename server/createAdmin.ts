@@ -5,8 +5,9 @@ async function main() {
   const hashedPassword = await bcrypt.hash("SuperSecret123!", 10);
 
   const admin = await storage.createAdmin({
+    name: "Admin",
     email: "admin@example.com",
-    password: hashedPassword
+    passwordHash: hashedPassword
   });
 
   console.log("Admin created:", admin);

@@ -27,13 +27,6 @@ export const storage = {
     const [created] = await db.insert(admins).values(adminData).returning();
     return created;
   },
-// storage.ts
-loginAdmin: async (email: string, password: string) => {
-  const admin = await storage.getAdminByEmail(email);
-  if (!admin) return null;
-  const match = await bcrypt.compare(password, admin.password);
-  return match ? admin : null;
-},
   // Users
   getUser: async (id: string) => {
     const [user] = await db.select().from(users).where(eq(users.id, id));
