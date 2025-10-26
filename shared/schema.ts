@@ -69,7 +69,13 @@ export const news = pgTable("news", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertNewsSchema = createInsertSchema(news).omit({
+/**
+ * News insert schema with date string handling
+ * Accepts date strings from API and converts them to Date objects
+ */
+export const insertNewsSchema = createInsertSchema(news, {
+  publishedAt: z.union([z.date(), z.string().transform((str) => new Date(str))]).optional(),
+}).omit({
   id: true,
   createdAt: true,
 });
@@ -92,7 +98,14 @@ export const events = pgTable("events", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertEventSchema = createInsertSchema(events).omit({
+/**
+ * Event insert schema with date string handling
+ * Accepts date strings from API and converts them to Date objects
+ */
+export const insertEventSchema = createInsertSchema(events, {
+  eventDate: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  registrationDeadline: z.union([z.date(), z.string().transform((str) => new Date(str))]).optional(),
+}).omit({
   id: true,
   createdAt: true,
 });
