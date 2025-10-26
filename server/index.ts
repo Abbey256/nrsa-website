@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 
 import { registerRoutes } from "./registerRoutes";
 import { registerAuthRoutes } from "./auth";
+import { registerUploadRoutes } from "./upload";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 
@@ -48,6 +49,7 @@ app.use((req, res, next) => {
 
 // Register API routes
 registerAuthRoutes(app);
+registerUploadRoutes(app);
 registerRoutes(app);
 
 // Global error handler

@@ -7,9 +7,105 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash, MoveUp, MoveDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { HeroSlide } from "@shared/schema";
 
+/**
+ * Hero Slides Admin Page
+ * 
+ * Manages homepage hero carousel slides with drag-and-drop image upload.
+ * 
+ * Features:
+ * - Create, edit, delete hero slides
+ * - Drag-and-drop image upload (replaces URL-only input)
+ * - Reorder slides by changing order number
+ * - Toggle slide active/inactive status
+ * - All changes update live site immediately
+ */
 export default function AdminHeroSlides() {
-  const [slides] = useState([]);
+  const queryClient = useQueryClient();
+  const { data: slides = [] } = useQuery<HeroSlide[]>({
+    queryKey: ["/api/hero-slides"],
+  });
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editSlide, setEditSlide] = useState<HeroSlide | null>(null);
+  const [formData, setFormData] = useState({
+    imageUrl: "",
+    headline: "",
+    subheadline: "",
+    ctaText: "",
+    ctaLink: "",
+    order: 0,
+    isActive: true,
+  });
+
+  // Create or update mutation
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const method = editSlide ? "PATCH" : "POST";
+      const url = editSlide ? `/api/hero-slides/${editSlide.id}` : "/api/hero-slides";
+      return await apiRequest(method, url, formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
+      setDialogOpen(false);
+      resetForm();
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/hero-slides/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
+    },
+  });
+
+  const handleSave = () => {
+    if (!formData.imageUrl || !formData.headline) {
+      alert("Please provide an image and headline");
+      return;
+    }
+    saveMutation.mutate();
+  };
+
+  const handleEdit = (slide: HeroSlide) => {
+    setEditSlide(slide);
+    setFormData({
+      imageUrl: slide.imageUrl,
+      headline: slide.headline,
+      subheadline: slide.subheadline || "",
+      ctaText: slide.ctaText || "",
+      ctaLink: slide.ctaLink || "",
+      order: slide.order,
+      isActive: slide.isActive,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Delete this slide?")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const resetForm = () => {
+    setEditSlide(null);
+    setFormData({
+      imageUrl: "",
+      headline: "",
+      subheadline: "",
+      ctaText: "",
+      ctaLink: "",
+      order: slides.length,
+      isActive: true,
+    });
+  };
 
   return (
     <div>
@@ -25,39 +121,80 @@ export default function AdminHeroSlides() {
               Add Slide
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add Hero Slide</DialogTitle>
+              <DialogTitle>{editSlide ? "Edit" : "Add"} Hero Slide</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
-              <div>
-                <Label>Image URL *</Label>
-                <Input placeholder="https://example.com/image.jpg" data-testid="input-image-url" />
-              </div>
+              {/* NEW: Drag-and-drop image upload component */}
+              <ImageUpload
+                value={formData.imageUrl}
+                onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                label="Hero Image *"
+              />
+              
               <div>
                 <Label>Headline *</Label>
-                <Input placeholder="Main headline text" data-testid="input-headline" />
+                <Input 
+                  value={formData.headline}
+                  onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+                  placeholder="Main headline text" 
+                  data-testid="input-headline" 
+                />
               </div>
               <div>
                 <Label>Subheadline</Label>
-                <Input placeholder="Supporting text (optional)" data-testid="input-subheadline" />
+                <Input 
+                  value={formData.subheadline}
+                  onChange={(e) => setFormData({ ...formData, subheadline: e.target.value })}
+                  placeholder="Supporting text (optional)" 
+                  data-testid="input-subheadline" 
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>CTA Button Text</Label>
-                  <Input placeholder="Learn More" data-testid="input-cta-text" />
+                  <Input 
+                    value={formData.ctaText}
+                    onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                    placeholder="Learn More" 
+                    data-testid="input-cta-text" 
+                  />
                 </div>
                 <div>
                   <Label>CTA Link</Label>
-                  <Input placeholder="/about" data-testid="input-cta-link" />
+                  <Input 
+                    value={formData.ctaLink}
+                    onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                    placeholder="/about" 
+                    data-testid="input-cta-link" 
+                  />
                 </div>
               </div>
+              <div>
+                <Label>Display Order</Label>
+                <Input 
+                  type="number"
+                  value={formData.order}
+                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                />
+              </div>
               <div className="flex items-center gap-2">
-                <Switch data-testid="switch-active" />
+                <Switch 
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  data-testid="switch-active" 
+                />
                 <Label>Active</Label>
               </div>
-              <Button className="w-full bg-primary hover:bg-primary/90" data-testid="button-save-slide">
-                Save Slide
+              <Button 
+                onClick={handleSave}
+                disabled={saveMutation.isPending}
+                className="w-full bg-primary hover:bg-primary/90" 
+                data-testid="button-save-slide"
+              >
+                {saveMutation.isPending ? "Saving..." : "Save Slide"}
               </Button>
             </div>
           </DialogContent>
@@ -71,8 +208,50 @@ export default function AdminHeroSlides() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {/* Slides will be listed here */}
+        <div className="grid gap-4">
+          {slides.map((slide) => (
+            <Card key={slide.id}>
+              <CardContent className="p-6">
+                <div className="flex gap-4">
+                  <img 
+                    src={slide.imageUrl} 
+                    alt={slide.headline}
+                    className="w-32 h-20 object-cover rounded"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{slide.headline}</h3>
+                    {slide.subheadline && (
+                      <p className="text-sm text-muted-foreground">{slide.subheadline}</p>
+                    )}
+                    <div className="flex gap-2 mt-2">
+                      <span className="text-xs px-2 py-1 rounded bg-gray-100">
+                        Order: {slide.order}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded ${slide.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100'}`}>
+                        {slide.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleEdit(slide)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="icon"
+                      onClick={() => handleDelete(slide.id)}
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
