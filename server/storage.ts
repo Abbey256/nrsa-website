@@ -27,6 +27,18 @@ export const storage = {
     const [created] = await db.insert(admins).values(adminData).returning();
     return created;
   },
+  /**
+   * Get all admin accounts (excluding password hashes for security)
+   * Used by admin management interface to list all administrators
+   */
+  getAllAdmins: async () => {
+    return await db.select({
+      id: admins.id,
+      name: admins.name,
+      email: admins.email,
+      createdAt: admins.createdAt
+    }).from(admins).orderBy(desc(admins.createdAt));
+  },
   // Users
   getUser: async (id: string) => {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -189,6 +201,13 @@ export const storage = {
     const [created] = await db.insert(affiliations).values(affiliation).returning();
     return created;
   },
+  updateAffiliation: async (id: number, data: Partial<InsertAffiliation>) => {
+    const [updated] = await db.update(affiliations).set(data).where(eq(affiliations.id, id)).returning();
+    return updated || undefined;
+  },
+  deleteAffiliation: async (id: number) => {
+    await db.delete(affiliations).where(eq(affiliations.id, id));
+  },
 
   // Contacts
   getAllContacts: async () => {
@@ -198,6 +217,13 @@ export const storage = {
     const [created] = await db.insert(contacts).values(contact).returning();
     return created;
   },
+  updateContact: async (id: number, data: Partial<InsertContact>) => {
+    const [updated] = await db.update(contacts).set(data).where(eq(contacts.id, id)).returning();
+    return updated || undefined;
+  },
+  deleteContact: async (id: number) => {
+    await db.delete(contacts).where(eq(contacts.id, id));
+  },
 
   // Site Settings
   getAllSiteSettings: async () => {
@@ -206,5 +232,12 @@ export const storage = {
   createSiteSetting: async (setting: InsertSiteSetting) => {
     const [created] = await db.insert(siteSettings).values(setting).returning();
     return created;
+  },
+  updateSiteSetting: async (id: number, data: Partial<InsertSiteSetting>) => {
+    const [updated] = await db.update(siteSettings).set(data).where(eq(siteSettings.id, id)).returning();
+    return updated || undefined;
+  },
+  deleteSiteSetting: async (id: number) => {
+    await db.delete(siteSettings).where(eq(siteSettings.id, id));
   },
 };

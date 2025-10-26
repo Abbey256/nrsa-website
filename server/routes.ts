@@ -2,6 +2,7 @@ import { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { requireAdmin } from "./authMiddleware"; // You should implement this middleware
+import bcrypt from "bcrypt";
 import {
   insertHeroSlideSchema,
   insertNewsSchema,
@@ -12,7 +13,8 @@ import {
   insertMediaSchema,
   insertAffiliationSchema,
   insertContactSchema,
-  insertSiteSettingSchema
+  insertSiteSettingSchema,
+  insertAdminSchema
 } from "@shared/schema";
 
 /**
@@ -190,14 +192,67 @@ export function registerAllRoutes(app: Express): Server {
   // ---------- AFFILIATIONS ----------
   app.get("/api/affiliations", async (req,res)=>{ try{ res.json(await storage.getAllAffiliations()); } catch(e:any){ res.status(500).json({error:e.message}); } });
   app.post("/api/affiliations", requireAdmin, async (req,res)=>{ try{ const aff = await storage.createAffiliation(insertAffiliationSchema.parse(req.body)); res.status(201).json(aff); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.patch("/api/affiliations/:id", requireAdmin, async (req,res)=>{ try{ const aff = await storage.updateAffiliation(parseInt(req.params.id), req.body); if(!aff) return res.status(404).json({error:"Affiliation not found"}); res.json(aff); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.delete("/api/affiliations/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteAffiliation(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
 
   // ---------- CONTACTS ----------
-  app.get("/api/contacts", async (req,res)=>{ try{ res.json(await storage.getAllContacts()); } catch(e:any){ res.status(500).json({error:e.message}); } });
+  app.get("/api/contacts", requireAdmin, async (req,res)=>{ try{ res.json(await storage.getAllContacts()); } catch(e:any){ res.status(500).json({error:e.message}); } });
   app.post("/api/contacts", async (req,res)=>{ try{ const contact = await storage.createContact(insertContactSchema.parse(req.body)); res.status(201).json(contact); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.patch("/api/contacts/:id", requireAdmin, async (req,res)=>{ try{ const contact = await storage.updateContact(parseInt(req.params.id), req.body); if(!contact) return res.status(404).json({error:"Contact not found"}); res.json(contact); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.delete("/api/contacts/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteContact(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
 
   // ---------- SITE SETTINGS ----------
   app.get("/api/site-settings", async (req,res)=>{ try{ res.json(await storage.getAllSiteSettings()); } catch(e:any){ res.status(500).json({error:e.message}); } });
   app.post("/api/site-settings", requireAdmin, async (req,res)=>{ try{ const setting = await storage.createSiteSetting(insertSiteSettingSchema.parse(req.body)); res.status(201).json(setting); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.patch("/api/site-settings/:id", requireAdmin, async (req,res)=>{ try{ const setting = await storage.updateSiteSetting(parseInt(req.params.id), req.body); if(!setting) return res.status(404).json({error:"Setting not found"}); res.json(setting); } catch(e:any){ res.status(400).json({error:e.message}); } });
+  app.delete("/api/site-settings/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteSiteSetting(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
+
+  // ---------- ADMIN MANAGEMENT ----------
+  /**
+   * Admin Management Endpoints
+   * Allows authenticated admins to manage other admin accounts
+   */
+  app.get("/api/admins", requireAdmin, async (req,res)=>{ 
+    try{ 
+      res.json(await storage.getAllAdmins()); 
+    } catch(e:any){ 
+      res.status(500).json({error:e.message}); 
+    } 
+  });
+  
+  /**
+   * Create new admin account
+   * Requires: { name: string, email: string, passwordHash: string }
+   * Note: Password must be hashed with bcrypt before sending
+   */
+  app.post("/api/admins", requireAdmin, async (req,res)=>{ 
+    try{ 
+      const { name, email, password } = req.body;
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: "Name, email, and password are required" });
+      }
+      
+      // Check if admin with this email already exists
+      const existingAdmin = await storage.getAdminByEmail(email);
+      if (existingAdmin) {
+        return res.status(409).json({ error: "Admin with this email already exists" });
+      }
+      
+      // Hash password before storing (10 rounds of bcrypt)
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      const admin = await storage.createAdmin({ name, email, passwordHash });
+      // Return admin without password hash for security
+      res.status(201).json({ 
+        id: admin.id, 
+        name: admin.name, 
+        email: admin.email, 
+        createdAt: admin.createdAt 
+      }); 
+    } catch(e:any){ 
+      res.status(400).json({error:e.message}); 
+    } 
+  });
 
   return createServer(app);
 }
