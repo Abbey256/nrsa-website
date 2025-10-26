@@ -1,6 +1,6 @@
 import ws from "ws";
 import { neon, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
 
 // 1. Configure the WebSocket for the serverless driver
