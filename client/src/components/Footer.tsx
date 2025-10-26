@@ -55,7 +55,7 @@ export function Footer() {
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-4 h-4 mt-1 flex-shrink-0 text-[#009739]" />
-                <span>info@nrsa.ng</span>
+                <span>rsfederationng@gmail.com</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 mt-1 flex-shrink-0 text-[#009739]" />

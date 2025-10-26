@@ -2,10 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-
-// FIX: Replaced the local asset import with a public placeholder URL 
-// since local asset paths often fail to resolve in the build environment.
-const logoUrl = "https://placehold.co/100x56/009739/ffffff?text=NRSA+Logo";
+import logoUrl from "@assets/nrsf-logo_1761313307811.jpg";
 
 export function Header() {
   const [location] = useLocation();
