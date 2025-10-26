@@ -1,17 +1,20 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
+import ws from "ws";
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import * as schema from "@shared/schema";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database on Render?"
-  );
-}
+// 1. Configure the WebSocket for the serverless driver
+// This line is correct and necessary for a server environment.
+neonConfig.webSocketConstructor = ws;
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // required for Render
-});
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL must be set");
 
-export const db = drizzle(pool, { schema });
+// 2. Create the 'sql' connection function using the Neon driver
+// This replaces the old 'new Pool' setup entirely.
+const sql = neon(process.env.DATABASE_URL);
 
+// 3. Create the Drizzle DB instance using the 'sql' function
+export const db = drizzle(sql, { schema });
+
+// NOTE: You no longer need to export 'pool' or import 'pkg' (pg)
+// You should also remove the 'pg' dependency from your package.json

@@ -15,15 +15,11 @@ dotenv.config();
 
 const app = express();
 
-// Express middleware
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    (req as any).rawBody = buf;
-  }
-}));
+// Middleware
+app.use(express.json({ verify: (req, _res, buf) => (req as any).rawBody = buf }));
 app.use(express.urlencoded({ extended: false }));
 
-// Logging middleware
+// Logging
 app.use((req, res, next) => {
   const start = Date.now();
   let capturedJsonResponse: Record<string, any> | undefined;
@@ -47,7 +43,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Register API routes
+// Register routes
 registerAuthRoutes(app);
 registerUploadRoutes(app);
 registerRoutes(app);
@@ -59,36 +55,19 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(status).json({ message });
 });
 
-// Frontend serving
+// Frontend
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Automatically creates the default admin user on startup if it doesn't exist.
- * This ensures there's always an admin user available for the admin portal.
- * 
- * Admin Credentials (configurable via environment variables):
- * - Email: ADMIN_EMAIL (default: admin1@nrsa.com.ng)
- * - Password: ADMIN_PASSWORD (default: adminpassme2$)
- * 
- * IMPORTANT FOR PRODUCTION:
- * Set custom admin credentials using environment variables to override defaults.
- * After first deployment, change the password through the admin dashboard or database.
- * 
- * Security Note:
- * This function only creates an admin if one doesn't exist with the specified email.
- * This prevents unauthorized admin creation since /api/admin/setup endpoint has been removed.
- */
+// Ensure default admin exists
 async function ensureDefaultAdminExists() {
   try {
-    // Use environment variables for credentials, with secure defaults
     const adminEmail = process.env.ADMIN_EMAIL || "admin1@nrsa.com.ng";
     const adminPassword = process.env.ADMIN_PASSWORD || "adminpassme2$";
     
     const existingAdmin = await storage.getAdminByEmail(adminEmail);
-    
+
     if (!existingAdmin) {
-      // Hash password with 10 rounds of bcrypt
       const passwordHash = await bcrypt.hash(adminPassword, 10);
       await storage.createAdmin({
         name: process.env.ADMIN_NAME || "Main Admin",
@@ -96,9 +75,7 @@ async function ensureDefaultAdminExists() {
         passwordHash
       });
       log("✓ Default admin user created successfully");
-      if (!process.env.ADMIN_EMAIL) {
-        log("⚠ Using default admin credentials - set ADMIN_EMAIL and ADMIN_PASSWORD env vars for production");
-      }
+      if (!process.env.ADMIN_EMAIL) log("⚠ Using default admin credentials - change in env vars for production");
     } else {
       log("✓ Default admin user already exists");
     }
@@ -107,10 +84,10 @@ async function ensureDefaultAdminExists() {
   }
 }
 
+// Start server
 (async () => {
-  // Ensure default admin exists before starting the server
   await ensureDefaultAdminExists();
-  
+
   if (app.get("env") === "development") {
     const httpServer = createServer(app);
     await setupVite(app, httpServer);
@@ -119,9 +96,7 @@ async function ensureDefaultAdminExists() {
     const distPath = path.join(__dirname, "../dist");
     serveStatic(app);
     app.use(express.static(distPath));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    app.get("*", (_req, res) => res.sendFile(path.join(distPath, "index.html")));
     app.listen(process.env.PORT || 5000, () => log(`Server running on port ${process.env.PORT || 5000}`));
   }
 })();
