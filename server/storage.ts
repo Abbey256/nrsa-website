@@ -1,35 +1,31 @@
 import { 
-  type User, type InsertUser, type HeroSlide, type InsertHeroSlide, 
+  type User, type InsertUser, type Admin, type InsertAdmin,
+  type HeroSlide, type InsertHeroSlide, 
   type News, type InsertNews, type Event, type InsertEvent,
   type Player, type InsertPlayer, type Club, type InsertClub,
   type Leader, type InsertLeader, type Media, type InsertMedia,
   type Affiliation, type InsertAffiliation, type Contact, type InsertContact,
   type SiteSetting, type InsertSiteSetting,
-  users, heroSlides, news, events, players, clubs, leaders,
+  users, admins, heroSlides, news, events, players, clubs, leaders,
   media, affiliations, contacts, siteSettings
 } from "@shared/schema";
 
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
-export interface Admin {
-  id: number;
-  name: string;
-  email: string;
-  passwordHash: string;
-}
-
-let admins: Admin[] = [];
-
 export const storage = {
   // Admin methods
-  getAdminByEmail: async (email: string) => admins.find(a => a.email === email),
-  getAdminById: async (id: number) => admins.find(a => a.id === id),
-  createAdmin: async (adminData: { name: string; email: string; passwordHash: string }) => {
-    const id = admins.length + 1;
-    const admin: Admin = { id, ...adminData };
-    admins.push(admin);
-    return admin;
+  getAdminByEmail: async (email: string) => {
+    const [admin] = await db.select().from(admins).where(eq(admins.email, email));
+    return admin || undefined;
+  },
+  getAdminById: async (id: number) => {
+    const [admin] = await db.select().from(admins).where(eq(admins.id, id));
+    return admin || undefined;
+  },
+  createAdmin: async (adminData: InsertAdmin) => {
+    const [created] = await db.insert(admins).values(adminData).returning();
+    return created;
   },
 
   // Users
