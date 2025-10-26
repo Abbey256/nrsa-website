@@ -1,32 +1,28 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Zap, UserCheck, MapPin } from "lucide-react";
-import { useRoute } from "wouter"; 
-import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 
-// --- Type Definitions (matching the admin data structure) ---
 interface Leader {
-  id: string;
+  id: number;
   name: string;
-  position: string; 
+  position: string;
   bio: string;
   photoUrl: string;
-  order: number; // Include 'order' for sorting, as confirmed by Admin code
-  state?: string; // Adding optional state for consistency with Players card
+  order: number;
+  state?: string;
 }
 
 const API_URL = "/api/leaders";
 
 export default function Leaders() {
-  // Use useRoute to get the navigate function for programmatic navigation
-  const [, , navigate] = useRoute("/leaders/:id"); 
+  const [, navigate] = useLocation();
   
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Data Fetching Effect (using standard API fetch)
   useEffect(() => {
     const fetchLeaders = async () => {
         try {
@@ -38,8 +34,7 @@ export default function Leaders() {
             
             const data: Leader[] = await response.json();
             
-            // Sort based on the 'order' field from the Admin portal.
-            data.sort((a, b) => a.order - b.order); 
+            data.sort((a, b) => a.order - b.order);
             
             setLeaders(data);
             setError(null);
@@ -53,10 +48,9 @@ export default function Leaders() {
     };
 
     fetchLeaders();
-  }, []); 
+  }, []);
 
-  const handleReadBio = (leaderId: string) => {
-    // Programmatic navigation to the dedicated leader detail page
+  const handleReadBio = (leaderId: number) => {
     navigate(`/leaders/${leaderId}`);
   };
 
@@ -90,10 +84,8 @@ export default function Leaders() {
     }
 
     return (
-      // Using 4 columns for consistency with Players
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"> 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {leaders.map((leader) => (
-          // Make the entire card clickable for better UX, like the Players page
           <Card 
             key={leader.id} 
             className="group overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl border-t-8 border-primary/70 rounded-xl cursor-pointer hover-elevate active-elevate-2"
@@ -125,7 +117,6 @@ export default function Leaders() {
                 </div>
               )}
 
-              {/* Show a brief snippet of the bio for consistency with the Players card structure */}
               {leader.bio && (
                   <div className="text-left pt-4 border-t space-y-3">
                     <div className="text-sm text-muted-foreground mb-1">About</div>
@@ -133,7 +124,6 @@ export default function Leaders() {
                   </div>
               )}
               
-              {/* Optional: Use a hidden button or simpler text for the link, as the card is clickable */}
               <div className="mt-4 text-primary font-semibold text-sm hover:underline">
                   Click for Full Bio
               </div>
@@ -150,7 +140,6 @@ export default function Leaders() {
       <Helmet>
         <title>Leadership Team - NRSA</title>
       </Helmet>
-      {/* Reusing the Hero Section style from Players.tsx */}
       <section className="bg-primary text-primary-foreground py-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Our Visionary Leaders</h1>
@@ -160,7 +149,6 @@ export default function Leaders() {
         </div>
       </section>
 
-      {/* Leaders Grid/Content */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           {renderContent()}
