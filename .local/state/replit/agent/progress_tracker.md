@@ -13,6 +13,10 @@
 5. **Admin Creation**: Implemented automatic admin user creation on server startup
 6. **Routing**: Fixed 404 errors by flattening route structure in App.tsx
 7. **Security**: Removed insecure /api/admin/setup endpoint, added environment variable support
+8. **Admin Management**: ✨ Added ability for admins to create additional admin accounts via API
+9. **Complete CRUD**: ✨ Added missing update/delete operations for Affiliations, Contacts, and Site Settings
+10. **Date Handling**: ✨ Fixed event and news schemas to accept ISO date strings from frontend
+11. **Code Documentation**: ✨ Added comprehensive comments to auth, upload, and admin management code
 
 ### Default Admin Credentials:
 - Email: admin1@nrsa.com.ng
@@ -27,7 +31,20 @@
 
 ### Backend API Endpoints Working:
 - POST /api/admin/login - Admin authentication
-- All CRUD endpoints for: News, Events, Players, Clubs, Leaders, Hero Slides, Media, Contacts, Affiliations, Site Settings
+- GET /api/admins - List all admin accounts (admin only)
+- POST /api/admins - Create new admin accounts (admin only)
+- **Complete CRUD operations** for all entities:
+  - Events: Create, Read, Update, Delete
+  - Players: Create, Read, Update, Delete
+  - Clubs: Create, Read, Update, Delete
+  - News: Create, Read, Update, Delete
+  - Hero Slides: Create, Read, Update, Delete
+  - Media: Create, Read, Update, Delete
+  - Affiliations: Create, Read, Update, Delete ✨ (Update & Delete newly added)
+  - Contacts: Create, Read, Update, Delete ✨ (Update & Delete newly added)
+  - Site Settings: Create, Read, Update, Delete ✨ (Update & Delete newly added)
+  - Leaders: Create, Read, Update, Delete
+- POST /api/upload - Image upload with validation (5MB limit, images only)
 
 ### Frontend Routes Working:
 - /admin/login - Admin login page
