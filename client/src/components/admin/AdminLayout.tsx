@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { 
   LayoutDashboard, 
   Settings, 
@@ -21,6 +22,18 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      window.location.href = "/admin/login";
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    window.location.href = "/";
+  };
 
   const navItems = [
     { label: "Dashboard", path: "/admin-nrsa-dashboard", icon: LayoutDashboard },
@@ -77,16 +90,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Logout */}
         <div className="p-4 border-t border-primary-foreground/10">
-          <Link href="/">
-            <Button 
-              variant="destructive" 
-              className="w-full justify-start gap-3"
-              data-testid="button-logout"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Back to Website</span>
-            </Button>
-          </Link>
+          <Button 
+            variant="destructive" 
+            className="w-full justify-start gap-3"
+            onClick={handleLogout}
+            data-testid="button-logout"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </Button>
         </div>
       </aside>
 
