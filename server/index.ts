@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -96,7 +97,7 @@ async function ensureDefaultAdminExists() {
   await ensureDefaultAdminExists();
   
   if (app.get("env") === "development") {
-    const httpServer = require("http").createServer(app);
+    const httpServer = createServer(app);
     await setupVite(app, httpServer);
     httpServer.listen(process.env.PORT || 5000, () => log(`Dev server running on port ${process.env.PORT || 5000}`));
   } else {

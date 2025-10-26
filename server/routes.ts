@@ -15,7 +15,13 @@ import {
   insertSiteSettingSchema
 } from "@shared/schema";
 
-export function registerRoutes(app: Express): Server {
+/**
+ * Registers all CRUD API routes for the application.
+ * Includes endpoints for: Hero Slides, News, Events, Players, Clubs, Leaders, 
+ * Media, Affiliations, Contacts, and Site Settings.
+ * Protected routes require admin authentication via JWT.
+ */
+export function registerAllRoutes(app: Express): Server {
 
   // ---------- HERO SLIDES ----------
   app.get("/api/hero-slides", async (req, res) => {
