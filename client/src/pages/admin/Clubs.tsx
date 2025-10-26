@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import type { Club, InsertClub } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
 
 /**
  * AdminClubs — Admin UI for Clubs with Add / Edit / Delete
@@ -36,15 +37,7 @@ export default function AdminClubs() {
   // --- Add Club mutation ---
   const addClub = useMutation({
     mutationFn: async (newClub: InsertClub) => {
-      const res = await fetch("/api/clubs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newClub),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to add club");
-      }
+      const res = await apiRequest("POST", "/api/clubs", newClub);
       return res.json();
     },
     onSuccess: () => {
@@ -55,15 +48,7 @@ export default function AdminClubs() {
   // --- Update Club mutation (Edit) ---
   const updateClub = useMutation({
     mutationFn: async (payload: { id: string; data: Partial<Club> }) => {
-      const res = await fetch(`/api/clubs/${payload.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload.data),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to update club");
-      }
+      const res = await apiRequest("PATCH", `/api/clubs/${payload.id}`, payload.data);
       return res.json();
     },
     onSuccess: () => {
@@ -74,12 +59,8 @@ export default function AdminClubs() {
   // --- Delete Club mutation ---
   const deleteClub = useMutation({
     mutationFn: async (id: string | number) => {
-      const res = await fetch(`/api/clubs/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to delete club");
-      }
-      return res.json();
+      const res = await apiRequest("DELETE", `/api/clubs/${id}`);
+      return res.status === 204 ? null : res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/clubs"] }),
   });

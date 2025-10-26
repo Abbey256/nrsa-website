@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AdminSettings() {
-  const API_URL = "https://nrsa-backend.onrender.com/api/settings";
+  const API_URL = "/api/site-settings";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,8 +29,7 @@ export default function AdminSettings() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Failed to load settings");
+      const res = await apiRequest("GET", API_URL);
       const data = await res.json();
       setSettings(data);
     } catch (err) {
@@ -46,12 +46,7 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(API_URL, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      if (!res.ok) throw new Error("Failed to save settings");
+      await apiRequest("POST", API_URL, settings);
       alert("✅ Settings updated successfully!");
     } catch (err) {
       console.error("Error saving settings:", err);

@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 type News = {
   id: number;
@@ -46,16 +47,10 @@ export default function AdminNews() {
   // 🔹 Create or Update
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const method = editItem ? "PUT" : "POST";
+      const method = editItem ? "PATCH" : "POST";
       const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Failed to save news");
+      const res = await apiRequest(method, url, formData);
       return res.json();
     },
     onSuccess: () => {
@@ -69,9 +64,8 @@ export default function AdminNews() {
   // 🔹 Delete
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
-      return res.json();
+      const res = await apiRequest("DELETE", `/api/news/${id}`);
+      return res.status === 204 ? null : res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/news"] }),
   });

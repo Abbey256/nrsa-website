@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Player {
   id?: number;
@@ -40,7 +41,7 @@ export default function AdminPlayers() {
 
   const [open, setOpen] = useState(false);
 
-  const API_URL = "https://nrsa-backend.onrender.com/api/players";
+  const API_URL = "/api/players";
 
   // Fetch players
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function AdminPlayers() {
   const fetchPlayers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(API_URL);
+      const res = await apiRequest("GET", API_URL);
       const data = await res.json();
       setPlayers(data);
     } catch (err) {
@@ -67,17 +68,11 @@ export default function AdminPlayers() {
 
   // Add or Edit Player
   const handleSave = async () => {
-    const method = editingPlayer ? "PUT" : "POST";
+    const method = editingPlayer ? "PATCH" : "POST";
     const url = editingPlayer ? `${API_URL}/${editingPlayer.id}` : API_URL;
 
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error("Failed to save player");
-
+      await apiRequest(method, url, form);
       await fetchPlayers();
       setForm({
         name: "",
@@ -99,8 +94,7 @@ export default function AdminPlayers() {
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this player?")) return;
     try {
-      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete player");
+      await apiRequest("DELETE", `${API_URL}/${id}`);
       setPlayers(players.filter((p) => p.id !== id));
     } catch (err) {
       console.error("Error deleting player:", err);
