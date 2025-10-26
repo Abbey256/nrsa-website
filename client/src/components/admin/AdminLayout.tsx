@@ -20,16 +20,33 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ * AdminLayout Component
+ * 
+ * Provides the admin dashboard layout with:
+ * - JWT authentication check: Redirects to login if no token is found
+ * - Sidebar navigation with all admin sections
+ * - Logout functionality that clears the JWT token
+ * 
+ * Authentication Flow:
+ * 1. On mount, checks for 'adminToken' in localStorage
+ * 2. If no token exists, redirects to /admin/login
+ * 3. Token is set after successful login (see Login.tsx)
+ * 4. Token is sent with API requests via Authorization header (see individual admin pages)
+ */
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
 
+  // JWT Authentication Check - runs on component mount
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
+      // No token found, redirect to login page
       window.location.href = "/admin/login";
     }
   }, []);
 
+  // Logout handler: removes JWT token and redirects to home page
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     window.location.href = "/";

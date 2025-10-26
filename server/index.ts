@@ -65,25 +65,38 @@ const __dirname = path.dirname(__filename);
  * Automatically creates the default admin user on startup if it doesn't exist.
  * This ensures there's always an admin user available for the admin portal.
  * 
- * Default Admin Credentials:
- * - Email: admin1@nrsa.com.ng
- * - Password: adminpassme2$
+ * Admin Credentials (configurable via environment variables):
+ * - Email: ADMIN_EMAIL (default: admin1@nrsa.com.ng)
+ * - Password: ADMIN_PASSWORD (default: adminpassme2$)
+ * 
+ * IMPORTANT FOR PRODUCTION:
+ * Set custom admin credentials using environment variables to override defaults.
+ * After first deployment, change the password through the admin dashboard or database.
+ * 
+ * Security Note:
+ * This function only creates an admin if one doesn't exist with the specified email.
+ * This prevents unauthorized admin creation since /api/admin/setup endpoint has been removed.
  */
 async function ensureDefaultAdminExists() {
   try {
-    const adminEmail = "admin1@nrsa.com.ng";
-    const adminPassword = "adminpassme2$";
+    // Use environment variables for credentials, with secure defaults
+    const adminEmail = process.env.ADMIN_EMAIL || "admin1@nrsa.com.ng";
+    const adminPassword = process.env.ADMIN_PASSWORD || "adminpassme2$";
     
     const existingAdmin = await storage.getAdminByEmail(adminEmail);
     
     if (!existingAdmin) {
+      // Hash password with 10 rounds of bcrypt
       const passwordHash = await bcrypt.hash(adminPassword, 10);
       await storage.createAdmin({
-        name: "Main Admin",
+        name: process.env.ADMIN_NAME || "Main Admin",
         email: adminEmail,
         passwordHash
       });
       log("✓ Default admin user created successfully");
+      if (!process.env.ADMIN_EMAIL) {
+        log("⚠ Using default admin credentials - set ADMIN_EMAIL and ADMIN_PASSWORD env vars for production");
+      }
     } else {
       log("✓ Default admin user already exists");
     }

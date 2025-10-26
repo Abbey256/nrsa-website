@@ -42,43 +42,57 @@ function PageWithLayout({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Admin dashboard routes wrapper with authentication layout
- */
-function AdminRoutes() {
-  return (
-    <AdminLayout>
-      <Switch>
-        <Route path="/admin-nrsa-dashboard" component={AdminDashboard} />
-        <Route path="/admin-nrsa-dashboard/hero-slides" component={AdminHeroSlides} />
-        <Route path="/admin-nrsa-dashboard/news" component={AdminNews} />
-        <Route path="/admin-nrsa-dashboard/events" component={AdminEvents} />
-        <Route path="/admin-nrsa-dashboard/players" component={AdminPlayers} />
-        <Route path="/admin-nrsa-dashboard/clubs" component={AdminClubs} />
-        <Route path="/admin-nrsa-dashboard/leaders" component={AdminLeaders} />
-        <Route path="/admin-nrsa-dashboard/media" component={AdminMedia} />
-        <Route path="/admin-nrsa-dashboard/affiliations" component={AdminAffiliations} />
-        <Route path="/admin-nrsa-dashboard/contacts" component={AdminContacts} />
-        <Route path="/admin-nrsa-dashboard/settings" component={AdminSettings} />
-      </Switch>
-    </AdminLayout>
-  );
-}
-
-/**
  * Main application component with routing configuration.
  * Routes are ordered by priority: admin routes first, then public routes, then 404.
+ * 
+ * Routing Fix:
+ * - Admin routes are now explicitly defined at the top level with exact paths
+ * - This ensures that /admin-nrsa-dashboard properly loads the Dashboard component
+ * - JWT authentication is checked in AdminLayout component (redirects to login if no token)
+ * - All admin routes use the AdminLayout wrapper which includes the sidebar navigation
  */
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Switch>
-          {/* Admin Login Route (no layout) */}
+          {/* Admin Login Route (no layout, public access) */}
           <Route path="/admin/login" component={AdminLogin} />
           
-          {/* Admin Dashboard Routes (with admin layout) */}
-          <Route path="/admin-nrsa-dashboard/:rest*">
-            {() => <AdminRoutes />}
+          {/* Admin Dashboard Routes - All routes explicitly defined with AdminLayout wrapper */}
+          {/* These routes require JWT authentication (checked in AdminLayout) */}
+          <Route path="/admin-nrsa-dashboard">
+            {() => <AdminLayout><AdminDashboard /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/hero-slides">
+            {() => <AdminLayout><AdminHeroSlides /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/news">
+            {() => <AdminLayout><AdminNews /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/events">
+            {() => <AdminLayout><AdminEvents /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/players">
+            {() => <AdminLayout><AdminPlayers /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/clubs">
+            {() => <AdminLayout><AdminClubs /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/leaders">
+            {() => <AdminLayout><AdminLeaders /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/media">
+            {() => <AdminLayout><AdminMedia /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/affiliations">
+            {() => <AdminLayout><AdminAffiliations /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/contacts">
+            {() => <AdminLayout><AdminContacts /></AdminLayout>}
+          </Route>
+          <Route path="/admin-nrsa-dashboard/settings">
+            {() => <AdminLayout><AdminSettings /></AdminLayout>}
           </Route>
           
           {/* Public Routes (with header and footer) */}
