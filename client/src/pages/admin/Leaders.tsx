@@ -1,238 +1,169 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Loader2, ArrowLeft, UserCheck } from "lucide-react";
+import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { ImageUpload } from "@/components/admin/ImageUpload";
-import type { Leader } from "@shared/schema";
+import { Card } from "@/components/ui/card";
 
-/**
- * Leaders Admin Page
- * 
- * CRITICAL FIX: Connected to actual API endpoints instead of local state
- * Leaders are now saved to the database and appear on the live site
- * 
- * Features:
- * - Image upload with drag-and-drop
- * - Full CRUD operations connected to /api/leaders
- * - Automatic refresh of live site when changes are made
- */
-export default function AdminLeaders() {
-  const queryClient = useQueryClient();
-  
-  // Fetch leaders from API
-  const { data: leaders = [] } = useQuery<Leader[]>({
-    queryKey: ["/api/leaders"],
-  });
+// --- Type Definitions (matching the admin data structure) ---
+interface Leader {
+  id: string;
+  name: string;
+  position: string; // Matches the field name in the admin component
+  bio: string;
+  photoUrl: string;
+}
 
-  const [open, setOpen] = useState(false);
-  const [editingLeader, setEditingLeader] = useState<Leader | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    position: "",
-    photoUrl: "",
-    bio: "",
-    order: 0,
-  });
+// NOTE: All Firebase/Firestore imports and setup have been removed,
+// as the Admin component confirms the data source is a standard REST API.
 
-  // Create or Update Leader
-  const saveLeader = useMutation({
-    mutationFn: async () => {
-      const method = editingLeader ? "PATCH" : "POST";
-      const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
-      await apiRequest(method, url, form);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
-      setOpen(false);
-      setEditingLeader(null);
-      setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
-    },
-  });
+export default function LeaderDetail() {
+  // 1. Get ID from URL and navigation function
+  const [match, params] = useRoute("/leaders/:id");
+  const [, navigate] = useLocation();
+  const leaderId = params?.id || null;
 
-  // Delete Leader
-  const deleteLeader = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/leaders/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
-    },
-  });
+  // 2. State management
+  const [leader, setLeader] = useState<Leader | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === "order" ? Number(value) : value }));
-  };
-
-  const handleSave = () => {
-    if (!form.name || !form.position) {
-      alert("Name and position are required!");
+  // 3. Data Fetching Effect (using standard API fetch)
+  useEffect(() => {
+    if (!leaderId) {
+      setIsLoading(false);
+      setError("Invalid leader ID provided in the URL.");
       return;
     }
-    saveLeader.mutate();
-  };
+    
+    setIsLoading(true);
+    setError(null);
 
-  const handleEdit = (leader: Leader) => {
-    setEditingLeader(leader);
-    setForm({
-      name: leader.name,
-      position: leader.position,
-      photoUrl: leader.photoUrl || "",
-      bio: leader.bio || "",
-      order: leader.order,
-    });
-    setOpen(true);
-  };
+    // Fetch data from the standard API endpoint, consistent with the Admin portal
+    const fetchLeader = async () => {
+      try {
+        // Construct the API URL. We assume the ID is the same as the doc ID/primary key.
+        const apiUrl = `/api/leaders/${leaderId}`;
+        console.log(`Fetching leader from: ${apiUrl}`);
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this leader?")) {
-      deleteLeader.mutate(id);
-    }
-  };
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data) {
+            const fetchedLeader: Leader = {
+                id: data.id,
+                name: data.name || "Untitled Leader",
+                position: data.position || "Position Pending",
+                bio: data.bio || "No biography provided.",
+                // Use the URL saved (likely from Cloudinary), fall back to a high-quality placeholder
+                photoUrl: data.photoUrl || "https://placehold.co/600x600/009739/ffffff?text=NRSA", 
+            };
+            setLeader(fetchedLeader);
+        } else {
+            setError(`Leader with ID ${leaderId} not found.`);
+        }
+        
+      } catch (e) {
+        console.error("Error fetching leader profile:", e);
+        setError("Could not load leader profile. Please check the API connection.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLeader();
+
+    // NOTE: This uses a single fetch and does not include real-time listening 
+    // like the previous Firestore version. A page refresh will get the latest data.
+    // If real-time updates are needed, you would use an API polling or WebSockets.
+
+  }, [leaderId]); // Re-run when the leaderId changes
+
+  // 4. Render States
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen -mt-20">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="ml-4 text-xl text-gray-600">Loading Leader Profile...</p>
+      </div>
+    );
+  }
+
+  if (error || !leader) {
+    return (
+      <div className="text-center p-20 bg-gray-50">
+        <h1 className="text-4xl font-bold text-red-600">Error</h1>
+        <p className="mt-4 text-xl text-gray-600">{error || "Leader not found."}</p>
+        <Button onClick={() => navigate("/leaders")} className="mt-8 bg-primary hover:bg-primary/90">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Leaders
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Leaders Management</h1>
-          <p className="text-muted-foreground mt-2">Manage federation leadership</p>
-        </div>
+    <>
+      <Helmet>
+        <title>{leader.name} - NRSA Leadership</title>
+      </Helmet>
+      
+      <div className="bg-gray-50 py-16 sm:py-24">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/leaders")} 
+            className="mb-8 text-primary hover:bg-primary/10 transition-all duration-300 font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Leadership Team
+          </Button>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button
-              className="bg-primary hover:bg-primary/90"
-              data-testid="button-add-leader"
-              onClick={() => {
-                setEditingLeader(null);
-                setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Leader
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingLeader ? "Edit Leader" : "Add Leader"}</DialogTitle>
-            </DialogHeader>
+          <Card className="p-8 md:p-12 shadow-2xl rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              
+              {/* Leader Photo Section */}
+              <div className="lg:col-span-1">
+                <img 
+                  src={leader.photoUrl} 
+                  alt={`Photo of ${leader.name}`} 
+                  className="w-full h-auto object-cover rounded-lg shadow-xl aspect-square border-4 border-primary/20"
+                  onError={(e) => { 
+                    (e.target as HTMLImageElement).onerror = null; 
+                    (e.target as HTMLImageElement).src = "https://placehold.co/600x600/009739/ffffff?text=NRSA"; 
+                  }}
+                />
+              </div>
 
-            <div className="space-y-4 mt-4">
-              <div>
-                <Label>Full Name *</Label>
-                <Input
-                  name="name"
-                  placeholder="Leader name"
-                  value={form.name}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <Label>Position *</Label>
-                <Input
-                  name="position"
-                  placeholder="President, Vice President, etc."
-                  value={form.position}
-                  onChange={handleChange}
-                />
-              </div>
-              <ImageUpload
-                label="Leader Photo"
-                value={form.photoUrl}
-                onChange={(url) => setForm({ ...form, photoUrl: url })}
-              />
-              <div>
-                <Label>Bio</Label>
-                <Textarea
-                  name="bio"
-                  placeholder="Brief biography..."
-                  className="min-h-[120px]"
-                  value={form.bio}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <Label>Display Order</Label>
-                <Input
-                  name="order"
-                  type="number"
-                  placeholder="0"
-                  value={form.order}
-                  onChange={handleChange}
-                />
-              </div>
-              <Button
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={handleSave}
-                disabled={saveLeader.isPending}
-              >
-                {saveLeader.isPending
-                  ? "Saving..."
-                  : editingLeader
-                  ? "Update Leader"
-                  : "Save Leader"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+              {/* Leader Bio and Details Section */}
+              <div className="lg:col-span-2">
+                <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-2">{leader.name}</h1>
+                <p className="text-2xl font-semibold text-primary mb-6 flex items-center gap-2">
+                    <UserCheck className="w-6 h-6" />
+                    {leader.position}
+                </p>
 
-      {leaders.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              No leaders added yet. Click "Add Leader" to add one.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {leaders
-            .sort((a, b) => a.order - b.order)
-            .map((leader) => (
-              <Card key={leader.id} className="relative p-4">
-                {leader.photoUrl && (
-                  <img
-                    src={leader.photoUrl}
-                    alt={leader.name}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                )}
-                <h2 className="text-xl font-bold">{leader.name}</h2>
-                <p className="text-sm text-muted-foreground mb-2">{leader.position}</p>
-                {leader.bio && <p className="text-sm mb-4">{leader.bio}</p>}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(leader)}
-                  >
-                    <Pencil className="w-4 h-4 mr-1" /> Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(leader.id)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                  </Button>
+                <div className="prose prose-lg max-w-none text-gray-700">
+                    <h2 className="text-3xl font-bold text-gray-800 border-b border-primary/50 pb-2 mb-6 mt-6">Full Biography</h2>
+                    {/* Display bio. Splitting by newline for clean paragraph breaks */}
+                    {leader.bio.split('\n').map((paragraph, index) => (
+                        <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>
+                    ))}
+                    
+                    {/* Optional footer */}
+                    <p className="mt-10 text-sm italic text-gray-500 border-t pt-4">
+                        The leadership of the NRSA is committed to advancing the sport of rope skipping in Nigeria.
+                    </p>
                 </div>
-              </Card>
-            ))}
+              </div>
+            </div>
+          </Card>
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
