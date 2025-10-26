@@ -2,110 +2,114 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import logoUrl from "@assets/nrsf-logo_1761313307811.jpg";
+
+// FIX: Replaced the local asset import with a public placeholder URL 
+// since local asset paths often fail to resolve in the build environment.
+const logoUrl = "https://placehold.co/100x56/009739/ffffff?text=NRSA+Logo";
 
 export function Header() {
-  const [location] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { label: "Home", path: "/" },
-    { label: "About", path: "/about" },
-    { label: "News", path: "/news" },
-    { label: "Events", path: "/events" },
-    { label: "Players", path: "/players" },
-    { label: "Clubs", path: "/clubs" },
-    { label: "Media", path: "/media" },
-    { label: "Contact", path: "/contact" },
-  ];
+  const navItems = [
+    { label: "Home", path: "/" },
+    { label: "About", path: "/about" },
+    { label: "News", path: "/news" },
+    { label: "Events", path: "/events" },
+    { label: "Players", path: "/players" },
+    { label: "Clubs", path: "/clubs" },
+    { label: "Leaders", path: "/leaders" }, // Leaders Navigation Link is correctly kept
+    { label: "Media", path: "/media" },
+    { label: "Contact", path: "/contact" },
+  ];
 
-  return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
-      {/* Top Bar with Phone */}
-      <div className="bg-primary text-primary-foreground">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-2 flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            <span className="font-medium">+2347069465965</span>
-          </div>
-          <div className="text-xs">
-            Official Governing Body for Rope Skipping in Nigeria
-          </div>
-        </div>
-      </div>
+  return (
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      {/* Top Bar with Phone */}
+      <div className="bg-primary text-primary-foreground">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-2 flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">+2347069465965</span>
+          </div>
+          <div className="text-xs">
+            Official Governing Body for Rope Skipping in Nigeria
+          </div>
+        </div>
+      </div>
 
-      {/* Main Navigation */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" data-testid="link-home">
-            <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all">
-              <img 
-                src={logoUrl} 
-                alt="NRSA Logo" 
-                className="h-14 w-auto object-contain"
-                data-testid="img-logo"
-              />
-              <div>
-                <div className="font-bold text-lg text-foreground leading-tight">NRSA</div>
-                <div className="text-xs text-muted-foreground">Nigeria Rope Skipping</div>
-              </div>
-            </div>
-          </Link>
+      {/* Main Navigation */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <Link href="/" data-testid="link-home">
+            <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all">
+              <img 
+                src={logoUrl} 
+                alt="NRSA Logo" 
+                className="h-14 w-auto object-contain"
+                data-testid="img-logo"
+              />
+              <div>
+                <div className="font-bold text-lg text-foreground leading-tight">NRSA</div>
+                <div className="text-xs text-muted-foreground">Nigeria Rope Skipping</div>
+              </div>
+            </div>
+          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Link key={item.path} href={item.path} data-testid={`link-nav-${item.label.toLowerCase()}`}>
-                <div
-                  className={`
-                    px-4 py-2 rounded-md font-medium text-sm cursor-pointer
-                    hover-elevate active-elevate-2 transition-all
-                    ${location === item.path ? "text-primary" : "text-foreground"}
-                  `}
-                >
-                  {item.label}
-                  {location === item.path && (
-                    <div className="h-0.5 bg-primary mt-1 rounded-full" />
-                  )}
-                </div>
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <Link key={item.path} href={item.path} data-testid={`link-nav-${item.label.toLowerCase()}`}>
+                <div
+                  className={`
+                    px-4 py-2 rounded-md font-medium text-sm cursor-pointer
+                    hover-elevate active-elevate-2 transition-all
+                    ${location === item.path ? "text-primary" : "text-foreground"}
+                  `}
+                >
+                  {item.label}
+                  {location === item.path && (
+                    <div className="h-0.5 bg-primary mt-1 rounded-full" />
+                  )}
+                </div>
+              </Link>
+            ))}
+          </nav>
 
-          {/* Mobile Menu Button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            data-testid="button-mobile-menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-        </div>
-      </div>
+          {/* Mobile Menu Button */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            data-testid="button-mobile-menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+        </div>
+      </div>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[128px] bg-primary z-50">
-          <nav className="flex flex-col p-6 gap-2">
-            {navItems.map((item) => (
-              <Link key={item.path} href={item.path} data-testid={`link-mobile-${item.label.toLowerCase()}`}>
-                <div
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`
-                    px-4 py-3 rounded-md font-semibold text-lg cursor-pointer
-                    ${location === item.path ? "bg-white text-primary" : "text-white hover-elevate active-elevate-2"}
-                  `}
-                >
-                  {item.label}
-                </div>
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
-    </header>
-  );
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 top-[128px] bg-primary z-50">
+          <nav className="flex flex-col p-6 gap-2">
+            {navItems.map((item) => (
+              <Link key={item.path} href={item.path} data-testid={`link-mobile-${item.label.toLowerCase()}`}>
+                <div
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`
+                    px-4 py-3 rounded-md font-semibold text-lg cursor-pointer
+                    ${location === item.path ? "bg-white text-primary" : "text-white hover-elevate active-elevate-2"}
+                  `}
+                >
+                  {item.label}
+                </div>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </header>
+  );
 }
