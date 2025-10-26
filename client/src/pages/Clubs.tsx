@@ -1,4 +1,3 @@
-// src/pages/Clubs.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,11 +43,33 @@ export default function Clubs() {
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <span className="text-3xl font-bold text-primary">
+                      {/* --- START Logo/Initial Display Block --- */}
+                      <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {club.logoUrl ? (
+                          <img 
+                            src={club.logoUrl} 
+                            alt={`${club.name} logo`} 
+                            className="w-full h-full object-contain p-2"
+                            // Fallback to initial if image fails to load
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.style.display = 'none';
+                              // Display initial letter fallback
+                              const initialElement = e.currentTarget.parentElement?.querySelector('.club-initial');
+                              if (initialElement) initialElement.style.display = 'block';
+                            }}
+                          />
+                        ) : null}
+                        {/* Initial Letter Fallback */}
+                        <span 
+                          className="club-initial text-3xl font-bold text-primary"
+                          style={{ display: club.logoUrl ? 'none' : 'block' }} // Hide if logo is present
+                        >
                           {club.name.charAt(0)}
                         </span>
                       </div>
+                      {/* --- END Logo/Initial Display Block --- */}
+                      
                       {club.isRegistered && (
                         <Badge className="bg-primary text-primary-foreground">Registered</Badge>
                       )}
