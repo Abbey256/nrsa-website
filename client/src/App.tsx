@@ -28,28 +28,22 @@ import AdminSettings from "@/pages/admin/Settings";
 import AdminLogin from "@/pages/admin/Login";
 import NotFound from "@/pages/not-found";
 
-function PublicRoutes() {
+/**
+ * Wrapper component for public-facing pages with Header and Footer
+ */
+function PageWithLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/about" component={About} />
-          <Route path="/news" component={News} />
-          <Route path="/events" component={Events} />
-          <Route path="/players" component={Players} />
-          <Route path="/clubs" component={Clubs} />
-          <Route path="/media" component={Media} />
-          <Route path="/contact" component={Contact} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );
 }
 
+/**
+ * Admin dashboard routes wrapper with authentication layout
+ */
 function AdminRoutes() {
   return (
     <AdminLayout>
@@ -70,6 +64,10 @@ function AdminRoutes() {
   );
 }
 
+/**
+ * Main application component with routing configuration.
+ * Routes are ordered by priority: admin routes first, then public routes, then 404.
+ */
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -78,15 +76,39 @@ export default function App() {
           {/* Admin Login Route (no layout) */}
           <Route path="/admin/login" component={AdminLogin} />
           
-          {/* Admin Routes */}
+          {/* Admin Dashboard Routes (with admin layout) */}
           <Route path="/admin-nrsa-dashboard/:rest*">
             {() => <AdminRoutes />}
           </Route>
           
-          {/* Public Routes */}
-          <Route>
-            {() => <PublicRoutes />}
+          {/* Public Routes (with header and footer) */}
+          <Route path="/">
+            {() => <PageWithLayout><Home /></PageWithLayout>}
           </Route>
+          <Route path="/about">
+            {() => <PageWithLayout><About /></PageWithLayout>}
+          </Route>
+          <Route path="/news">
+            {() => <PageWithLayout><News /></PageWithLayout>}
+          </Route>
+          <Route path="/events">
+            {() => <PageWithLayout><Events /></PageWithLayout>}
+          </Route>
+          <Route path="/players">
+            {() => <PageWithLayout><Players /></PageWithLayout>}
+          </Route>
+          <Route path="/clubs">
+            {() => <PageWithLayout><Clubs /></PageWithLayout>}
+          </Route>
+          <Route path="/media">
+            {() => <PageWithLayout><Media /></PageWithLayout>}
+          </Route>
+          <Route path="/contact">
+            {() => <PageWithLayout><Contact /></PageWithLayout>}
+          </Route>
+          
+          {/* 404 Catch-all */}
+          <Route component={NotFound} />
         </Switch>
         <Toaster />
       </TooltipProvider>
