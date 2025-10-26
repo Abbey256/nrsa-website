@@ -23,7 +23,7 @@ export default function AdminLogin() {
 
       // Save token to localStorage
       localStorage.setItem("adminToken", data.token);
-      window.location.href = "/admin"; // redirect to admin dashboard
+      window.location.href = "/admin-nrsa-dashboard"; // redirect to admin dashboard
     } catch (err: any) {
       setError(err.message);
     }
