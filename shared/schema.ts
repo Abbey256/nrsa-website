@@ -114,9 +114,15 @@ export const insertEventSchema = createInsertSchema(events, {
   ]),
   registrationDeadline: z.union([
     z.date(),
-    z.string().transform((str) => new Date(str))
+    z.string().transform((str) => str ? new Date(str) : undefined)
   ]).optional(),
-  registrationLink: z.string().url().optional().or(z.literal("")), // ✅ now optional
+  registrationLink: z
+    .string()
+    .optional()
+    .refine(
+      (value) => !value || value.trim() === "" || /^https?:\/\/.+/.test(value),
+      "Invalid URL format"
+    ),
 }).omit({
   id: true,
   createdAt: true,
