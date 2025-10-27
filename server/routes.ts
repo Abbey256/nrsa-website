@@ -86,34 +86,32 @@ export function registerAllRoutes(app: Express): Server {
   });
 
   // ---------- EVENTS ----------
-  app.get("/api/events", async (req, res) => {
-    try { res.json(await storage.getAllEvents()); }
-    catch (e:any) { res.status(500).json({ error: e.message }); }
-  });
-  app.get("/api/events/:id", async (req, res) => {
+ // ---------- EVENTS ----------
+// ... (GET and POST handlers remain the same)
+
+app.patch("/api/events/:id", requireAdmin, async (req, res) => {
     try {
-      const event = await storage.getEvent(parseInt(req.params.id));
-      if (!event) return res.status(404).json({ error: "Event not found" });
-      res.json(event);
-    } catch (e:any) { res.status(500).json({ error: e.message }); }
-  });
-  app.post("/api/events", requireAdmin, async (req, res) => {
-    try {
-      const event = await storage.createEvent(insertEventSchema.parse(req.body));
-      res.status(201).json(event);
-    } catch (e:any) { res.status(400).json({ error: e.message }); }
-  });
-  app.patch("/api/events/:id", requireAdmin, async (req, res) => {
-    try {
-      const event = await storage.updateEvent(parseInt(req.params.id), req.body);
-      if (!event) return res.status(404).json({ error: "Event not found" });
-      res.json(event);
-    } catch (e:any) { res.status(400).json({ error: e.message }); }
-  });
-  app.delete("/api/events/:id", requireAdmin, async (req, res) => {
-    try { await storage.deleteEvent(parseInt(req.params.id)); res.status(204).send(); }
-    catch (e:any) { res.status(500).json({ error: e.message }); }
-  });
+        // 💡 FIX: Use the insertEventSchema and use partial() to validate only fields present.
+        // This ensures date strings are converted to Date objects using the transformation 
+        // logic defined in the schema.
+        const validatedBody = insertEventSchema.partial().parse(req.body);
+
+        const event = await storage.updateEvent(
+            parseInt(req.params.id),
+            // Pass the validated and transformed body to storage.updateEvent
+            validatedBody 
+        );
+
+        if (!event) return res.status(404).json({ error: "Event not found" });
+        res.json(event);
+    } catch (e: any) {
+        // If validation fails (e.g., invalid URL, date format), Zod throws an error
+        // which results in a 400 Bad Request response.
+        res.status(400).json({ error: e.message });
+    }
+});
+
+// ... (DELETE handler remains the same)
 
   // ---------- PLAYERS ----------
   app.get("/api/players", async (req, res) => {
