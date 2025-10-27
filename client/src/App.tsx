@@ -10,6 +10,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import News from "@/pages/News";
+import NewsDetail from "@/pages/NewsDetail";
 import Events from "@/pages/Events";
 import Players from "@/pages/Players";
 import Clubs from "@/pages/Clubs";
@@ -91,6 +92,9 @@ export default function App() {
             </Route>
             <Route path="/news">
               <PageWithLayout><News /></PageWithLayout>
+            </Route>
+            <Route path="/news/:id">
+              <PageWithLayout><NewsDetail /></PageWithLayout>
             </Route>
             <Route path="/events">
               <PageWithLayout><Events /></PageWithLayout>

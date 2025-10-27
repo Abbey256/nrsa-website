@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import type { News } from "@shared/schema";
 
 export default function News() {
+  const [, navigate] = useLocation();
   const { data: newsItems = [], isLoading } = useQuery<News[]>({
     queryKey: ["/api/news"],
   });
@@ -40,6 +42,7 @@ export default function News() {
                 key={item.id} 
                 className="hover-elevate active-elevate-2 cursor-pointer transition-all border-t-4 border-t-primary h-full flex flex-col"
                 data-testid={`card-news-${item.id}`}
+                onClick={() => navigate(`/news/${item.id}`)}
               >
                 {item.imageUrl && (
                   <div className="w-full h-48 bg-muted overflow-hidden">
