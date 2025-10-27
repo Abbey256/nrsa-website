@@ -8,6 +8,16 @@ The Nigeria Rope Skipping Association (NRSA) website is an official sports feder
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**October 27, 2025**:
+- **Admin Portal Standardization**: Updated Leaders and Players admin components to use React Query + Toast notifications pattern (consistent with Events, Media, Contacts)
+- **Event Registration Links**: Added `registrationLink` field to Events schema, admin form input, and functional "Register Now" button on frontend that opens links in new tab
+- **Media Category Dropdown**: Enhanced Media admin form with Select dropdown for categories (Training, Achievement, Event, Announcement) instead of free-text input
+- **Frontend Cleanup**: Removed non-functional "Contact Club" button from Clubs page
+- **Backend Code Quality**: Formatted Leaders routes in `server/routes.ts` for consistency with other endpoints
+- **Verified Functionality**: News detail page and Admin Contacts modal already fully implemented and working
+
 ## System Architecture
 
 ### Frontend Architecture
