@@ -17,6 +17,9 @@
 9. **Complete CRUD**: ✨ Added missing update/delete operations for Affiliations, Contacts, and Site Settings
 10. **Date Handling**: ✨ Fixed event and news schemas to accept ISO date strings from frontend
 11. **Code Documentation**: ✨ Added comprehensive comments to auth, upload, and admin management code
+12. **Admin Leaders Portal**: ✨✨ Created proper admin Leaders CRUD page following the same pattern as other admin pages (Players, Clubs, etc.)
+13. **Schema Coercion**: ✨✨ Added proper numeric coercion for 'order' fields in leaders, heroSlides, and affiliations schemas to handle HTML form string inputs
+14. **Admin Login UX**: ✨✨ Improved admin login with proper HTML form element for better accessibility and user experience
 
 ### Default Admin Credentials:
 - Email: admin1@nrsa.com.ng
