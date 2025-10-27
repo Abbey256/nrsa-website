@@ -49,9 +49,13 @@ export const heroSlides = pgTable("hero_slides", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertHeroSlideSchema = createInsertSchema(heroSlides).omit({
-  id: true,
-  createdAt: true,
+export const insertHeroSlideSchema = createInsertSchema(heroSlides, {
+  order: z.coerce.number()
+    .int({ message: "Order must be a whole number." })
+    .nonnegative({ message: "Order cannot be negative." }),
+}).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertHeroSlide = z.infer<typeof insertHeroSlideSchema>;
@@ -190,9 +194,13 @@ export const leaders = pgTable("leaders", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertLeaderSchema = createInsertSchema(leaders).omit({
-  id: true,
-  createdAt: true,
+export const insertLeaderSchema = createInsertSchema(leaders, {
+  order: z.coerce.number()
+    .int({ message: "Order must be a whole number." })
+    .nonnegative({ message: "Order cannot be negative." }),
+}).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertLeader = z.infer<typeof insertLeaderSchema>;
@@ -227,9 +235,13 @@ export const affiliations = pgTable("affiliations", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertAffiliationSchema = createInsertSchema(affiliations).omit({
-  id: true,
-  createdAt: true,
+export const insertAffiliationSchema = createInsertSchema(affiliations, {
+  order: z.coerce.number()
+    .int({ message: "Order must be a whole number." })
+    .nonnegative({ message: "Order cannot be negative." }),
+}).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertAffiliation = z.infer<typeof insertAffiliationSchema>;

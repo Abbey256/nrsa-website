@@ -1,169 +1,278 @@
-import React, { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
-import { Loader2, ArrowLeft, UserCheck } from "lucide-react";
-import { useRoute, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { apiRequest } from "@/lib/queryClient";
 
-// --- Type Definitions (matching the admin data structure) ---
 interface Leader {
-  id: string;
+  id?: number;
   name: string;
-  position: string; // Matches the field name in the admin component
-  bio: string;
-  photoUrl: string;
+  position: string;
+  photoUrl?: string;
+  bio?: string;
+  order: number;
 }
 
-// NOTE: All Firebase/Firestore imports and setup have been removed,
-// as the Admin component confirms the data source is a standard REST API.
+export default function AdminLeaders() {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingLeader, setEditingLeader] = useState<Leader | null>(null);
+  const [form, setForm] = useState<Leader>({
+    name: "",
+    position: "",
+    photoUrl: "",
+    bio: "",
+    order: 0,
+  });
 
-export default function LeaderDetail() {
-  // 1. Get ID from URL and navigation function
-  const [match, params] = useRoute("/leaders/:id");
-  const [, navigate] = useLocation();
-  const leaderId = params?.id || null;
+  const [open, setOpen] = useState(false);
 
-  // 2. State management
-  const [leader, setLeader] = useState<Leader | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const API_URL = "/api/leaders";
 
-  // 3. Data Fetching Effect (using standard API fetch)
   useEffect(() => {
-    if (!leaderId) {
-      setIsLoading(false);
-      setError("Invalid leader ID provided in the URL.");
-      return;
+    fetchLeaders();
+  }, []);
+
+  const fetchLeaders = async () => {
+    setLoading(true);
+    try {
+      const res = await apiRequest("GET", API_URL);
+      const data = await res.json();
+      setLeaders(data);
+    } catch (err) {
+      console.error("Error fetching leaders:", err);
+    } finally {
+      setLoading(false);
     }
-    
-    setIsLoading(true);
-    setError(null);
+  };
 
-    // Fetch data from the standard API endpoint, consistent with the Admin portal
-    const fetchLeader = async () => {
-      try {
-        // Construct the API URL. We assume the ID is the same as the doc ID/primary key.
-        const apiUrl = `/api/leaders/${leaderId}`;
-        console.log(`Fetching leader from: ${apiUrl}`);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-        const response = await fetch(apiUrl);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data) {
-            const fetchedLeader: Leader = {
-                id: data.id,
-                name: data.name || "Untitled Leader",
-                position: data.position || "Position Pending",
-                bio: data.bio || "No biography provided.",
-                // Use the URL saved (likely from Cloudinary), fall back to a high-quality placeholder
-                photoUrl: data.photoUrl || "https://placehold.co/600x600/009739/ffffff?text=NRSA", 
-            };
-            setLeader(fetchedLeader);
-        } else {
-            setError(`Leader with ID ${leaderId} not found.`);
-        }
-        
-      } catch (e) {
-        console.error("Error fetching leader profile:", e);
-        setError("Could not load leader profile. Please check the API connection.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleSave = async () => {
+    const method = editingLeader ? "PATCH" : "POST";
+    const url = editingLeader ? `${API_URL}/${editingLeader.id}` : API_URL;
 
-    fetchLeader();
+    try {
+      await apiRequest(method, url, form);
+      await fetchLeaders();
+      setForm({
+        name: "",
+        position: "",
+        photoUrl: "",
+        bio: "",
+        order: 0,
+      });
+      setEditingLeader(null);
+      setOpen(false);
+    } catch (err) {
+      console.error("Error saving leader:", err);
+    }
+  };
 
-    // NOTE: This uses a single fetch and does not include real-time listening 
-    // like the previous Firestore version. A page refresh will get the latest data.
-    // If real-time updates are needed, you would use an API polling or WebSockets.
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this leader?")) return;
+    try {
+      await apiRequest("DELETE", `${API_URL}/${id}`);
+      setLeaders(leaders.filter((l) => l.id !== id));
+    } catch (err) {
+      console.error("Error deleting leader:", err);
+    }
+  };
 
-  }, [leaderId]); // Re-run when the leaderId changes
-
-  // 4. Render States
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen -mt-20">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="ml-4 text-xl text-gray-600">Loading Leader Profile...</p>
-      </div>
-    );
-  }
-
-  if (error || !leader) {
-    return (
-      <div className="text-center p-20 bg-gray-50">
-        <h1 className="text-4xl font-bold text-red-600">Error</h1>
-        <p className="mt-4 text-xl text-gray-600">{error || "Leader not found."}</p>
-        <Button onClick={() => navigate("/leaders")} className="mt-8 bg-primary hover:bg-primary/90">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Leaders
-        </Button>
-      </div>
-    );
-  }
+  const handleEdit = (leader: Leader) => {
+    setEditingLeader(leader);
+    setForm(leader);
+    setOpen(true);
+  };
 
   return (
-    <>
-      <Helmet>
-        <title>{leader.name} - NRSA Leadership</title>
-      </Helmet>
-      
-      <div className="bg-gray-50 py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/leaders")} 
-            className="mb-8 text-primary hover:bg-primary/10 transition-all duration-300 font-semibold"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Leadership Team
-          </Button>
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground" data-testid="text-page-title">
+            Leaders Management
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Manage federation leaders — Add, Edit, or Delete leadership profiles
+          </p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-add-leader"
+              onClick={() => {
+                setEditingLeader(null);
+                setForm({
+                  name: "",
+                  position: "",
+                  photoUrl: "",
+                  bio: "",
+                  order: 0,
+                });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Leader
+            </Button>
+          </DialogTrigger>
 
-          <Card className="p-8 md:p-12 shadow-2xl rounded-xl">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-              
-              {/* Leader Photo Section */}
-              <div className="lg:col-span-1">
-                <img 
-                  src={leader.photoUrl} 
-                  alt={`Photo of ${leader.name}`} 
-                  className="w-full h-auto object-cover rounded-lg shadow-xl aspect-square border-4 border-primary/20"
-                  onError={(e) => { 
-                    (e.target as HTMLImageElement).onerror = null; 
-                    (e.target as HTMLImageElement).src = "https://placehold.co/600x600/009739/ffffff?text=NRSA"; 
-                  }}
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingLeader ? "Edit Leader" : "Add Leader"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div>
+                <Label>Full Name *</Label>
+                <Input
+                  name="name"
+                  placeholder="Leader name"
+                  value={form.name}
+                  onChange={handleChange}
+                  data-testid="input-leader-name"
                 />
               </div>
-
-              {/* Leader Bio and Details Section */}
-              <div className="lg:col-span-2">
-                <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-2">{leader.name}</h1>
-                <p className="text-2xl font-semibold text-primary mb-6 flex items-center gap-2">
-                    <UserCheck className="w-6 h-6" />
-                    {leader.position}
+              <div>
+                <Label>Position *</Label>
+                <Input
+                  name="position"
+                  placeholder="e.g., President, Vice President"
+                  value={form.position}
+                  onChange={handleChange}
+                  data-testid="input-leader-position"
+                />
+              </div>
+              <ImageUpload
+                label="Leader Photo"
+                value={form.photoUrl || ""}
+                onChange={(url) => setForm({ ...form, photoUrl: url })}
+              />
+              <div>
+                <Label>Biography</Label>
+                <Textarea
+                  name="bio"
+                  placeholder="Leader's biography and background..."
+                  value={form.bio}
+                  onChange={handleChange}
+                  rows={5}
+                  data-testid="input-leader-bio"
+                />
+              </div>
+              <div>
+                <Label>Display Order</Label>
+                <Input
+                  type="number"
+                  name="order"
+                  placeholder="0"
+                  value={form.order}
+                  onChange={handleChange}
+                  data-testid="input-leader-order"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lower numbers appear first (e.g., President = 0, VP = 1)
                 </p>
-
-                <div className="prose prose-lg max-w-none text-gray-700">
-                    <h2 className="text-3xl font-bold text-gray-800 border-b border-primary/50 pb-2 mb-6 mt-6">Full Biography</h2>
-                    {/* Display bio. Splitting by newline for clean paragraph breaks */}
-                    {leader.bio.split('\n').map((paragraph, index) => (
-                        <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>
-                    ))}
-                    
-                    {/* Optional footer */}
-                    <p className="mt-10 text-sm italic text-gray-500 border-t pt-4">
-                        The leadership of the NRSA is committed to advancing the sport of rope skipping in Nigeria.
-                    </p>
-                </div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleSave}
+                  className="bg-primary hover:bg-primary/90 flex-1"
+                  data-testid="button-save-leader"
+                >
+                  {editingLeader ? "Update Leader" : "Add Leader"}
+                </Button>
+                <Button
+                  onClick={() => setOpen(false)}
+                  variant="outline"
+                  data-testid="button-cancel"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
-          </Card>
-        </div>
+          </DialogContent>
+        </Dialog>
       </div>
-    </>
+
+      {loading ? (
+        <p className="text-center text-muted-foreground py-12">Loading leaders...</p>
+      ) : leaders.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">
+              No leaders added yet. Click "Add Leader" to create one.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {leaders.map((leader) => (
+            <Card
+              key={leader.id}
+              className="hover:shadow-md transition-all"
+              data-testid={`card-leader-${leader.id}`}
+            >
+              <CardContent className="p-6 space-y-4">
+                {leader.photoUrl && (
+                  <img
+                    src={leader.photoUrl}
+                    alt={leader.name}
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                )}
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg" data-testid={`text-leader-name-${leader.id}`}>
+                      {leader.name}
+                    </h3>
+                    <p className="text-sm text-primary font-semibold" data-testid={`text-leader-position-${leader.id}`}>
+                      {leader.position}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Order: {leader.order}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(leader)}
+                      data-testid={`button-edit-${leader.id}`}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(leader.id!)}
+                      data-testid={`button-delete-${leader.id}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                {leader.bio && (
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {leader.bio}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -27,7 +27,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
     try {
       // Send login request to backend API
@@ -50,18 +51,40 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-32 p-6 border rounded shadow space-y-4">
-      <h1 className="text-2xl font-bold">Admin Login</h1>
-      {error && <div className="text-red-500">{error}</div>}
-      <div>
-        <Label>Email</Label>
-        <Input value={email} onChange={e => setEmail(e.target.value)} />
-      </div>
-      <div>
-        <Label>Password</Label>
-        <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      </div>
-      <Button className="w-full" onClick={handleLogin}>Login</Button>
+    <div className="max-w-md mx-auto mt-32 p-6 border rounded shadow">
+      <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            required 
+            data-testid="input-admin-email"
+          />
+        </div>
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <Input 
+            id="password" 
+            type="password" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            required 
+            data-testid="input-admin-password"
+          />
+        </div>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          data-testid="button-admin-login"
+        >
+          Login
+        </Button>
+      </form>
     </div>
   );
 }
