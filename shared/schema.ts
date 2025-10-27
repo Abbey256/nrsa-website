@@ -108,11 +108,18 @@ export const events = pgTable("events", {
  * Accepts date strings from API and converts them to Date objects
  */
 export const insertEventSchema = createInsertSchema(events, {
-  eventDate: z.union([z.date(), z.string().transform((str) => new Date(str))]),
-  registrationDeadline: z.union([z.date(), z.string().transform((str) => new Date(str))]).optional(),
+  eventDate: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]),
+  registrationDeadline: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]).optional(),
+  registrationLink: z.string().url().optional().or(z.literal("")), // ✅ now optional
 }).omit({
-  id: true,
-  createdAt: true,
+  id: true,
+  createdAt: true,
 });
 
 export type InsertEvent = z.infer<typeof insertEventSchema>;
