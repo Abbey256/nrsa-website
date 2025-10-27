@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,22 +13,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-
-interface Leader {
-  id?: number;
-  name: string;
-  position: string;
-  photoUrl?: string;
-  bio?: string;
-  order: number;
-}
+import { useToast } from "@/hooks/use-toast";
+import type { Leader } from "@shared/schema";
 
 export default function AdminLeaders() {
-  const [leaders, setLeaders] = useState<Leader[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
   const [editingLeader, setEditingLeader] = useState<Leader | null>(null);
-  const [form, setForm] = useState<Leader>({
+  const [form, setForm] = useState({
     name: "",
     position: "",
     photoUrl: "",
@@ -36,38 +31,24 @@ export default function AdminLeaders() {
     order: 0,
   });
 
-  const [open, setOpen] = useState(false);
+  const { data: leaders = [], isLoading } = useQuery<Leader[]>({
+    queryKey: ["/api/leaders"],
+  });
 
-  const API_URL = "/api/leaders";
-
-  useEffect(() => {
-    fetchLeaders();
-  }, []);
-
-  const fetchLeaders = async () => {
-    setLoading(true);
-    try {
-      const res = await apiRequest("GET", API_URL);
-      const data = await res.json();
-      setLeaders(data);
-    } catch (err) {
-      console.error("Error fetching leaders:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async () => {
-    const method = editingLeader ? "PATCH" : "POST";
-    const url = editingLeader ? `${API_URL}/${editingLeader.id}` : API_URL;
-
-    try {
+  const saveLeader = useMutation({
+    mutationFn: async () => {
+      const method = editingLeader ? "PATCH" : "POST";
+      const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
       await apiRequest(method, url, form);
-      await fetchLeaders();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+      toast({
+        title: editingLeader ? "Leader Updated" : "Leader Added",
+        description: "Leader profile saved successfully!",
+      });
+      setOpen(false);
+      setEditingLeader(null);
       setForm({
         name: "",
         position: "",
@@ -75,26 +56,66 @@ export default function AdminLeaders() {
         bio: "",
         order: 0,
       });
-      setEditingLeader(null);
-      setOpen(false);
-    } catch (err) {
-      console.error("Error saving leader:", err);
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save leader.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteLeader = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/leaders/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+      toast({
+        title: "Leader Deleted",
+        description: "The leader profile has been removed successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete leader.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this leader?")) return;
-    try {
-      await apiRequest("DELETE", `${API_URL}/${id}`);
-      setLeaders(leaders.filter((l) => l.id !== id));
-    } catch (err) {
-      console.error("Error deleting leader:", err);
+  const handleSave = () => {
+    if (!form.name || !form.position) {
+      toast({
+        title: "Validation Error",
+        description: "Name and position are required fields.",
+        variant: "destructive",
+      });
+      return;
     }
+    saveLeader.mutate();
+  };
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Are you sure you want to delete this leader?")) return;
+    deleteLeader.mutate(id);
   };
 
   const handleEdit = (leader: Leader) => {
     setEditingLeader(leader);
-    setForm(leader);
+    setForm({
+      name: leader.name,
+      position: leader.position,
+      photoUrl: leader.photoUrl || "",
+      bio: leader.bio || "",
+      order: leader.order,
+    });
     setOpen(true);
   };
 
@@ -206,7 +227,7 @@ export default function AdminLeaders() {
         </Dialog>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <p className="text-center text-muted-foreground py-12">Loading leaders...</p>
       ) : leaders.length === 0 ? (
         <Card>

@@ -32,6 +32,7 @@ export default function AdminEvents() {
     state: "",
     eventDate: "",
     registrationDeadline: "",
+    registrationLink: "",
     imageUrl: "",
     isFeatured: false,
   });
@@ -64,6 +65,7 @@ export default function AdminEvents() {
         state: "",
         eventDate: "",
         registrationDeadline: "",
+        registrationLink: "",
         imageUrl: "",
         isFeatured: false,
       });
@@ -114,6 +116,7 @@ export default function AdminEvents() {
       registrationDeadline: event.registrationDeadline
         ? new Date(event.registrationDeadline).toISOString().slice(0, 16)
         : "",
+      registrationLink: (event as any).registrationLink || "",
       imageUrl: event.imageUrl || "",
       isFeatured: event.isFeatured,
     });
@@ -195,6 +198,20 @@ export default function AdminEvents() {
                     onChange={handleChange}
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label>Registration Link (Optional)</Label>
+                <Input
+                  type="url"
+                  name="registrationLink"
+                  placeholder="https://example.com/register"
+                  value={form.registrationLink}
+                  onChange={handleChange}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  If provided, the "Register Now" button will open this link
+                </p>
               </div>
 
               <ImageUpload

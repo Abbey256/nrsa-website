@@ -78,9 +78,15 @@ export default function Events() {
                     )}
                   </div>
 
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" data-testid={`button-register-${event.id}`}>
-                    Register Now
-                  </Button>
+                  {(event as any).registrationLink && (
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                      data-testid={`button-register-${event.id}`}
+                      onClick={() => window.open((event as any).registrationLink, '_blank')}
+                    >
+                      Register Now
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
               ))}

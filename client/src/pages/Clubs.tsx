@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { MapPin, User, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Club } from "@shared/schema";
@@ -99,10 +98,6 @@ export default function Clubs() {
                         <span className="text-muted-foreground">{club.contactPhone}</span>
                       </div>
                     </div>
-
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Contact Club
-                    </Button>
                   </CardContent>
                 </Card>
               ))}

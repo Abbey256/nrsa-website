@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Trash, Edit2 } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -99,10 +106,20 @@ export default function AdminMedia() {
               />
               <div>
                 <Label>Category *</Label>
-                <Input
+                <Select
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                />
+                  onValueChange={(value) => setForm({ ...form, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Training">Training</SelectItem>
+                    <SelectItem value="Achievement">Achievement</SelectItem>
+                    <SelectItem value="Event">Event</SelectItem>
+                    <SelectItem value="Announcement">Announcement</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <Button
                 className="w-full bg-primary hover:bg-primary/90"

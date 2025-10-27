@@ -97,6 +97,7 @@ export const events = pgTable("events", {
   state: text("state").notNull(),
   eventDate: timestamp("event_date").notNull(),
   registrationDeadline: timestamp("registration_deadline"),
+  registrationLink: text("registration_link"),
   imageUrl: text("image_url"),
   isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),

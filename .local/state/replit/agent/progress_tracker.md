@@ -2,6 +2,11 @@
 [x] 2. Restart the workflow to see if the project is working
 [x] 3. Verify the project is working using the feedback tool
 [x] 4. Inform user the import is completed and they can start building, mark the import as completed using the complete_project_import tool
+[x] 5. Fix admin portal CRUD operations - standardized to use React Query + Toast
+[x] 6. Add Event registration link functionality
+[x] 7. Add Media category dropdown with specific options
+[x] 8. Remove Contact Club button from frontend
+[x] 9. Format backend routes for consistency
 
 ## Migration Summary
 
