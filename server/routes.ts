@@ -163,34 +163,57 @@ export function registerAllRoutes(app: Express): Server {
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
-  // ---------- LEADERS ----------
-  app.get("/api/leaders", async (req, res) => {
-    try { res.json(await storage.getAllLeaders()); }
-    catch (e: any) { res.status(500).json({ error: e.message }); }
-  });
+// ---------- LEADERS ----------
+app.get("/api/leaders", async (req, res) => {
+  try {
+    res.json(await storage.getAllLeaders());
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
-  app.post("/api/leaders", requireAdmin, async (req, res) => {
-    try {
-      const leader = await storage.createLeader(insertLeaderSchema.parse(req.body));
-      res.status(201).json(leader);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
+// Get a single leader by ID
+app.get("/api/leaders/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const leader = await storage.getLeader(id);
+    if (!leader) return res.status(404).json({ error: "Leader not found" });
+    res.json(leader);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
-  app.patch("/api/leaders/:id", requireAdmin, async (req, res) => {
-    try {
-      const leader = await storage.updateLeader(parseInt(req.params.id), req.body);
-      if (!leader) return res.status(404).json({ error: "Leader not found" });
-      res.json(leader);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
+app.post("/api/leaders", requireAdmin, async (req, res) => {
+  try {
+    const leader = await storage.createLeader(insertLeaderSchema.parse(req.body));
+    res.status(201).json(leader);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
 
-  app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
-    try {
-      await storage.deleteLeader(parseInt(req.params.id));
-      res.status(204).send();
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
-  });
+app.patch("/api/leaders/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updatedData = insertLeaderSchema.partial().parse(req.body);
+    const leader = await storage.updateLeader(id, updatedData);
+    if (!leader) return res.status(404).json({ error: "Leader not found" });
+    res.json(leader);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
 
+app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteLeader(id);
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
   // ---------- MEDIA ----------
   app.get("/api/media", async (req, res) => {
     try { res.json(await storage.getAllMedia()); }
