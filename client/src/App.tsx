@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import News from "@/pages/News";
@@ -18,6 +19,7 @@ import Leaders from "@/pages/Leaders";
 import LeaderDetail from "@/pages/LeaderDetail";
 import Media from "@/pages/Media";
 import Contact from "@/pages/Contact";
+
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminHeroSlides from "@/pages/admin/HeroSlides";
 import AdminNews from "@/pages/admin/News";
@@ -31,6 +33,7 @@ import AdminContacts from "@/pages/admin/Contacts";
 import AdminSettings from "@/pages/admin/Settings";
 import AdminAdmins from "@/pages/admin/Admins";
 import AdminLogin from "@/pages/admin/Login";
+
 import NotFound from "@/pages/not-found";
 
 function PageWithLayout({ children }: { children: React.ReactNode }) {
@@ -49,8 +52,10 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Switch>
+
+            {/* Admin Routes */}
             <Route path="/admin/login" component={AdminLogin} />
-            
+
             <Route path="/admin-nrsa-dashboard">
               <AdminLayout><AdminDashboard /></AdminLayout>
             </Route>
@@ -87,7 +92,8 @@ export default function App() {
             <Route path="/admin-nrsa-dashboard/settings">
               <AdminLayout><AdminSettings /></AdminLayout>
             </Route>
-            
+
+            {/* Public Routes */}
             <Route path="/">
               <PageWithLayout><Home /></PageWithLayout>
             </Route>
@@ -98,7 +104,11 @@ export default function App() {
               <PageWithLayout><News /></PageWithLayout>
             </Route>
             <Route path="/news/:id">
-              <PageWithLayout><NewsDetail /></PageWithLayout>
+              {(params) => (
+                <PageWithLayout>
+                  <NewsDetail id={params.id} />
+                </PageWithLayout>
+              )}
             </Route>
             <Route path="/events">
               <PageWithLayout><Events /></PageWithLayout>
@@ -112,8 +122,13 @@ export default function App() {
             <Route path="/leaders">
               <PageWithLayout><Leaders /></PageWithLayout>
             </Route>
+            {/* Fixed Route: Pass id param to LeaderDetail */}
             <Route path="/leaders/:id">
-              <PageWithLayout><LeaderDetail /></PageWithLayout>
+              {(params) => (
+                <PageWithLayout>
+                  <LeaderDetail id={params.id} />
+                </PageWithLayout>
+              )}
             </Route>
             <Route path="/media">
               <PageWithLayout><Media /></PageWithLayout>
@@ -121,8 +136,10 @@ export default function App() {
             <Route path="/contact">
               <PageWithLayout><Contact /></PageWithLayout>
             </Route>
-            
+
+            {/* Fallback */}
             <Route component={NotFound} />
+
           </Switch>
           <Toaster />
         </TooltipProvider>
