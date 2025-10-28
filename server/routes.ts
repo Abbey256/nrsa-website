@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { requireAdmin } from "./authMiddleware"; // You should implement this middleware
+import { requireAdmin, requireSuperAdmin, type AdminRequest } from "./authMiddleware";
 import bcrypt from "bcrypt";
 import {
   insertHeroSlideSchema,
@@ -229,10 +229,6 @@ app.patch("/api/events/:id", requireAdmin, async (req, res) => {
   app.delete("/api/site-settings/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteSiteSetting(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
 
   // ---------- ADMIN MANAGEMENT ----------
-  /**
-   * Admin Management Endpoints
-   * Allows authenticated admins to manage other admin accounts
-   */
   app.get("/api/admins", requireAdmin, async (req,res)=>{ 
     try{ 
       res.json(await storage.getAllAdmins()); 
@@ -241,37 +237,51 @@ app.patch("/api/events/:id", requireAdmin, async (req, res) => {
     } 
   });
   
-  /**
-   * Create new admin account
-   * Requires: { name: string, email: string, passwordHash: string }
-   * Note: Password must be hashed with bcrypt before sending
-   */
-  app.post("/api/admins", requireAdmin, async (req,res)=>{ 
+  app.post("/api/admins", requireSuperAdmin, async (req,res)=>{ 
     try{ 
-      const { name, email, password } = req.body;
+      const { name, email, password, role } = req.body;
       if (!name || !email || !password) {
         return res.status(400).json({ error: "Name, email, and password are required" });
       }
       
-      // Check if admin with this email already exists
       const existingAdmin = await storage.getAdminByEmail(email);
       if (existingAdmin) {
         return res.status(409).json({ error: "Admin with this email already exists" });
       }
       
-      // Hash password before storing (10 rounds of bcrypt)
       const passwordHash = await bcrypt.hash(password, 10);
       
-      const admin = await storage.createAdmin({ name, email, passwordHash });
-      // Return admin without password hash for security
+      const admin = await storage.createAdmin({ 
+        name, 
+        email, 
+        passwordHash,
+        role: role || "admin"
+      });
+      
       res.status(201).json({ 
         id: admin.id, 
         name: admin.name, 
-        email: admin.email, 
+        email: admin.email,
+        role: admin.role,
         createdAt: admin.createdAt 
       }); 
     } catch(e:any){ 
       res.status(400).json({error:e.message}); 
+    } 
+  });
+  
+  app.delete("/api/admins/:id", requireSuperAdmin, async (req: AdminRequest, res)=>{ 
+    try{ 
+      const adminId = parseInt(req.params.id);
+      
+      if (adminId === req.adminId) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      await storage.deleteAdmin(adminId);
+      res.status(204).send();
+    } catch(e:any){ 
+      res.status(500).json({error:e.message}); 
     } 
   });
 

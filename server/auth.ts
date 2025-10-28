@@ -38,9 +38,9 @@ export function registerAuthRoutes(app: Express) {
     if (!match) return res.status(401).json({ error: "Invalid credentials" });
 
     // Generate JWT token valid for 8 hours
-    const token = jwt.sign({ adminId: admin.id }, JWT_SECRET, { expiresIn: "8h" });
+    const token = jwt.sign({ adminId: admin.id, role: admin.role }, JWT_SECRET, { expiresIn: "8h" });
     
     // Return token and admin info (excluding password hash)
-    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email } });
+    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role } });
   });
 }

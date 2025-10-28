@@ -40,8 +40,9 @@ export default function AdminLogin() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
 
-      // Store JWT token in localStorage for subsequent API requests
+      // Store JWT token and admin info in localStorage for subsequent API requests
       localStorage.setItem("adminToken", data.token);
+      localStorage.setItem("admin", JSON.stringify(data.admin));
       
       // Redirect to admin dashboard (route fixed in App.tsx)
       window.location.href = "/admin-nrsa-dashboard";

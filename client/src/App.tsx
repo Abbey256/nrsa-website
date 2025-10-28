@@ -29,6 +29,7 @@ import AdminMedia from "@/pages/admin/Media";
 import AdminAffiliations from "@/pages/admin/Affiliations";
 import AdminContacts from "@/pages/admin/Contacts";
 import AdminSettings from "@/pages/admin/Settings";
+import AdminAdmins from "@/pages/admin/Admins";
 import AdminLogin from "@/pages/admin/Login";
 import NotFound from "@/pages/not-found";
 
@@ -79,6 +80,9 @@ export default function App() {
             </Route>
             <Route path="/admin-nrsa-dashboard/contacts">
               <AdminLayout><AdminContacts /></AdminLayout>
+            </Route>
+            <Route path="/admin-nrsa-dashboard/admins">
+              <AdminLayout><AdminAdmins /></AdminLayout>
             </Route>
             <Route path="/admin-nrsa-dashboard/settings">
               <AdminLayout><AdminSettings /></AdminLayout>

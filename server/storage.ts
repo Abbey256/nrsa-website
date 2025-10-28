@@ -36,8 +36,12 @@ export const storage = {
       id: admins.id,
       name: admins.name,
       email: admins.email,
+      role: admins.role,
       createdAt: admins.createdAt
     }).from(admins).orderBy(desc(admins.createdAt));
+  },
+  deleteAdmin: async (id: number) => {
+    await db.delete(admins).where(eq(admins.id, id));
   },
   // Users
   getUser: async (id: string) => {

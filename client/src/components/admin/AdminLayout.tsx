@@ -11,7 +11,8 @@ import {
   Image as ImageIcon, 
   Link as LinkIcon, 
   Mail, 
-  LogOut 
+  LogOut,
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoUrl from "@assets/nrsf-logo_1761313307811.jpg";
@@ -46,9 +47,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, []);
 
-  // Logout handler: removes JWT token and redirects to home page
+  // Logout handler: removes JWT token and admin info, redirects to home page
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("admin");
     window.location.href = "/";
   };
 
@@ -63,6 +65,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { label: "Media", path: "/admin-nrsa-dashboard/media", icon: ImageIcon },
     { label: "Affiliations", path: "/admin-nrsa-dashboard/affiliations", icon: LinkIcon },
     { label: "Contact Messages", path: "/admin-nrsa-dashboard/contacts", icon: Mail },
+    { label: "Manage Admins", path: "/admin-nrsa-dashboard/admins", icon: ShieldCheck },
     { label: "Site Settings", path: "/admin-nrsa-dashboard/settings", icon: Settings },
   ];
 
