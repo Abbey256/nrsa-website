@@ -36,6 +36,7 @@ type Admin = {
   name: string;
   email: string;
   role: "super-admin" | "admin";
+  protected: boolean;
   createdAt: string;
 };
 
@@ -274,7 +275,7 @@ export default function AdminManagement() {
                     {new Date(admin.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    {admin.id !== currentAdmin.id && (
+                    {admin.id !== currentAdmin.id && !admin.protected && (
                       <Button
                         variant="destructive"
                         size="sm"
@@ -284,6 +285,9 @@ export default function AdminManagement() {
                       >
                         <Trash2 className="w-4 h-4 mr-1" /> Delete
                       </Button>
+                    )}
+                    {admin.protected && (
+                      <span className="text-xs text-muted-foreground italic">Protected</span>
                     )}
                   </TableCell>
                 </TableRow>

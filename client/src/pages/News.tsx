@@ -50,6 +50,7 @@ export default function News() {
                       src={item.imageUrl} 
                       alt={item.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                 )}

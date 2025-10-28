@@ -278,6 +278,15 @@ app.patch("/api/events/:id", requireAdmin, async (req, res) => {
         return res.status(400).json({ error: "Cannot delete your own account" });
       }
       
+      const targetAdmin = await storage.getAdminById(adminId);
+      if (!targetAdmin) {
+        return res.status(404).json({ error: "Admin not found" });
+      }
+      
+      if (targetAdmin.protected) {
+        return res.status(403).json({ error: "Cannot delete protected admin account" });
+      }
+      
       await storage.deleteAdmin(adminId);
       res.status(204).send();
     } catch(e:any){ 

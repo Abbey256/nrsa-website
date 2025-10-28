@@ -75,6 +75,7 @@ export default function Media() {
                       src={item.imageUrl} 
                       alt={item.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <ImageIcon className="w-16 h-16 text-muted-foreground" />

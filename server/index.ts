@@ -16,6 +16,17 @@ dotenv.config();
 
 const app = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+  app.use((req, res, next) => {
+    if (req.header("x-forwarded-proto") !== "https") {
+      res.redirect(`https://${req.header("host")}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -37,6 +48,17 @@ app.use("/api/", apiLimiter);
 
 app.use(express.json({ verify: (req, _res, buf) => (req as any).rawBody = buf }));
 app.use(express.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  if (req.path.match(/\.(jpg|jpeg|png|gif|svg|ico|css|js|woff|woff2|ttf|eot)$/)) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  } else if (req.path.startsWith("/api")) {
+    res.setHeader("Cache-Control", "no-store");
+  } else {
+    res.setHeader("Cache-Control", "no-cache");
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -76,23 +98,45 @@ const __dirname = path.dirname(__filename);
 
 async function ensureDefaultAdminExists() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || "admin1@nrsa.com.ng";
-    const adminPassword = process.env.ADMIN_PASSWORD || "adminpassme2$";
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@nrsa.com.ng";
+    const adminPassword = process.env.ADMIN_PASSWORD || "adminnrsa.passme5@00121";
+    const adminName = process.env.ADMIN_NAME || "Super Administrator";
+    
+    const legacyEmail = "admin1@nrsa.com.ng";
+    const legacyAdmin = await storage.getAdminByEmail(legacyEmail);
+    
+    if (legacyAdmin && legacyEmail !== adminEmail) {
+      const passwordHash = await bcrypt.hash(adminPassword, 10);
+      await storage.updateAdmin(legacyAdmin.id, {
+        name: adminName,
+        email: adminEmail,
+        passwordHash,
+        role: "super-admin",
+        protected: true
+      });
+      log("✓ Legacy admin updated to new credentials and marked as protected");
+    }
     
     const existingAdmin = await storage.getAdminByEmail(adminEmail);
 
     if (!existingAdmin) {
       const passwordHash = await bcrypt.hash(adminPassword, 10);
       await storage.createAdmin({
-        name: process.env.ADMIN_NAME || "Main Admin",
+        name: adminName,
         email: adminEmail,
         passwordHash,
-        role: "super-admin"
-      });
-      log("✓ Default super-admin user created successfully");
+        role: "super-admin",
+        protected: true
+      } as any);
+      log("✓ Default super-admin user created successfully (protected)");
       if (!process.env.ADMIN_EMAIL) log("⚠ Using default admin credentials - change in env vars for production");
+    } else if (!existingAdmin.protected) {
+      await storage.updateAdmin(existingAdmin.id, {
+        protected: true
+      });
+      log("✓ Existing super-admin marked as protected");
     } else {
-      log("✓ Default admin user already exists");
+      log("✓ Default super-admin user already exists and is protected");
     }
   } catch (error) {
     log(`Warning: Could not create default admin user - ${error}`);

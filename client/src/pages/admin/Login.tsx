@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
  * Handles administrator authentication using JWT tokens.
  * 
  * Default Admin Credentials (auto-created on server startup):
- * - Email: admin1@nrsa.com.ng
- * - Password: adminpassme2$
+ * - Email: admin@nrsa.com.ng
+ * - Password: adminnrsa.passme5@00121
  * 
  * Authentication Flow:
  * 1. User enters email and password
@@ -26,10 +26,12 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     try {
       // Send login request to backend API
       const res = await fetch("/api/admin/login", {
@@ -47,14 +49,20 @@ export default function AdminLogin() {
       // Redirect to admin dashboard (route fixed in App.tsx)
       window.location.href = "/admin-nrsa-dashboard";
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Invalid credentials. Please try again.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-32 p-6 border rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+    <div className="max-w-md mx-auto mt-32 p-6 border rounded-lg shadow-lg bg-card">
+      <h1 className="text-2xl font-bold mb-4 text-foreground">Admin Login</h1>
+      {error && (
+        <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded mb-4" role="alert">
+          <p className="font-medium">Login Failed</p>
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -81,9 +89,20 @@ export default function AdminLogin() {
         <Button 
           type="submit" 
           className="w-full" 
+          disabled={isLoading}
           data-testid="button-admin-login"
         >
-          Login
+          {isLoading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
         </Button>
       </form>
     </div>

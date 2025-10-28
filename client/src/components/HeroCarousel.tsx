@@ -50,7 +50,7 @@ export function HeroCarousel() {
           }`}
         >
           <div className="relative w-full h-full">
-            <img src={slide.imageUrl} alt={slide.headline} className="w-full h-full object-cover" />
+            <img src={slide.imageUrl} alt={slide.headline} className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-black/40" />
           </div>
           <div className="absolute inset-0 flex items-center justify-center z-20">

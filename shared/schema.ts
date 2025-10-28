@@ -26,6 +26,7 @@ export const admins = pgTable("admins", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("admin"),
+  protected: boolean("protected").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -34,6 +35,7 @@ export const insertAdminSchema = createInsertSchema(admins, {
 }).omit({
   id: true,
   createdAt: true,
+  protected: true,
 });
 
 export type InsertAdmin = z.infer<typeof insertAdminSchema>;

@@ -37,8 +37,13 @@ export const storage = {
       name: admins.name,
       email: admins.email,
       role: admins.role,
+      protected: admins.protected,
       createdAt: admins.createdAt
     }).from(admins).orderBy(desc(admins.createdAt));
+  },
+  updateAdmin: async (id: number, data: Partial<Admin>) => {
+    const [updated] = await db.update(admins).set(data).where(eq(admins.id, id)).returning();
+    return updated || undefined;
   },
   deleteAdmin: async (id: number) => {
     await db.delete(admins).where(eq(admins.id, id));
