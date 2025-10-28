@@ -2,18 +2,42 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Image as ImageIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Image as ImageIcon, Edit } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Media } from "@shared/schema";
 
 export default function Media() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [editingItem, setEditingItem] = useState<Media | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    imageUrl: "",
+  });
+
+  const queryClient = useQueryClient();
 
   const { data: mediaItems = [], isLoading } = useQuery<Media[]>({
     queryKey: ["/api/media"],
   });
 
-  // Dynamically extract unique categories from media items
+  const updateMutation = useMutation({
+    mutationFn: async (updatedItem: Media) => {
+      const res = await fetch(`/api/media/${updatedItem.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedItem),
+      });
+      if (!res.ok) throw new Error("Failed to update media");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["/api/media"]);
+      setEditingItem(null);
+    },
+  });
+
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(new Set(mediaItems.map(item => item.category)));
     return ["All", ...uniqueCategories];
@@ -23,6 +47,22 @@ export default function Media() {
     selectedCategory === "All"
       ? mediaItems
       : mediaItems.filter((item) => item.category === selectedCategory);
+
+  const handleEditClick = (item: Media) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      imageUrl: item.imageUrl,
+    });
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    updateMutation.mutate({ ...editingItem, ...formData });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -46,7 +86,6 @@ export default function Media() {
                 variant={selectedCategory === category ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category)}
                 className={selectedCategory === category ? "bg-primary hover:bg-primary/90" : ""}
-                data-testid={`button-category-${category.toLowerCase()}`}
               >
                 {category}
               </Button>
@@ -54,6 +93,50 @@ export default function Media() {
           </div>
         </div>
       </section>
+
+      {/* Edit Form */}
+      {editingItem && (
+        <section className="py-8 bg-muted">
+          <div className="max-w-xl mx-auto px-6">
+            <h2 className="text-2xl font-bold mb-4">Edit Media</h2>
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full p-2 border rounded"
+              />
+              <textarea
+                placeholder="Description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                placeholder="Category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                placeholder="Image URL"
+                value={formData.imageUrl}
+                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                className="w-full p-2 border rounded"
+              />
+              <div className="flex gap-3">
+                <Button type="submit">Update</Button>
+                <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </section>
+      )}
 
       {/* Media Grid */}
       <section className="py-20">
@@ -73,8 +156,7 @@ export default function Media() {
               {filteredMedia.map((item) => (
                 <Card
                   key={item.id}
-                  className="overflow-hidden hover:elevate active:elevate-2 cursor-pointer transition-all"
-                  data-testid={`card-media-${item.id}`}
+                  className="overflow-hidden hover:elevate cursor-pointer transition-all relative"
                 >
                   <div className="relative aspect-video bg-muted flex items-center justify-center">
                     {item.imageUrl ? (
@@ -96,6 +178,15 @@ export default function Media() {
                   <div className="p-4">
                     <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
+                    <div className="mt-3 flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditClick(item)}
+                      >
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
