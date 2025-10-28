@@ -42,8 +42,8 @@ export default function AdminLeaders() {
 
   // --- Fetch leaders ---
   const { data: leaders = [], isLoading } = useQuery<Leader[]>({
-    queryKey: ["/api/leaders"],
-    queryFn: () => apiRequest("GET", "/api/leaders"),
+    queryKey: ["leaders"],
+    queryFn: async () => apiRequest("GET", "/api/leaders"),
   });
 
   // --- Save leader (Add or Update) ---
@@ -54,7 +54,7 @@ export default function AdminLeaders() {
       await apiRequest(method, url, form);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+      queryClient.invalidateQueries(["leaders"]);
       toast({
         title: editingLeader ? "Leader Updated" : "Leader Added",
         description: "Leader profile saved successfully!",
@@ -78,7 +78,7 @@ export default function AdminLeaders() {
       await apiRequest("DELETE", `/api/leaders/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+      queryClient.invalidateQueries(["leaders"]);
       toast({
         title: "Leader Deleted",
         description: "The leader profile has been removed successfully.",
@@ -130,28 +130,17 @@ export default function AdminLeaders() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" data-testid="text-page-title">
-            Leaders Management
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground">Leaders Management</h1>
           <p className="text-muted-foreground mt-2">
             Manage federation leaders — Add, Edit, or Delete leadership profiles
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button
-              className="bg-primary hover:bg-primary/90"
-              data-testid="button-add-leader"
-              onClick={() => {
-                setEditingLeader(null);
-                setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Leader
+            <Button onClick={() => { setEditingLeader(null); setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 }); }}>
+              <Plus className="w-4 h-4 mr-2" /> Add Leader
             </Button>
           </DialogTrigger>
-
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingLeader ? "Edit Leader" : "Add Leader"}</DialogTitle>
@@ -159,69 +148,24 @@ export default function AdminLeaders() {
             <div className="space-y-4 mt-4">
               <div>
                 <Label>Full Name *</Label>
-                <Input
-                  name="name"
-                  placeholder="Leader name"
-                  value={form.name}
-                  onChange={handleChange}
-                  data-testid="input-leader-name"
-                />
+                <Input name="name" value={form.name} onChange={handleChange} />
               </div>
               <div>
                 <Label>Position *</Label>
-                <Input
-                  name="position"
-                  placeholder="e.g., President, Vice President"
-                  value={form.position}
-                  onChange={handleChange}
-                  data-testid="input-leader-position"
-                />
+                <Input name="position" value={form.position} onChange={handleChange} />
               </div>
-              <ImageUpload
-                label="Leader Photo"
-                value={form.photoUrl || ""}
-                onChange={(url) => setForm({ ...form, photoUrl: url })}
-              />
+              <ImageUpload label="Leader Photo" value={form.photoUrl || ""} onChange={(url) => setForm({ ...form, photoUrl: url })} />
               <div>
                 <Label>Biography</Label>
-                <Textarea
-                  name="bio"
-                  placeholder="Leader's biography and background..."
-                  value={form.bio}
-                  onChange={handleChange}
-                  rows={5}
-                  data-testid="input-leader-bio"
-                />
+                <Textarea name="bio" value={form.bio} onChange={handleChange} rows={5} />
               </div>
               <div>
                 <Label>Display Order</Label>
-                <Input
-                  type="number"
-                  name="order"
-                  placeholder="0"
-                  value={form.order}
-                  onChange={handleChange}
-                  data-testid="input-leader-order"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Lower numbers appear first (e.g., President = 0, VP = 1)
-                </p>
+                <Input type="number" name="order" value={form.order} onChange={handleChange} />
               </div>
               <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  className="bg-primary hover:bg-primary/90 flex-1"
-                  data-testid="button-save-leader"
-                >
-                  {editingLeader ? "Update Leader" : "Add Leader"}
-                </Button>
-                <Button
-                  onClick={() => setOpen(false)}
-                  variant="outline"
-                  data-testid="button-cancel"
-                >
-                  Cancel
-                </Button>
+                <Button onClick={handleSave}>{editingLeader ? "Update" : "Add"}</Button>
+                <Button onClick={() => setOpen(false)} variant="outline">Cancel</Button>
               </div>
             </div>
           </DialogContent>
@@ -229,69 +173,22 @@ export default function AdminLeaders() {
       </div>
 
       {isLoading ? (
-        <p className="text-center text-muted-foreground py-12">Loading leaders...</p>
+        <p className="text-center py-12">Loading leaders...</p>
       ) : leaders.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              No leaders added yet. Click "Add Leader" to create one.
-            </p>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="py-12 text-center">No leaders added yet.</CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {leaders.map((leader) => (
-            <Card
-              key={leader.id}
-              className="hover:shadow-md transition-all"
-              data-testid={`card-leader-${leader.id}`}
-            >
-              <CardContent className="p-6 space-y-4">
-                <img
-                  src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"}
-                  alt={leader.name}
-                  className="w-full h-48 object-cover rounded-md"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).onerror = null;
-                    (e.target as HTMLImageElement).src =
-                      "https://placehold.co/400x400/009739/ffffff?text=NRSA";
-                  }}
-                />
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg" data-testid={`text-leader-name-${leader.id}`}>
-                      {leader.name}
-                    </h3>
-                    <p
-                      className="text-sm text-primary font-semibold"
-                      data-testid={`text-leader-position-${leader.id}`}
-                    >
-                      {leader.position}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">Order: {leader.order}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(leader)}
-                      data-testid={`button-edit-${leader.id}`}
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(leader.id!)}
-                      data-testid={`button-delete-${leader.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+            <Card key={leader.id}>
+              <CardContent>
+                <img src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"} alt={leader.name} className="w-full h-48 object-cover rounded-md" />
+                <h3 className="font-bold">{leader.name}</h3>
+                <p className="text-primary font-semibold">{leader.position}</p>
+                <p>Order: {leader.order}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button onClick={() => handleEdit(leader)}><Edit2 /></Button>
+                  <Button onClick={() => handleDelete(leader.id)} variant="destructive"><Trash2 /></Button>
                 </div>
-                {leader.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">{leader.bio}</p>
-                )}
               </CardContent>
             </Card>
           ))}
