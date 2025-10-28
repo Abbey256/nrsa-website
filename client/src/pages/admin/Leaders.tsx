@@ -16,7 +16,16 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Leader } from "@shared/schema";
+
+interface Leader {
+  id: number;
+  name: string;
+  position: string;
+  bio?: string;
+  photoUrl?: string;
+  order: number;
+  state?: string;
+}
 
 export default function AdminLeaders() {
   const { toast } = useToast();
@@ -31,10 +40,13 @@ export default function AdminLeaders() {
     order: 0,
   });
 
+  // --- Fetch leaders ---
   const { data: leaders = [], isLoading } = useQuery<Leader[]>({
     queryKey: ["/api/leaders"],
+    queryFn: () => apiRequest("GET", "/api/leaders"),
   });
 
+  // --- Save leader (Add or Update) ---
   const saveLeader = useMutation({
     mutationFn: async () => {
       const method = editingLeader ? "PATCH" : "POST";
@@ -49,13 +61,7 @@ export default function AdminLeaders() {
       });
       setOpen(false);
       setEditingLeader(null);
-      setForm({
-        name: "",
-        position: "",
-        photoUrl: "",
-        bio: "",
-        order: 0,
-      });
+      setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
     },
     onError: (error: Error) => {
       toast({
@@ -66,6 +72,7 @@ export default function AdminLeaders() {
     },
   });
 
+  // --- Delete leader ---
   const deleteLeader = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/leaders/${id}`);
@@ -114,7 +121,7 @@ export default function AdminLeaders() {
       position: leader.position,
       photoUrl: leader.photoUrl || "",
       bio: leader.bio || "",
-      order: leader.order,
+      order: leader.order || 0,
     });
     setOpen(true);
   };
@@ -137,13 +144,7 @@ export default function AdminLeaders() {
               data-testid="button-add-leader"
               onClick={() => {
                 setEditingLeader(null);
-                setForm({
-                  name: "",
-                  position: "",
-                  photoUrl: "",
-                  bio: "",
-                  order: 0,
-                });
+                setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -246,24 +247,28 @@ export default function AdminLeaders() {
               data-testid={`card-leader-${leader.id}`}
             >
               <CardContent className="p-6 space-y-4">
-                {leader.photoUrl && (
-                  <img
-                    src={leader.photoUrl}
-                    alt={leader.name}
-                    className="w-full h-48 object-cover rounded-md"
-                  />
-                )}
+                <img
+                  src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"}
+                  alt={leader.name}
+                  className="w-full h-48 object-cover rounded-md"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).onerror = null;
+                    (e.target as HTMLImageElement).src =
+                      "https://placehold.co/400x400/009739/ffffff?text=NRSA";
+                  }}
+                />
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="font-bold text-lg" data-testid={`text-leader-name-${leader.id}`}>
                       {leader.name}
                     </h3>
-                    <p className="text-sm text-primary font-semibold" data-testid={`text-leader-position-${leader.id}`}>
+                    <p
+                      className="text-sm text-primary font-semibold"
+                      data-testid={`text-leader-position-${leader.id}`}
+                    >
                       {leader.position}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Order: {leader.order}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Order: {leader.order}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -285,9 +290,7 @@ export default function AdminLeaders() {
                   </div>
                 </div>
                 {leader.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {leader.bio}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">{leader.bio}</p>
                 )}
               </CardContent>
             </Card>
