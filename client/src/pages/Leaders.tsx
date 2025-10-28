@@ -1,73 +1,72 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
 import { useRoute, useLocation } from "wouter";
-import { Loader2, ArrowLeft, UserCheck, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Leader {
   id: number;
   name: string;
   position: string;
-  bio: string;
-  photoUrl: string;
+  bio?: string;
+  photoUrl?: string;
+  order: number;
   state?: string;
 }
 
 export default function LeaderDetail() {
   const [match, params] = useRoute("/leaders/:id");
-  const [, navigate] = useLocation();
-  const leaderId = params?.id ? Number(params.id) : null;
+  const id = params?.id;
 
+  const [, navigate] = useLocation();
   const [leader, setLeader] = useState<Leader | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!leaderId) { setError("Invalid leader ID"); setIsLoading(false); return; }
+    if (!id) return;
+
     const fetchLeader = async () => {
       try {
-        const res = await fetch(`/api/leaders/${leaderId}`);
+        const res = await fetch(`/api/leaders/${id}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data: Leader = await res.json();
-        setLeader({
-          ...data,
-          photoUrl: data.photoUrl || "https://placehold.co/600x600/009739/ffffff?text=NRSA",
-          bio: data.bio || "No biography provided.",
-        });
+        setLeader(data);
         setError(null);
       } catch (e) {
         console.error(e);
-        setError("Could not load leader profile. Please check the API connection.");
+        setError("Could not load leader details. Please check the API connection.");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchLeader();
-  }, [leaderId]);
 
-  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
-  if (error || !leader) return <div className="p-12 text-center text-red-700">{error || "Leader not found."}<Button onClick={() => navigate("/leaders")}>Back</Button></div>;
+    fetchLeader();
+  }, [id]);
+
+  if (!id) return <div className="p-12 text-center text-red-700">Invalid leader ID</div>;
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  if (error) return <div className="p-12 text-center text-red-700">{error}</div>;
+  if (!leader) return <div className="p-12 text-center text-yellow-700">Leader not found</div>;
 
   return (
-    <>
-      <Helmet><title>{leader.name} - Leadership</title></Helmet>
-      <div className="py-16 max-w-7xl mx-auto px-6 lg:px-8">
-        <Button variant="ghost" onClick={() => navigate("/leaders")} className="mb-8"><ArrowLeft className="w-4 h-4 mr-2"/>Back to Leaders</Button>
-        <Card className="p-8 md:p-12 shadow-2xl rounded-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <img src={leader.photoUrl} alt={leader.name} className="w-full h-auto object-cover rounded-lg shadow-xl aspect-square border-4 border-primary/20"/>
-            <div className="lg:col-span-2">
-              <h1 className="text-5xl font-extrabold">{leader.name}</h1>
-              <p className="text-2xl font-semibold text-primary flex items-center gap-2"><UserCheck className="w-6 h-6"/>{leader.position}</p>
-              {leader.state && <p className="text-lg text-gray-600 flex items-center gap-2"><MapPin className="w-5 h-5 text-primary/70"/>{leader.state}</p>}
-              <div className="mt-6 prose prose-lg max-w-none text-gray-700">
-                {leader.bio.split("\n").map((p, idx) => <p key={idx}>{p}</p>)}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </>
+    <div className="max-w-4xl mx-auto p-6">
+      <button className="mb-6 text-primary underline" onClick={() => navigate("/leaders")}>
+        &larr; Back to Leaders
+      </button>
+
+      <Card>
+        <CardContent className="text-center">
+          <img
+            src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"}
+            alt={leader.name}
+            className="w-full max-w-xs mx-auto h-64 object-cover rounded-md mb-4"
+          />
+          <h2 className="text-2xl font-bold">{leader.name}</h2>
+          <p className="text-primary font-semibold">{leader.position}</p>
+          {leader.state && <p className="text-muted-foreground">{leader.state}</p>}
+          {leader.bio && <p className="mt-4 text-foreground">{leader.bio}</p>}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
