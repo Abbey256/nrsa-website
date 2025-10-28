@@ -24,17 +24,32 @@ export default function Media() {
 
   const updateMutation = useMutation({
     mutationFn: async (updatedItem: Media) => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) throw new Error("Unauthorized — No token found");
+
       const res = await fetch(`/api/media/${updatedItem.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(updatedItem),
       });
-      if (!res.ok) throw new Error("Failed to update media");
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to update media");
+      }
+
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["/api/media"]);
       setEditingItem(null);
+      alert("✅ Media updated successfully!");
+    },
+    onError: (error: any) => {
+      alert(`❌ ${error.message}`);
     },
   });
 
@@ -128,7 +143,9 @@ export default function Media() {
                 className="w-full p-2 border rounded"
               />
               <div className="flex gap-3">
-                <Button type="submit">Update</Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? "Updating..." : "Update"}
+                </Button>
                 <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
                   Cancel
                 </Button>
