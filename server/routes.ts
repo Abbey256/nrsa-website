@@ -212,13 +212,21 @@ export function registerAllRoutes(app: Express): Server {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  app.patch("/api/media/:id", requireAdmin, async (req, res) => {
-    try {
-      const item = await storage.updateMedia(parseInt(req.params.id), req.body);
-      if (!item) return res.status(404).json({ error: "Media not found" });
-      res.json(item);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
+ app.patch("/api/media/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = insertMediaSchema.partial().parse(req.body);
+
+    const updatedItem = await storage.updateMedia(parseInt(id), updatedData);
+
+    if (!updatedItem) return res.status(404).json({ error: "Media not found" });
+
+    res.json(updatedItem);
+  } catch (e: any) {
+    console.error(e);
+    res.status(400).json({ error: e.message });
+  }
+});
 
   app.delete("/api/media/:id", requireAdmin, async (req, res) => {
     try {
@@ -226,6 +234,7 @@ export function registerAllRoutes(app: Express): Server {
       res.status(204).send();
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
+  
 
   // ---------- AFFILIATIONS ----------
   app.get("/api/affiliations", async (req, res) => {
