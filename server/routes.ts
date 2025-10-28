@@ -209,7 +209,22 @@ app.patch("/api/events/:id", requireAdmin, async (req, res) => {
   app.post("/api/media", requireAdmin, async (req,res)=>{ try{ const item = await storage.createMedia(insertMediaSchema.parse(req.body)); res.status(201).json(item); } catch(e:any){ res.status(400).json({error:e.message}); } });
   app.patch("/api/media/:id", requireAdmin, async (req,res)=>{ try{ const item = await storage.updateMedia(parseInt(req.params.id), req.body); if(!item) return res.status(404).json({error:"Media not found"}); res.json(item); } catch(e:any){ res.status(400).json({error:e.message}); } });
   app.delete("/api/media/:id", requireAdmin, async (req,res)=>{ try{ await storage.deleteMedia(parseInt(req.params.id)); res.status(204).send(); } catch(e:any){ res.status(500).json({error:e.message}); } });
+app.put("/api/media/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, category, imageUrl } = req.body;
 
+    await db
+      .update(media)
+      .set({ title, description, category, imageUrl })
+      .where(eq(media.id, Number(id)));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating media:", error);
+    res.status(500).json({ error: "Failed to update media" });
+  }
+});
   // ---------- AFFILIATIONS ----------
   app.get("/api/affiliations", async (req,res)=>{ try{ res.json(await storage.getAllAffiliations()); } catch(e:any){ res.status(500).json({error:e.message}); } });
   app.post("/api/affiliations", requireAdmin, async (req,res)=>{ try{ const aff = await storage.createAffiliation(insertAffiliationSchema.parse(req.body)); res.status(201).json(aff); } catch(e:any){ res.status(400).json({error:e.message}); } });
