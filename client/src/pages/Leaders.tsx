@@ -95,7 +95,7 @@ export default function Leaders() {
                 <img 
                     src={leader.photoUrl} 
                     alt={`Photo of ${leader.name}`} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => { 
                         (e.target as HTMLImageElement).onerror = null; 
                         (e.target as HTMLImageElement).src = "https://placehold.co/400x400/009739/ffffff?text=NRSA"; 

@@ -41,9 +41,13 @@ export default function AdminLeaders() {
   });
 
   // --- Fetch leaders ---
-  const { data: leaders = [], isLoading } = useQuery<Leader[]>({
+  const { data: leaders = [], isLoading, isError, error } = useQuery<Leader[]>({
     queryKey: ["leaders"],
-    queryFn: async () => apiRequest("GET", "/api/leaders"),
+    queryFn: async () => {
+      // parse the JSON here - apiRequest returns a Response
+      const res = await apiRequest("GET", "/api/leaders");
+      return await res.json();
+    },
   });
 
   // --- Save leader (Add or Update) ---
@@ -174,6 +178,12 @@ export default function AdminLeaders() {
 
       {isLoading ? (
         <p className="text-center py-12">Loading leaders...</p>
+      ) : isError ? (
+        <Card>
+          <CardContent className="py-12 text-center text-red-700">
+            Error loading leaders: {(error as Error)?.message || "Unknown error"}
+          </CardContent>
+        </Card>
       ) : leaders.length === 0 ? (
         <Card><CardContent className="py-12 text-center">No leaders added yet.</CardContent></Card>
       ) : (
@@ -181,7 +191,7 @@ export default function AdminLeaders() {
           {leaders.map((leader) => (
             <Card key={leader.id}>
               <CardContent>
-                <img src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"} alt={leader.name} className="w-full h-48 object-cover rounded-md" />
+                <img src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"} alt={leader.name} className="w-full h-48 object-cover object-top rounded-md" />
                 <h3 className="font-bold">{leader.name}</h3>
                 <p className="text-primary font-semibold">{leader.position}</p>
                 <p>Order: {leader.order}</p>
