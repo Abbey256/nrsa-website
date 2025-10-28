@@ -1,6 +1,90 @@
-node_modules
-dist
-.DS_Store
-server/public
-vite.config.ts.*
+# === Dependencies & Build ===
+node_modules/
+dist/
+build/
+.cache/
+.next/
+out/
+tmp/
+temp/
 *.tar.gz
+*.zip
+*.log
+
+# === Environment & Secrets ===
+.env
+.env.*
+!.env.example
+
+# === Database & ORM ===
+migrations/
+drizzle/
+drizzle.config.ts
+*.db
+*.sqlite
+*.sql
+*.bak
+*.dump
+
+# === Vite / Bundler ===
+vite.config.ts
+vite.config.js
+vite.config.*.ts
+vite.config.*.js
+.vite/
+.vitepress/
+*.tsbuildinfo
+
+# === OS & IDE files ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# === Test & Coverage ===
+coverage/
+jest-cache/
+*.spec.ts
+*.test.ts
+*.test.js
+*.spec.js
+
+# === Render / Replit Specific ===
+render.yaml
+replit.nix
+replit.*
+*.replit
+*.lock
+
+# === Frontend Generated ===
+server/public/
+public/build/
+public/uploads/
+uploads/
+assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# === Logs & Runtime ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.pid
+*.seed
+
+# === Security Backups ===
+backup/
+secrets/
+keys/
+certs/
+*.pem
+*.key
+*.crt
