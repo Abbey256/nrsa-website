@@ -36,7 +36,7 @@ export default function Contact() {
     defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
   });
 
-  // createContact should parse the apiRequest Response and return json
+  // createContact should parse apiRequest response and return JSON
   const createContact = useMutation({
     mutationFn: async (data: z.infer<typeof contactFormSchema>) => {
       const res = await apiRequest("POST", "/api/contacts", data);
