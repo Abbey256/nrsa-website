@@ -48,10 +48,6 @@ export function Header() {
                 className="h-14 w-auto object-contain"
                 data-testid="img-logo"
               />
-              <div>
-                <div className="font-bold text-lg text-foreground leading-tight">NRSA</div>
-                <div className="text-xs text-muted-foreground">Nigeria Rope Skipping</div>
-              </div>
             </div>
           </Link>
 
