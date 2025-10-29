@@ -2,7 +2,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || "";
 
-// Build full URL: if provided url is absolute use it, otherwise prefix with API_BASE (which may be "")
+// Build full URL: return as-is if absolute, otherwise prefix with API_BASE
 function buildUrl(url: string) {
   if (/^https?:\/\//i.test(url)) return url;
   const base = API_BASE.replace(/\/$/, "");
@@ -56,14 +56,15 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const authHeaders = getAuthHeaders();
-    const fullUrl = buildUrl(queryKey.join("/"));
+    const url = queryKey.join("/");
+    const fullUrl = buildUrl(url);
     const res = await fetch(fullUrl, {
       credentials: "include",
       headers: authHeaders,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      return null as any;
     }
 
     await throwIfResNotOk(res);

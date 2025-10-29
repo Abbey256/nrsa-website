@@ -47,7 +47,6 @@ export default function Contact() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       form.reset();
-      // refresh admin contacts if open in same browser
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
     onError: (error: any) => {
@@ -63,10 +62,8 @@ export default function Contact() {
     createContact.mutate(data);
   };
 
- 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
       <section className="bg-primary text-primary-foreground py-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Contact Us</h1>
@@ -76,11 +73,9 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* Contact Content */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Contact Information */}
             <div className="lg:col-span-1 space-y-6">
               <Card>
                 <CardHeader>
@@ -93,9 +88,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-sm text-muted-foreground" data-testid="text-contact-phone">
-                        +2347069465965
-                      </p>
+                      <p className="text-sm text-muted-foreground" data-testid="text-contact-phone">+2347069465965</p>
                     </div>
                   </div>
 
@@ -133,103 +126,62 @@ export default function Contact() {
               </Card>
             </div>
 
-            {/* Contact Form */}
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl">Send Us a Message</CardTitle>
-                  <p className="text-muted-foreground">
-                    Fill out the form below and we'll get back to you as soon as possible.
-                  </p>
+                  <p className="text-muted-foreground">Fill out the form below and we'll get back to you as soon as possible.</p>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Name *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Your full name" {...field} data-testid="input-name" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="name" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name *</FormLabel>
+                            <FormControl><Input placeholder="Your full name" {...field} data-testid="input-name" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
 
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email *</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="your.email@example.com" {...field} data-testid="input-email" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="email" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email *</FormLabel>
+                            <FormControl><Input type="email" placeholder="your.email@example.com" {...field} data-testid="input-email" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone (Optional)</FormLabel>
-                              <FormControl>
-                                <Input placeholder="+234 xxx xxx xxxx" {...field} data-testid="input-phone" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="subject"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Subject *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="What is this about?" {...field} data-testid="input-subject" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="message"
-                        render={({ field }) => (
+                        <FormField control={form.control} name="phone" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Message *</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Tell us how we can help..."
-                                className="min-h-[150px] resize-none"
-                                {...field}
-                                data-testid="input-message"
-                              />
-                            </FormControl>
+                            <FormLabel>Phone (Optional)</FormLabel>
+                            <FormControl><Input placeholder="+234 xxx xxx xxxx" {...field} data-testid="input-phone" /></FormControl>
                             <FormMessage />
                           </FormItem>
-                        )}
-                      />
+                        )} />
 
-                      <Button
-                        type="submit"
-                        className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                        disabled={createContact.isLoading}
-                        data-testid="button-submit"
-                      >
+                        <FormField control={form.control} name="subject" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Subject *</FormLabel>
+                            <FormControl><Input placeholder="What is this about?" {...field} data-testid="input-subject" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+
+                      <FormField control={form.control} name="message" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Message *</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Tell us how we can help..." className="min-h-[150px] resize-none" {...field} data-testid="input-message" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+
+                      <Button type="submit" className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8" disabled={createContact.isLoading} data-testid="button-submit">
                         {createContact.isLoading ? "Sending..." : "Send Message"}
                       </Button>
                     </form>

@@ -272,7 +272,18 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
+
 // ---------- CONTACTS ----------
+app.post("/api/contacts", async (req, res) => {
+  try {
+    const contact = await storage.createContact(insertContactSchema.parse(req.body));
+    res.status(201).json(contact);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Admin-only endpoints
 app.get("/api/contacts", requireAdmin, async (req, res) => {
   try {
     res.json(await storage.getAllContacts());
@@ -284,7 +295,6 @@ app.get("/api/contacts", requireAdmin, async (req, res) => {
 app.get("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    // storage.getAllContacts used as fallback if no single-get function exists
     const all = await storage.getAllContacts();
     const item = all.find((c) => c.id === id);
     if (!item) return res.status(404).json({ error: "Contact not found" });
@@ -297,8 +307,7 @@ app.get("/api/contacts/:id", requireAdmin, async (req, res) => {
 app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const updatedData = req.body;
-    const updated = await storage.updateContact(id, updatedData);
+    const updated = await storage.updateContact(id, req.body);
     if (!updated) return res.status(404).json({ error: "Contact not found" });
     res.json(updated);
   } catch (e: any) {
@@ -308,8 +317,7 @@ app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
 
 app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    await storage.deleteContact(id);
+    await storage.deleteContact(parseInt(req.params.id));
     res.status(204).send();
   } catch (e: any) {
     res.status(500).json({ error: e.message });
