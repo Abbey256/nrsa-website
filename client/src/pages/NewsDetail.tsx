@@ -18,7 +18,6 @@ interface NewsArticle {
 }
 
 export default function NewsDetail({ id: propId }: { id?: string } = {}) {
-  // prefer an explicit prop id if provided (some routes pass params into the component)
   const [match, params] = useRoute("/news/:id");
   const [, navigate] = useLocation();
   const newsId = propId || params?.id || null;
@@ -40,41 +39,45 @@ export default function NewsDetail({ id: propId }: { id?: string } = {}) {
 
     const fetchArticle = async () => {
       try {
+        // Use the same relative path so API_BASE logic in queryClient applies
         const apiUrl = `/api/news/${newsId}`;
-        const response = await fetch(apiUrl);
+        const res = await fetch(apiUrl, { credentials: "include" });
 
-        if (response.status === 404) {
-          // specific handling for not-found so user sees a clearer message
-          setError("News article not found.");
+        // If server returned html (e.g., index.html) the content-type will reflect it
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok) {
+          // try to read text body for debugging — might be HTML error page
+          const bodyText = await res.text().catch(() => "");
+          console.error(`GET ${apiUrl} failed:`, res.status, bodyText);
+          if (res.status === 404) {
+            setError("News article not found (404).");
+          } else {
+            setError(`Server error (${res.status}). Check server logs.`);
+          }
           return;
         }
 
-        if (!response.ok) {
-          // try to read server error body for better debugging
-          let text = "";
-          try {
-            text = await response.text();
-          } catch (e) {
-            /* ignore text parse errors */
-          }
-          throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+        // If back-end returns HTML (content-type text/html) it's not JSON
+        if (contentType.includes("text/html")) {
+          const bodyText = await res.text().catch(() => "");
+          console.error(`Unexpected HTML response for ${apiUrl}:`, bodyText);
+          setError("Server returned HTML instead of JSON. Check API base URL and server routes.");
+          return;
         }
 
-        const data = await response.json();
-
+        // Expect JSON
+        const data = await res.json();
         if (!aborted) {
-          if (data) {
-            setArticle(data as NewsArticle);
-            setError(null);
-          } else {
-            setError(`News article with ID ${newsId} not found.`);
-          }
+          setArticle(data as NewsArticle);
+          setError(null);
         }
       } catch (e: any) {
         console.error("Error fetching news article:", e);
         setError(
-          (e?.message && `Could not load news article: ${e.message}`) ||
-            "Could not load news article. Please check the API connection."
+          e?.message
+            ? `Could not load news article: ${e.message}`
+            : "Could not load news article. Please check the API connection."
         );
       } finally {
         if (!aborted) setIsLoading(false);
@@ -102,7 +105,6 @@ export default function NewsDetail({ id: propId }: { id?: string } = {}) {
       <div className="text-center p-20 bg-gray-50">
         <h1 className="text-4xl font-bold text-red-600">Error</h1>
         <p className="mt-4 text-xl text-gray-600">{error || "News article not found."}</p>
-
         <div className="mt-8">
           <Button onClick={() => navigate("/news")} className="bg-primary hover:bg-primary/90">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to News
@@ -138,18 +140,13 @@ export default function NewsDetail({ id: propId }: { id?: string } = {}) {
                   alt={article.title}
                   className="w-full h-full object-cover"
                   data-testid="img-news-hero"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
                 />
               </div>
             )}
 
             <div className="flex items-center gap-3 mb-6">
               {article.isFeatured && (
-                <Badge className="bg-destructive text-destructive-foreground text-sm px-3 py-1">
-                  Featured
-                </Badge>
+                <Badge className="bg-destructive text-destructive-foreground text-sm px-3 py-1">Featured</Badge>
               )}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
@@ -161,8 +158,7 @@ export default function NewsDetail({ id: propId }: { id?: string } = {}) {
             <p className="text-lg text-muted-foreground mb-6">{article.excerpt}</p>
 
             <div className="prose max-w-none text-foreground">
-              {/* This assumes content is plain text or HTML. If it's stored as HTML, you may want to dangerouslySetInnerHTML */}
-              <div>{article.content}</div>
+              <div dangerouslySetInnerHTML={{ __html: article.content }} />
             </div>
 
             <div className="mt-8">
