@@ -56,6 +56,21 @@ export function registerAllRoutes(app: Express): Server {
     catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  app.get("/api/news/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const article = await storage.getNews(id);
+
+    if (!article) {
+      return res.status(404).json({ error: "News not found" });
+    }
+
+    res.json(article);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
   app.post("/api/news", requireAdmin, async (req, res) => {
     try {
       const article = await storage.createNews(insertNewsSchema.parse(req.body));
