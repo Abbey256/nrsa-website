@@ -47,14 +47,14 @@ export function Header() {
       className="h-12 w-auto object-contain"
       data-testid="img-logo"
     />
-    <div className="hidden sm:flex flex-col">
-  <span className="font-bold text-lg text-foreground leading-tight">
-    NRSA
-  </span>
-  <span className="text-xs text-muted-foreground">
-    Nigeria Rope Skipping Association
-  </span>
-</div>
+    <div className="hidden md:flex flex-col">
+      <span className="font-bold text-lg text-foreground leading-tight">
+        NRSA
+      </span>
+      <span className="text-xs text-muted-foreground">
+        Nigeria Rope Skipping Association
+      </span>
+    </div>
   </div>
 </Link>
              
