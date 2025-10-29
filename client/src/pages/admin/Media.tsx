@@ -26,7 +26,7 @@ import axios from "axios";
 export default function AdminMedia() {
   const queryClient = useQueryClient();
 
-  // For dialog open/close control
+  // Dialog open/close
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Fetch all media
@@ -46,9 +46,9 @@ export default function AdminMedia() {
     category: "",
   });
 
-  // Save (add/edit)
+  // Save (add/edit) - use payload passed to mutate, don't close over editingMedia
   const saveMedia = useMutation({
-    mutationFn: async (media: Media) => {
+    mutationFn: async (mediaPayload: Partial<Media>) => {
       const token = localStorage.getItem("adminToken");
       if (!token) throw new Error("Unauthorized - No token found");
 
@@ -56,10 +56,13 @@ export default function AdminMedia() {
         headers: { Authorization: `Bearer ${token}` },
       };
 
-      if (editingMedia) {
-        await axios.put(`/api/media/${editingMedia.id}`, media, config);
+      // If an id is provided use PUT otherwise POST
+      if (mediaPayload.id) {
+        const res = await axios.put(`/api/media/${mediaPayload.id}`, mediaPayload, config);
+        return res.data;
       } else {
-        await axios.post("/api/media", media, config);
+        const res = await axios.post("/api/media", mediaPayload, config);
+        return res.data;
       }
     },
     onSuccess: () => {
@@ -68,9 +71,14 @@ export default function AdminMedia() {
       setForm({ title: "", description: "", imageUrl: "", category: "" });
       setIsDialogOpen(false);
     },
+    onError: (err: any) => {
+      console.error("Failed to save media:", err?.response?.data || err.message || err);
+      // Use a simple alert so admin sees failure; replace with toast if you have a toast hook
+      alert("Failed to save media: " + (err?.response?.data?.error || err.message || "Unknown error"));
+    },
   });
 
-  // Delete
+  // Delete mutation
   const deleteMedia = useMutation({
     mutationFn: async (id: number) => {
       const token = localStorage.getItem("adminToken");
@@ -81,30 +89,48 @@ export default function AdminMedia() {
       });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/media"] }),
+    onError: (err: any) => {
+      console.error("Failed to delete media:", err?.response?.data || err.message || err);
+      alert("Failed to delete media: " + (err?.response?.data?.error || err.message || "Unknown error"));
+    },
   });
 
-  // Submit handler
+  // Submit handler - build payload and pass it to the mutation
   const handleSubmit = () => {
     if (!form.title || !form.imageUrl || !form.category) {
       alert("Please fill all required fields.");
       return;
     }
-    saveMedia.mutate(form as Media);
+
+    const payload: Partial<Media> = {
+      title: form.title,
+      description: form.description,
+      imageUrl: form.imageUrl,
+      category: form.category,
+    };
+
+    if (editingMedia) {
+      // include id for update
+      // Type assertion because Media may require other fields
+      payload.id = editingMedia.id;
+    }
+
+    saveMedia.mutate(payload);
   };
 
-  // Edit handler
+  // Edit handler - populate form and open dialog
   const handleEdit = (item: Media) => {
     setEditingMedia(item);
     setForm({
       title: item.title,
       description: item.description || "",
-      imageUrl: item.imageUrl,
+      imageUrl: item.imageUrl || "",
       category: item.category || "",
     });
-    setIsDialogOpen(true); // 💡 Open dialog when edit clicked
+    setIsDialogOpen(true);
   };
 
-  // Reset form when opening for new add
+  // Add new - reset form and open dialog
   const handleAddNew = () => {
     setEditingMedia(null);
     setForm({ title: "", description: "", imageUrl: "", category: "" });
@@ -127,7 +153,7 @@ export default function AdminMedia() {
         </Button>
       </div>
 
-      {/* 💡 Modal Dialog (now controlled) */}
+      {/* Controlled Modal Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -140,6 +166,7 @@ export default function AdminMedia() {
               <Input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Media title"
               />
             </div>
 
@@ -148,6 +175,7 @@ export default function AdminMedia() {
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Short description (optional)"
               />
             </div>
 
@@ -178,9 +206,9 @@ export default function AdminMedia() {
             <Button
               className="w-full bg-primary hover:bg-primary/90"
               onClick={handleSubmit}
-              disabled={saveMedia.isPending}
+              disabled={saveMedia.isLoading}
             >
-              {saveMedia.isPending
+              {saveMedia.isLoading
                 ? "Saving..."
                 : editingMedia
                 ? "Update Media"
@@ -206,7 +234,7 @@ export default function AdminMedia() {
               <img
                 src={item.imageUrl}
                 alt={item.title}
-                className="w-full h-48 object-cover rounded-md"
+                className="w-full h-48 object-cover object-top rounded-md"
               />
               <h3 className="font-semibold mt-3">{item.title}</h3>
               <p className="text-sm text-muted-foreground mb-2">
@@ -223,7 +251,11 @@ export default function AdminMedia() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => deleteMedia.mutate(item.id)}
+                  onClick={() => {
+                    if (confirm("Are you sure you want to delete this media item?")) {
+                      deleteMedia.mutate(item.id);
+                    }
+                  }}
                 >
                   <Trash className="w-4 h-4 mr-1" /> Delete
                 </Button>

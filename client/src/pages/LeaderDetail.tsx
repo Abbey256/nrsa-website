@@ -58,7 +58,9 @@ export default function LeaderDetail({ id }: { id: string }) {
             <img
               src={leader.photoUrl || "https://placehold.co/400x400/009739/ffffff?text=NRSA"}
               alt={leader.name}
-              className="w-full max-w-xs mx-auto h-64 object-cover rounded-md mb-4"
+              className="w-full max-w-xs mx-auto h-64 object-cover object-top rounded-md mb-4"
+              // inline fallback to ensure top alignment even if Tailwind didn't include object-top utility
+              style={{ objectPosition: "top center" }}
             />
             <h2 className="text-2xl font-bold">{leader.name}</h2>
             <p className="text-primary font-semibold">{leader.position}</p>
