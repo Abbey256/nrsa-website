@@ -28,7 +28,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-2 flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <Phone className="w-4 h-4" />
-            <span className="font-medium">+2347069465965</span>
+            <span className="font-medium">NIGERIA ROPE SKIPPING ASSOCIATION</span>
           </div>
           <div className="text-xs">
             Official Governing Body for Rope Skipping in Nigeria
@@ -39,21 +39,26 @@ export function Header() {
       {/* Main Navigation */}
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" data-testid="link-home">
-            <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all">
-              <img 
-                src={logoUrl} 
-                alt="NRSA Logo" 
-                className="h-14 w-auto object-contain"
-                data-testid="img-logo"
-              />
-              <div>
-                <div className="font-bold text-lg text-foreground leading-tight"></div>
-                <div className="text-xs text-muted-foreground"></div>
-              </div>
-            </div>
-          </Link>
+          {/* Logo + Name */}
+<Link href="/" data-testid="link-home">
+  <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all">
+    <img 
+      src={logoUrl} 
+      alt="NRSA Logo" 
+      className="h-12 w-auto object-contain"
+      data-testid="img-logo"
+    />
+    <div className="flex flex-col">
+      <span className="font-bold text-base sm:text-lg text-foreground leading-tight whitespace-nowrap">
+        NRSA
+      </span>
+      <span className="text-xs text-muted-foreground hidden xs:block">
+        Nigeria Rope Skipping Association
+      </span>
+    </div>
+  </div>
+</Link>
+             
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
