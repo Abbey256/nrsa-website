@@ -272,7 +272,7 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
- // ---------- CONTACTS ----------
+// ---------- CONTACTS ----------
 app.get("/api/contacts", requireAdmin, async (req, res) => {
   try {
     res.json(await storage.getAllContacts());
@@ -284,7 +284,7 @@ app.get("/api/contacts", requireAdmin, async (req, res) => {
 app.get("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    // storage doesn't have a single-get helper in all commits; fallback to getAllContacts/find
+    // storage.getAllContacts used as fallback if no single-get function exists
     const all = await storage.getAllContacts();
     const item = all.find((c) => c.id === id);
     if (!item) return res.status(404).json({ error: "Contact not found" });
