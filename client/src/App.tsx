@@ -10,6 +10,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Home from "@/pages/Home";
 import About from "@/pages/About";
+import Competitions from "@/pages/Competitions"; // added import
 import News from "@/pages/News";
 import NewsDetail from "@/pages/NewsDetail";
 import Events from "@/pages/Events";
@@ -99,6 +100,9 @@ export default function App() {
             </Route>
             <Route path="/about">
               <PageWithLayout><About /></PageWithLayout>
+            </Route>
+            <Route path="/competitions"> {/* added route right after /about */}
+              <PageWithLayout><Competitions /></PageWithLayout>
             </Route>
             <Route path="/news">
               <PageWithLayout><News /></PageWithLayout>
