@@ -1,5 +1,15 @@
 import { Link } from "wouter";
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Telegram,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logoUrl from "@assets/nrsf-logo_1761313307811.jpg";
@@ -20,7 +30,8 @@ export function Footer() {
               </div>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Nigeria Rope Skipping Association (NRSA) is the official governing body for rope skipping in Nigeria, affiliated with IJRU and IRSO.
+              Nigeria Rope Skipping Association (NRSA) is the official governing
+              body for rope skipping in Nigeria, affiliated with IJRU and IRSO.
             </p>
           </div>
 
@@ -36,7 +47,11 @@ export function Footer() {
                 { label: "Players", path: "/players" },
                 { label: "Clubs", path: "/clubs" },
               ].map((item) => (
-                <Link key={item.path} href={item.path} data-testid={`link-footer-${item.label.toLowerCase()}`}>
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  data-testid={`link-footer-${item.label.toLowerCase()}`}
+                >
                   <span className="text-sm text-gray-400 hover:text-[#009739] transition-colors cursor-pointer">
                     {item.label}
                   </span>
@@ -63,31 +78,134 @@ export function Footer() {
               </div>
             </div>
 
-  {/* Social Media */}
-<div className="mt-6">
-  <h4 className="font-semibold text-sm mb-3">Follow Us</h4>
-  <div className="flex gap-2">
-    <a href="https://www.facebook.com/RSfederation_ng" target="_blank" rel="noopener noreferrer">
-      <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-facebook">
-        <Facebook className="w-5 h-5" />
-      </Button>
-    </a>
+            {/* Social Media */}
+            <div className="mt-6">
+              <h4 className="font-semibold text-sm mb-3">Follow Us</h4>
+              <div className="flex gap-2 flex-wrap">
+                <a
+                  href="https://www.facebook.com/RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-facebook"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </Button>
+                </a>
 
-    <a href="https://x.com/RSfederation_ng" target="_blank" rel="noopener noreferrer">
-      <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-twitter">
-        <Twitter className="w-5 h-5" />
-      </Button>
-    </a>
+                <a
+                  href="https://x.com/RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-twitter"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </Button>
+                </a>
 
-    <a href="https://www.instagram.com/RSfederation_ng" target="_blank" rel="noopener noreferrer">
-      <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-instagram">
-        <Instagram className="w-5 h-5" />
-      </Button>
-    </a>
-  </div>
-</div>
+                <a
+                  href="https://www.instagram.com/RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-instagram"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </Button>
+                </a>
 
-  {/* Newsletter */}
+                <a
+                  href="https://www.linkedin.com/company/RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-linkedin"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </Button>
+                </a>
+
+                <a
+                  href="https://www.youtube.com/@RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-youtube"
+                  >
+                    <Youtube className="w-5 h-5" />
+                  </Button>
+                </a>
+
+                <a
+                  href="https://t.me/RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-telegram"
+                  >
+                    <Telegram className="w-5 h-5" />
+                  </Button>
+                </a>
+
+                <a
+                  href="https://www.tiktok.com/@RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-tiktok"
+                  >
+                    <span className="text-xs font-bold">TT</span>
+                  </Button>
+                </a>
+
+                <a
+                  href="https://medium.com/@RSfederation_ng"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-[#009739]"
+                    data-testid="button-social-medium"
+                  >
+                    <span className="text-xs font-bold">M</span>
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Newsletter */}
           <div>
             <h3 className="font-bold text-lg mb-4 text-[#009739]">Newsletter</h3>
             <p className="text-sm text-gray-400 mb-4">
@@ -100,7 +218,11 @@ export function Footer() {
                 className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                 data-testid="input-newsletter-email"
               />
-              <Button variant="default" className="bg-[#009739] hover:bg-[#007a2e] text-white" data-testid="button-subscribe">
+              <Button
+                variant="default"
+                className="bg-[#009739] hover:bg-[#007a2e] text-white"
+                data-testid="button-subscribe"
+              >
                 Subscribe
               </Button>
             </div>
@@ -111,7 +233,9 @@ export function Footer() {
         <div className="border-t border-white/10 pt-8 mb-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
             <div className="text-center">
-              <div className="text-sm font-semibold text-[#009739] mb-2">Proud Member Of</div>
+              <div className="text-sm font-semibold text-[#009739] mb-2">
+                Proud Member Of
+              </div>
               <div className="flex items-center gap-6">
                 <div className="text-white font-bold">IJRU</div>
                 <div className="text-white font-bold">IRSO</div>
@@ -120,12 +244,15 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
+ {/* Copyright */}
         <div className="border-t border-white/10 pt-8 text-center text-sm text-gray-400">
           <p>© {new Date().getFullYear()} Nigeria Rope Skipping Association. All rights reserved.</p>
           <p className="mt-2">CAC Registered Sports Federation</p>
           <Link href="/admin/login">
-            <span className="inline-block mt-4 text-xs text-gray-600 hover:text-gray-500 transition-colors cursor-pointer opacity-50 hover:opacity-100" data-testid="link-admin">
+            <span
+              className="inline-block mt-4 text-xs text-gray-600 hover:text-gray-500 transition-colors cursor-pointer opacity-50 hover:opacity-100"
+              data-testid="link-admin"
+            >
               •
             </span>
           </Link>
