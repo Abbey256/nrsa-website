@@ -5,7 +5,6 @@ import {
   Instagram,
   Linkedin,
   Youtube,
-  Telegram,
   Mail,
   Phone,
   MapPin,
@@ -157,20 +156,6 @@ export function Footer() {
                   </Button>
                 </a>
 
-                <a
-                  href="https://t.me/RSfederation_ng"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-white hover:text-[#009739]"
-                    data-testid="button-social-telegram"
-                  >
-                    <Telegram className="w-5 h-5" />
-                  </Button>
-                </a>
 
                 <a
                   href="https://www.tiktok.com/@RSfederation_ng"
