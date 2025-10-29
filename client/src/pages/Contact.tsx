@@ -22,28 +22,28 @@ const contactFormSchema = insertContactSchema.extend({
 
 export default function Contact() {
   const { toast } = useToast();
-  
-  const form = useForm<z.infer<typeof contactFormSchema>>({
+  const queryClient = useQueryClient();
+
+  const form = useForm({
     resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      subject: "",
-      message: "",
-    },
+    defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
   });
 
   const createContact = useMutation({
-    mutationFn: async (data: z.infer<typeof contactFormSchema>) => {
-      return await apiRequest("POST", "/api/contacts", data);
+    mutationFn: async (data: any) => {
+      // apiRequest returns a Response; parse as needed
+      const res = await apiRequest("POST", "/api/contacts", data);
+      // return created contact
+      return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       form.reset();
+      // invalidate local contacts cache (helpful for dev or same-browser tabs)
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
     onError: (error: Error) => {
       toast({
@@ -54,9 +54,11 @@ export default function Contact() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof contactFormSchema>) => {
+  const onSubmit = async (data: any) => {
     createContact.mutate(data);
   };
+
+  
 
   return (
     <div className="min-h-screen bg-background">

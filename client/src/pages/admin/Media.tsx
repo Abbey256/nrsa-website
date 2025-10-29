@@ -56,9 +56,9 @@ export default function AdminMedia() {
         headers: { Authorization: `Bearer ${token}` },
       };
 
-      // If an id is provided use PUT otherwise POST
+      // If an id is provided use PATCH otherwise POST
       if (mediaPayload.id) {
-        const res = await axios.put(`/api/media/${mediaPayload.id}`, mediaPayload, config);
+        const res = await axios.patch(`/api/media/${mediaPayload.id}`, mediaPayload, config);
         return res.data;
       } else {
         const res = await axios.post("/api/media", mediaPayload, config);

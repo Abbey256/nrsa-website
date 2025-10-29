@@ -28,8 +28,13 @@ export default function AdminContacts() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
-  const { data: contacts = [], isLoading } = useQuery<Contact[]>({
+  // Explicitly use apiRequest so Authorization headers (admin token) are included.
+  const { data: contacts = [], isLoading, isError } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/contacts");
+      return await res.json();
+    },
   });
 
   const deleteContact = useMutation({
@@ -52,9 +57,28 @@ export default function AdminContacts() {
     },
   });
 
+  // Mark contact as read when viewing
+  const markRead = useMutation({
+    mutationFn: async (id: number) => {
+      // patch only isRead to true
+      await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+    },
+    onError: (err: Error) => {
+      console.error("Failed to mark contact read:", err);
+    },
+  });
+
   const handleViewMessage = (contact: Contact) => {
     setSelectedContact(contact);
     setViewDialogOpen(true);
+
+    if (!contact.isRead) {
+      // fire-and-forget: mark message as read on server and refresh list
+      markRead.mutate(contact.id);
+    }
   };
 
   return (
@@ -72,6 +96,12 @@ export default function AdminContacts() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Loading messages...</p>
+          </CardContent>
+        </Card>
+      ) : isError ? (
+        <Card>
+          <CardContent className="py-12 text-center text-red-700">
+            Failed to load messages. Check server logs and authentication.
           </CardContent>
         </Card>
       ) : contacts.length === 0 ? (
@@ -202,7 +232,7 @@ export default function AdminContacts() {
 
               <div className="border-t pt-4">
                 <p className="text-sm text-muted-foreground mb-2">Message</p>
-                <div 
+                <div
                   className="bg-muted/30 p-4 rounded-lg min-h-[200px]"
                   data-testid="text-contact-message"
                 >
