@@ -272,13 +272,49 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  // ---------- CONTACTS ----------
-  app.post("/api/contacts", async (req, res) => {
-    try {
-      const contact = await storage.createContact(insertContactSchema.parse(req.body));
-      res.status(201).json(contact);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
+ // ---------- CONTACTS ----------
+app.get("/api/contacts", requireAdmin, async (req, res) => {
+  try {
+    res.json(await storage.getAllContacts());
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/api/contacts/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // storage doesn't have a single-get helper in all commits; fallback to getAllContacts/find
+    const all = await storage.getAllContacts();
+    const item = all.find((c) => c.id === id);
+    if (!item) return res.status(404).json({ error: "Contact not found" });
+    res.json(item);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updatedData = req.body;
+    const updated = await storage.updateContact(id, updatedData);
+    if (!updated) return res.status(404).json({ error: "Contact not found" });
+    res.json(updated);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteContact(id);
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
   // ---------- SITE SETTINGS ----------
   app.get("/api/site-settings", async (req, res) => {
