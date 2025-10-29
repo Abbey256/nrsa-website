@@ -36,7 +36,6 @@ export default function Contact() {
     defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
   });
 
-  // createContact should parse the apiRequest Response and return json
   const createContact = useMutation({
     mutationFn: async (data: z.infer<typeof contactFormSchema>) => {
       const res = await apiRequest("POST", "/api/contacts", data);
@@ -48,7 +47,7 @@ export default function Contact() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       form.reset();
-      // helpful during local testing to refresh admin list in same browser
+      // refresh admin contacts if open in same browser
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
     onError: (error: any) => {
@@ -64,6 +63,7 @@ export default function Contact() {
     createContact.mutate(data);
   };
 
+ 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}

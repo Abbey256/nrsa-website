@@ -1,5 +1,14 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || "";
+
+// Build full URL: if provided url is absolute use it, otherwise prefix with API_BASE (which may be "")
+function buildUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) return url;
+  const base = API_BASE.replace(/\/$/, "");
+  return base + (url.startsWith("/") ? url : "/" + url);
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -10,11 +19,9 @@ async function throwIfResNotOk(res: Response) {
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("adminToken");
   const headers: Record<string, string> = {};
-  
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  
   return headers;
 }
 
@@ -29,7 +36,9 @@ export async function apiRequest(
     ...authHeaders,
   };
 
-  const res = await fetch(url, {
+  const fullUrl = buildUrl(url);
+
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -47,8 +56,8 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const authHeaders = getAuthHeaders();
-    
-    const res = await fetch(queryKey.join("/") as string, {
+    const fullUrl = buildUrl(queryKey.join("/"));
+    const res = await fetch(fullUrl, {
       credentials: "include",
       headers: authHeaders,
     });
@@ -64,14 +73,7 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
     },
   },
 });
