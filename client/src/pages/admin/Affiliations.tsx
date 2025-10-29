@@ -1,3 +1,13 @@
+<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+  <DialogHeader>
+    <DialogTitle>{editingAffiliation ? "Edit Affiliation" : "Add Affiliation"}</DialogTitle>
+    <DialogDescription id="affiliation-dialog-desc" className="text-muted-foreground mt-1">
+      Use this form to add or edit an affiliation (logo, website, description).
+    </DialogDescription>
+  </DialogHeader>
+  {/* ...rest of dialog content... */}
+</DialogContent>
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

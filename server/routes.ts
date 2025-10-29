@@ -259,18 +259,45 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
   });
   
 
-  // ---------- AFFILIATIONS ----------
-  app.get("/api/affiliations", async (req, res) => {
-    try { res.json(await storage.getAllAffiliations()); }
-    catch (e: any) { res.status(500).json({ error: e.message }); }
-  });
+ // ---------- AFFILIATIONS ----------
+app.get("/api/affiliations", async (req, res) => {
+  try { res.json(await storage.getAllAffiliations()); }
+  catch (e: any) { res.status(500).json({ error: e.message }); }
+});
 
-  app.post("/api/affiliations", requireAdmin, async (req, res) => {
-    try {
-      const aff = await storage.createAffiliation(insertAffiliationSchema.parse(req.body));
-      res.status(201).json(aff);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
-  });
+app.post("/api/affiliations", requireAdmin, async (req, res) => {
+  try {
+    const aff = await storage.createAffiliation(insertAffiliationSchema.parse(req.body));
+    res.status(201).json(aff);
+  } catch (e: any) { res.status(400).json({ error: e.message }); }
+});
+
+// Ensure PATCH exists for updates (admin)
+app.patch("/api/affiliations/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const updatedData = insertAffiliationSchema.partial().parse(req.body);
+    const updated = await storage.updateAffiliation(id, updatedData);
+    if (!updated) return res.status(404).json({ error: "Affiliation not found" });
+    res.json(updated);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Ensure DELETE exists for deletions (admin)
+app.delete("/api/affiliations/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    // optionally: check exists before delete
+    const all = await storage.getAllAffiliations();
+    if (!all.find(a => a.id === id)) return res.status(404).json({ error: "Affiliation not found" });
+    await storage.deleteAffiliation(id);
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 
 // ---------- CONTACTS ----------
