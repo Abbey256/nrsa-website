@@ -73,7 +73,6 @@ export default function AdminMedia() {
     },
     onError: (err: any) => {
       console.error("Failed to save media:", err?.response?.data || err.message || err);
-      // Use a simple alert so admin sees failure; replace with toast if you have a toast hook
       alert("Failed to save media: " + (err?.response?.data?.error || err.message || "Unknown error"));
     },
   });
@@ -110,8 +109,6 @@ export default function AdminMedia() {
     };
 
     if (editingMedia) {
-      // include id for update
-      // Type assertion because Media may require other fields
       payload.id = editingMedia.id;
     }
 
