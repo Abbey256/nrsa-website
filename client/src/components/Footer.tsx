@@ -64,21 +64,57 @@ export function Footer() {
             </div>
 
             {/* Social Media */}
-            <div className="mt-6">
-              <h4 className="font-semibold text-sm mb-3">Follow Us</h4>
-              <div className="flex gap-2">
-                <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-facebook">
-                  <Facebook className="w-5 h-5" />
-                </Button>
-                <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-twitter">
-                  <Twitter className="w-5 h-5" />
-                </Button>
-                <Button size="icon" variant="ghost" className="text-white hover:text-[#009739] hover-elevate active-elevate-2" data-testid="button-social-instagram">
-                  <Instagram className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
+            {/* Social Media */}
+<div className="mt-6">
+  <h4 className="font-semibold text-sm mb-3">Follow Us</h4>
+  <div className="flex gap-2">
+    <a
+      href="https://www.facebook.com/RSfederation_ng"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Button
+        size="icon"
+        variant="ghost"
+        className="text-white hover:text-[#009739] hover-elevate active-elevate-2"
+        data-testid="button-social-facebook"
+      >
+        <Facebook className="w-5 h-5" />
+      </Button>
+    </a>
+
+    <a
+      href="https://x.com/RSfederation_ng"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Button
+        size="icon"
+        variant="ghost"
+        className="text-white hover:text-[#009739] hover-elevate active-elevate-2"
+        data-testid="button-social-twitter"
+      >
+        <Twitter className="w-5 h-5" />
+      </Button>
+    </a>
+
+    <a
+      href="https://www.instagram.com/RSfederation_ng"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Button
+        size="icon"
+        variant="ghost"
+        className="text-white hover:text-[#009739] hover-elevate active-elevate-2"
+        data-testid="button-social-instagram"
+      >
+        <Instagram className="w-5 h-5" />
+      </Button>
+    </a>
+  </div>
+</div>
+          
 
           {/* Newsletter */}
           <div>
