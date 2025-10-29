@@ -5,10 +5,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { insertContactSchema } from "@shared/schema";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,49 +23,46 @@ const contactFormSchema = insertContactSchema.extend({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
-  subject: z.string().min(3, "Subject must be at least 3 characters"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
+  subject: z.string().min(3, "Subject is required"),
+  message: z.string().min(5, "Message is required"),
 });
 
 export default function Contact() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof contactFormSchema>>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: { name: "", email: "", phone: "", subject: "", message: "" },
   });
 
+  // createContact should parse the apiRequest Response and return json
   const createContact = useMutation({
-    mutationFn: async (data: any) => {
-      // apiRequest returns a Response; parse as needed
+    mutationFn: async (data: z.infer<typeof contactFormSchema>) => {
       const res = await apiRequest("POST", "/api/contacts", data);
-      // return created contact
       return await res.json();
     },
-    onSuccess: (created) => {
+    onSuccess: () => {
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       form.reset();
-      // invalidate local contacts cache (helpful for dev or same-browser tabs)
+      // helpful during local testing to refresh admin list in same browser
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
+        description: (error?.message || "Failed to send message. Please try again."),
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = (data: z.infer<typeof contactFormSchema>) => {
     createContact.mutate(data);
   };
-
-  
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,7 +93,9 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-sm text-muted-foreground" data-testid="text-contact-phone">+2347069465965</p>
+                      <p className="text-sm text-muted-foreground" data-testid="text-contact-phone">
+                        +2347069465965
+                      </p>
                     </div>
                   </div>
 
@@ -116,8 +122,11 @@ export default function Contact() {
               </Card>
 
               <Card className="bg-primary text-primary-foreground">
+                <CardHeader>
+                  <CardTitle>Office Hours</CardTitle>
+                </CardHeader>
                 <CardContent className="pt-6">
-                  <h3 className="font-bold text-lg mb-2">Office Hours</h3>
+                  <h3 className="font-bold text-lg mb-2">Weekdays</h3>
                   <p className="text-sm opacity-90">Monday - Friday</p>
                   <p className="text-sm opacity-90">8:00 AM - 5:00 PM WAT</p>
                 </CardContent>
@@ -129,7 +138,9 @@ export default function Contact() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl">Send Us a Message</CardTitle>
-                  <p className="text-muted-foreground">Fill out the form below and we'll get back to you as soon as possible.</p>
+                  <p className="text-muted-foreground">
+                    Fill out the form below and we'll get back to you as soon as possible.
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -201,10 +212,10 @@ export default function Contact() {
                           <FormItem>
                             <FormLabel>Message *</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Tell us how we can help..." 
+                              <Textarea
+                                placeholder="Tell us how we can help..."
                                 className="min-h-[150px] resize-none"
-                                {...field} 
+                                {...field}
                                 data-testid="input-message"
                               />
                             </FormControl>
@@ -213,13 +224,13 @@ export default function Contact() {
                         )}
                       />
 
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                        disabled={createContact.isPending}
+                        disabled={createContact.isLoading}
                         data-testid="button-submit"
                       >
-                        {createContact.isPending ? "Sending..." : "Send Message"}
+                        {createContact.isLoading ? "Sending..." : "Send Message"}
                       </Button>
                     </form>
                   </Form>
