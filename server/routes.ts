@@ -178,6 +178,43 @@ export function registerAllRoutes(app: Express): Server {
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ---------- MEMBER STATES ----------
+app.get("/api/member-states", async (req, res) => {
+  try {
+    res.json(await storage.getAllMemberStates());
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/member-states", requireAdmin, async (req, res) => {
+  try {
+    const state = await storage.createMemberState(req.body); // Add validation if needed
+    res.status(201).json(state);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.patch("/api/member-states/:id", requireAdmin, async (req, res) => {
+  try {
+    const state = await storage.updateMemberState(parseInt(req.params.id), req.body);
+    if (!state) return res.status(404).json({ error: "Member State not found" });
+    res.json(state);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete("/api/member-states/:id", requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteMemberState(parseInt(req.params.id));
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ---------- LEADERS ----------
 app.get("/api/leaders", async (req, res) => {
   try {

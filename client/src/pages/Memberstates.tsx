@@ -2,10 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, User, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { MemberState } from "@shared/schema";
+import type { Memberstates } from "@shared/schema";
 
-export default function MemberStates() {
-  const { data: states = [], isLoading } = useQuery<MemberState[]>({
+export default function Memberstates() {
+  const { data: states = [], isLoading } = useQuery<Memberstates[]>({
     queryKey: ["/api/member-states"],
   });
 
