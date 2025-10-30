@@ -49,10 +49,10 @@ export function Header() {
     />
     <div className="flex flex-col">
       <span className="font-bold text-base sm:text-lg text-foreground leading-tight whitespace-nowrap truncate">
-
+  NRSA
 </span>
       <span className="text-xs text-muted-foreground hidden sm:block">
-
+  Nigeria Rope Skipping Association
 </span>
     </div>
   </div>
