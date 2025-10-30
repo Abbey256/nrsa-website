@@ -63,7 +63,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { label: "Clubs", path: "/admin-nrsa-dashboard/clubs", icon: Trophy },
     { label: "Leaders", path: "/admin-nrsa-dashboard/leaders", icon: Users },
     { label: "Media", path: "/admin-nrsa-dashboard/media", icon: ImageIcon },
-    { label: "Affiliations", path: "/admin-nrsa-dashboard/affiliations", icon: LinkIcon },
+    { label: "Memberstate", path: "/admin-nrsa-dashboard/Memberstate", icon: LinkIcon },
     { label: "Contact Messages", path: "/admin-nrsa-dashboard/contacts", icon: Mail },
     { label: "Manage Admins", path: "/admin-nrsa-dashboard/admins", icon: ShieldCheck },
     { label: "Site Settings", path: "/admin-nrsa-dashboard/settings", icon: Settings },

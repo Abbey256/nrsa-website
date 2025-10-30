@@ -16,6 +16,7 @@ export function Header() {
     { label: "Events", path: "/events" },
     { label: "Players", path: "/players" },
     { label: "Clubs", path: "/clubs" },
+    { label: "Member States", path: "/member-states" },
     { label: "Leaders", path: "/leaders" },
     { label: "Media", path: "/media" },
     { label: "Contact", path: "/contact" },

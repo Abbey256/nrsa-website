@@ -25,7 +25,7 @@ export default function Competitions() {
               The <span className="text-primary">Y-Court</span> System
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              A revolutionary three-team format that makes rope skipping more dynamic and competitive
+              A revolutionary three-team format that makes rope skipping more dynamic and innovative
             </p>
           </div>
 
