@@ -81,8 +81,9 @@ export default function App() {
               <AdminLayout><AdminLeaders /></AdminLayout>
             </Route>
             <Route path="/admin-nrsa-dashboard/member-states">
-              <AdminLayout><AdminMemberstates /></AdminLayout>
-            </Route>
+  <AdminLayout><Memberstates /></AdminLayout>
+</Route>
+
             <Route path="/admin-nrsa-dashboard/media">
               <AdminLayout><AdminMedia /></AdminLayout>
             </Route>

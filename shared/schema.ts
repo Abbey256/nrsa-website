@@ -242,6 +242,29 @@ export const insertMediaSchema = createInsertSchema(media).omit({
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
 export type Media = typeof media.$inferSelect;
 
+// Affiliations
+export const affiliations = pgTable("affiliations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url").notNull(),
+  website: text("website"),
+  description: text("description"),
+  order: integer("order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertAffiliationSchema = createInsertSchema(affiliations, {
+  order: z.coerce.number()
+    .int({ message: "Order must be a whole number." })
+    .nonnegative({ message: "Order cannot be negative." }),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAffiliation = z.infer<typeof insertAffiliationSchema>;
+export type Affiliation = typeof affiliations.$inferSelect;
+
 // Contact Submissions
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
