@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, User, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { Memberstates } from "@shared/schema";
+import type { MemberState } from "@shared/schema";
 
 export default function Memberstates() {
-  const { data: states = [], isLoading } = useQuery<Memberstates[]>({
-    queryKey: ["/api/member-states"],
-  });
+  const { data: states = [], isLoading } = useQuery<MemberState[]>({
+  queryKey: ["/api/member-states"],
+});
 
   return (
     <div className="min-h-screen bg-background">
