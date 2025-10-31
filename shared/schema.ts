@@ -183,6 +183,21 @@ export const insertClubSchema = createInsertSchema(clubs).omit({
 export type InsertClub = z.infer<typeof insertClubSchema>;
 export type Club = typeof clubs.$inferSelect;
 
+import { pgTable, serial, varchar, boolean } from "drizzle-orm/pg-core";
+
+export const memberStates = pgTable("member_states", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  logoUrl: varchar("logo_url", { length: 500 }),
+  representativeName: varchar("representative_name", { length: 255 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  isRegistered: boolean("is_registered").default(false),
+});
+
+export type MemberState = typeof memberStates.$inferSelect;
+export type InsertMemberState = typeof memberStates.$inferInsert;
+
 // Federation Leaders
 export const leaders = pgTable("leaders", {
   id: serial("id").primaryKey(),
