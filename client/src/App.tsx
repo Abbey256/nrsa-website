@@ -10,7 +10,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Home from "@/pages/Home";
 import About from "@/pages/About";
-import Competitions from "@/pages/Competitions"; // added import
+import Competitions from "@/pages/Competitions";
 import News from "@/pages/News";
 import NewsDetail from "@/pages/NewsDetail";
 import Events from "@/pages/Events";
@@ -18,6 +18,7 @@ import Players from "@/pages/Players";
 import Clubs from "@/pages/Clubs";
 import Leaders from "@/pages/Leaders";
 import LeaderDetail from "@/pages/LeaderDetail";
+import Memberstates from "@/pages/Memberstates";
 import Media from "@/pages/Media";
 import Contact from "@/pages/Contact";
 
@@ -133,6 +134,9 @@ export default function App() {
                   <LeaderDetail id={params.id} />
                 </PageWithLayout>
               )}
+            </Route>
+            <Route path="/member-states">
+              <PageWithLayout><Memberstates /></PageWithLayout>
             </Route>
             <Route path="/media">
               <PageWithLayout><Media /></PageWithLayout>

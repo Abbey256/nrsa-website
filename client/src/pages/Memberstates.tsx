@@ -56,14 +56,13 @@ export default function Memberstates() {
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.style.display = "none";
-                              const initialElement = e.currentTarget.parentElement?.querySelector(".state-initial");
+                              const initialElement = e.currentTarget.parentElement?.querySelector(".state-initial") as HTMLElement;
                               if (initialElement) initialElement.style.display = "block";
                             }}
                           />
                         ) : null}
                         <span
-                          className="state-initial text-3xl font-bold text-primary"
-                          style={{ display: state.logoUrl ? "none" : "block" }}
+                          className={`state-initial text-3xl font-bold text-primary ${state.logoUrl ? "hidden" : "block"}`}
                         >
                           {state.name.charAt(0)}
                         </span>
@@ -75,12 +74,6 @@ export default function Memberstates() {
 
                   <CardContent className="flex-grow space-y-4">
                     <div className="space-y-3 text-sm">
-                      {state.region && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground">{state.region}</span>
-                        </div>
-                      )}
                      {state.representativeName && (
   <div className="flex items-center gap-2">
     <User className="w-4 h-4 text-primary flex-shrink-0" />
