@@ -183,8 +183,6 @@ export const insertClubSchema = createInsertSchema(clubs).omit({
 export type InsertClub = z.infer<typeof insertClubSchema>;
 export type Club = typeof clubs.$inferSelect;
 
-import { pgTable, serial, varchar, boolean } from "drizzle-orm/pg-core";
-
 export const memberStates = pgTable("member_states", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
