@@ -7,6 +7,11 @@ import type { MemberState } from "@shared/schema";
 export default function Memberstates() {
   const { data: states = [], isLoading } = useQuery<MemberState[]>({
   queryKey: ["/api/member-states"],
+  queryFn: async () => {
+    const res = await fetch("/api/member-states");
+    if (!res.ok) throw new Error("Failed to fetch member states");
+    return res.json();
+  },
 });
 
   return (
