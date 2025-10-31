@@ -18,7 +18,7 @@ import type { MemberState, InsertMemberState } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
-export default function AdminMemberStates() {
+export default function AdminMemberState() {
   const queryClient = useQueryClient();
 
 const { data: states = [], isLoading } = useQuery<MemberState[]>({

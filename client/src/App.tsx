@@ -29,7 +29,7 @@ import AdminEvents from "@/pages/admin/Events";
 import AdminPlayers from "@/pages/admin/Players";
 import AdminClubs from "@/pages/admin/Clubs";
 import AdminLeaders from "@/pages/admin/Leaders";
-import AdminState from "@/pages/admin/State";
+import AdminState from "@/pages/admin/Memberstate";
 import AdminMedia from "@/pages/admin/Media";
 import AdminAffiliations from "@/pages/admin/Affiliations";
 import AdminContacts from "@/pages/admin/Contacts";
@@ -80,13 +80,9 @@ export default function App() {
             <Route path="/admin-nrsa-dashboard/leaders">
               <AdminLayout><AdminLeaders /></AdminLayout>
             </Route>
-           <Route path="/admin-nrsa-dashboard/state">
+         <Route path="/admin-nrsa-dashboard/Memberstate">
   <AdminLayout><AdminState /></AdminLayout>
 </Route>
-
-
-
-
             <Route path="/admin-nrsa-dashboard/media">
               <AdminLayout><AdminMedia /></AdminLayout>
             </Route>
