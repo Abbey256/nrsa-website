@@ -85,12 +85,8 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
       alert("Please fill all required fields.");
       return;
     }
-    addState.mutate({
-      ...form,
-      // Ensure only relevant fields are passed to InsertMemberState
-      // The 'useUpload' field should be excluded before mutation.
-      useUpload: undefined, 
-    });
+    const { useUpload, ...stateData } = form;
+    addState.mutate(stateData);
     setForm({
       name: "",
       logoUrl: "",
