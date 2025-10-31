@@ -178,7 +178,7 @@ export function registerAllRoutes(app: Express): Server {
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
-  // ---------- MEMBER STATES ----------
+// ---------- MEMBER STATES ----------
 app.get("/api/member-states", async (req, res) => {
   try {
     res.json(await storage.getAllMemberStates());
@@ -187,9 +187,19 @@ app.get("/api/member-states", async (req, res) => {
   }
 });
 
+app.get("/api/member-states/:id", async (req, res) => {
+  try {
+    const state = await storage.getMemberState(parseInt(req.params.id));
+    if (!state) return res.status(404).json({ error: "Member State not found" });
+    res.json(state);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post("/api/member-states", requireAdmin, async (req, res) => {
   try {
-    const state = await storage.createMemberState(req.body); // Add validation if needed
+    const state = await storage.createMemberState(insertMemberStateSchema.parse(req.body));
     res.status(201).json(state);
   } catch (e: any) {
     res.status(400).json({ error: e.message });
@@ -214,6 +224,7 @@ app.delete("/api/member-states/:id", requireAdmin, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
 
 // ---------- LEADERS ----------
 app.get("/api/leaders", async (req, res) => {
