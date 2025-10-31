@@ -21,9 +21,14 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 export default function AdminMemberStates() {
   const queryClient = useQueryClient();
 
-  const { data: states = [], isLoading } = useQuery<MemberState[]>({
-    queryKey: ["/api/member-states"],
-  });
+const { data: states = [], isLoading } = useQuery<MemberState[]>({
+  queryKey: ["/api/member-states"],
+  queryFn: async () => {
+    const res = await fetch("/api/member-states");
+    if (!res.ok) throw new Error("Failed to fetch member states");
+    return res.json();
+  },
+});
 
   // --- Mutations (No changes needed) ---
   const addState = useMutation({
