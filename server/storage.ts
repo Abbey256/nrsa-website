@@ -3,7 +3,7 @@ import {
   type HeroSlide, type InsertHeroSlide, 
   type News, type InsertNews, type Event, type InsertEvent,
   type Player, type InsertPlayer, type Club, type InsertClub,
-  type Memberstates, type InsertMemberstates,
+  type MemberState, type InsertMemberState, memberStates,
   type Leader, type InsertLeader, type Media, type InsertMedia,
   type Affiliation, type InsertAffiliation, type Contact, type InsertContact,
   type SiteSetting, type InsertSiteSetting,
@@ -163,24 +163,23 @@ export const storage = {
     await db.delete(clubs).where(eq(clubs.id, id));
   },
 
-  // Member States
-getAllMemberStates: async () => {
-  return await db.select().from(Memberstates).orderBy(Memberstates.name);
+  getAllMemberStates: async () => {
+  return await db.select().from(memberStates).orderBy(memberStates.name);
 },
 getMemberState: async (id: number) => {
-  const [state] = await db.select().from(Memberstates).where(eq(Memberstates.id, id));
+  const [state] = await db.select().from(memberStates).where(eq(memberStates.id, id));
   return state || undefined;
 },
 createMemberState: async (state: InsertMemberState) => {
-  const [created] = await db.insert(Memberstates).values(state).returning();
+  const [created] = await db.insert(memberStates).values(state).returning();
   return created;
 },
 updateMemberState: async (id: number, data: Partial<InsertMemberState>) => {
-  const [updated] = await db.update(Memberstates).set(data).where(eq(Memberstates.id, id)).returning();
+  const [updated] = await db.update(memberStates).set(data).where(eq(memberStates.id, id)).returning();
   return updated || undefined;
 },
 deleteMemberState: async (id: number) => {
-  await db.delete(Memberstates).where(eq(Memberstates.id, id));
+  await db.delete(memberStates).where(eq(memberStates.id, id));
 },
 
   // Leaders
