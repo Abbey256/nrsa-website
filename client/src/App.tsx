@@ -29,7 +29,7 @@ import AdminEvents from "@/pages/admin/Events";
 import AdminPlayers from "@/pages/admin/Players";
 import AdminClubs from "@/pages/admin/Clubs";
 import AdminLeaders from "@/pages/admin/Leaders";
-import AdminMemberstates from "@/pages/admin/Memberstates";
+import AdminMemberstates from "@/pages/admin/AdminMemberStates";
 import AdminMedia from "@/pages/admin/Media";
 import AdminAffiliations from "@/pages/admin/Affiliations";
 import AdminContacts from "@/pages/admin/Contacts";
