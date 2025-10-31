@@ -15,6 +15,13 @@
       "when": 1761625986170,
       "tag": "0001_shiny_post",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761927248310,
+      "tag": "0002_melodic_blockbuster",
+      "breakpoints": true
     }
   ]
 }
