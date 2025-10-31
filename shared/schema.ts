@@ -201,7 +201,6 @@ export const insertMemberStateSchema = createInsertSchema(memberStates).omit({
 export type MemberState = typeof memberStates.$inferSelect;
 export type InsertMemberState = typeof memberStates.$inferInsert;
 
-
 // Federation Leaders
 export const leaders = pgTable("leaders", {
   id: serial("id").primaryKey(),
