@@ -1,11 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express, { Request, Response, NextFunction } from "express";
 import { createServer } from "http";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import bcrypt from "bcrypt";
 import rateLimit from "express-rate-limit";
-
 import { registerAllRoutes } from "./routes"; // ✅ Corrected import name
 import { registerAuthRoutes } from "./auth";
 import { registerUploadRoutes } from "./upload";
