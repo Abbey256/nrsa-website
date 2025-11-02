@@ -4,17 +4,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import type { Media } from "@shared/schema";
 
 export default function Media() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [, navigate] = useLocation();
 
-  // Check if logged-in user is admin (adjust key name if different)
   useState(() => {
     const userRole = localStorage.getItem("userRole");
     setIsAdmin(userRole === "admin");
   });
+
+  const handleEdit = (id: number) => {
+    navigate(`/admin-nrsa-dashboard/media`);
+  };
 
   const { data: mediaItems = [], isLoading } = useQuery<Media[]>({
     queryKey: ["/api/media"],
@@ -75,41 +80,90 @@ export default function Media() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMedia.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:elevate cursor-pointer transition-all">
-                  <div className="relative aspect-video bg-muted flex items-center justify-center">
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <ImageIcon className="w-16 h-16 text-muted-foreground" />
-                    )}
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-primary text-primary-foreground">
-                        {item.category}
-                      </Badge>
+              {filteredMedia.map((item) => {
+                const isExternalLink = item.imageUrl && (
+                  item.imageUrl.includes('youtube.com') ||
+                  item.imageUrl.includes('youtu.be') ||
+                  item.imageUrl.startsWith('http://') ||
+                  item.imageUrl.startsWith('https://')
+                ) && !item.imageUrl.includes('supabase');
+
+                return (
+                  <Card 
+                    key={item.id} 
+                    className="overflow-hidden hover:elevate cursor-pointer transition-all"
+                    onClick={() => {
+                      if (isExternalLink && !isAdmin) {
+                        window.open(item.imageUrl, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                    data-testid={`card-media-${item.id}`}
+                  >
+                    <div className="relative aspect-video bg-muted flex items-center justify-center">
+                      {item.imageUrl && !isExternalLink ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          data-testid={`img-media-${item.id}`}
+                        />
+                      ) : isExternalLink ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                          <svg className="w-16 h-16 text-primary mb-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                          </svg>
+                          <p className="text-sm font-medium text-primary">Click to view</p>
+                        </div>
+                      ) : (
+                        <ImageIcon className="w-16 h-16 text-muted-foreground" />
+                      )}
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-primary text-primary-foreground">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      {isExternalLink && (
+                        <div className="absolute bottom-3 right-3 bg-background/80 rounded-full p-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                    {/* Show edit only for admin */}
-                    {isAdmin && (
-                      <Button
-                        size="sm"
-                        className="mt-3"
-                        onClick={() => handleEdit(item.id)}
-                      >
-                        Edit
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2" data-testid={`text-title-${item.id}`}>{item.title}</h3>
+                      <p className="text-sm text-muted-foreground" data-testid={`text-description-${item.id}`}>{item.description}</p>
+                      {isExternalLink && !isAdmin && (
+                        <Button
+                          size="sm"
+                          className="mt-3 w-full"
+                          data-testid={`button-view-external-${item.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(item.imageUrl, '_blank', 'noopener,noreferrer');
+                          }}
+                        >
+                          View External Link
+                        </Button>
+                      )}
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          className="mt-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(item.id);
+                          }}
+                          data-testid={`button-edit-${item.id}`}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

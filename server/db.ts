@@ -5,18 +5,16 @@ import * as schema from "@shared/schema";
 const { Pool } = pkg;
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabasePassword = process.env.SUPABASE_DB_PASSWORD;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+if (!supabaseUrl || !supabasePassword) {
+  throw new Error("SUPABASE_URL and SUPABASE_DB_PASSWORD must be set");
 }
 
 const hostname = new URL(supabaseUrl).hostname;
 const projectRef = hostname.split('.')[0];
 
-const databaseUrl = `postgresql://postgres.${projectRef}:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres`;
-
-console.log("Connecting to Supabase database...");
+const databaseUrl = `postgresql://postgres.${projectRef}:${encodeURIComponent(supabasePassword)}@${hostname.replace('.supabase.co', '.supabase.com')}:5432/postgres`;
 
 export const pool = new Pool({
   connectionString: databaseUrl,
