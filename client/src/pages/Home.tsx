@@ -1,3 +1,4 @@
+import React from "react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";

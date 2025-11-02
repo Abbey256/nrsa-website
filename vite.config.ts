@@ -3,7 +3,11 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig(async () => {
-  const plugins = [react()];
+  const plugins = [
+    react({
+      jsxRuntime: 'automatic',
+    }),
+  ];
 
   // ✅ Load Replit plugins only in development mode
   if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
@@ -12,7 +16,9 @@ export default defineConfig(async () => {
       const { cartographer } = await import("@replit/vite-plugin-cartographer");
       const { devBanner } = await import("@replit/vite-plugin-dev-banner");
 
-      plugins.push(runtimeErrorOverlay(), cartographer(), devBanner());
+      plugins.push(runtimeErrorOverlay());
+      plugins.push(cartographer());
+      plugins.push(devBanner());
     } catch (err) {
       console.warn("⚠️ Replit dev plugins not found — skipping (safe to ignore in production)");
     }
@@ -34,8 +40,7 @@ export default defineConfig(async () => {
     },
     server: {
       fs: {
-        strict: true,
-        deny: ["**/.*"],
+        strict: false,
       },
     },
   };
