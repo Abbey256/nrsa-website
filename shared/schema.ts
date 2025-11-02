@@ -231,12 +231,16 @@ export const media = pgTable("media", {
   description: text("description"),
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
+  isExternal: boolean("is_external").notNull().default(false),
+  thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertMediaSchema = createInsertSchema(media).omit({
   id: true,
   createdAt: true,
+  isExternal: true,
+  thumbnailUrl: true,
 });
 
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
