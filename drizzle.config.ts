@@ -1,20 +1,19 @@
-// drizzle.config.ts
-
 import { defineConfig } from "drizzle-kit";
-import dotenv from "dotenv";
 
-// 💡 CHANGE THIS LINE: Specify the path to your production .env file
-dotenv.config({ path: ".env.production" }); 
-
-if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL not found. Ensure your .env file is set up correctly.");
+const supabaseUrl = process.env.SUPABASE_URL;
+if (!supabaseUrl) {
+  throw new Error("SUPABASE_URL must be set");
 }
+
+const hostname = new URL(supabaseUrl).hostname;
+const projectRef = hostname.split('.')[0];
+const databaseUrl = `postgresql://postgres.${projectRef}:${process.env.SUPABASE_SERVICE_ROLE_KEY}@${hostname}:5432/postgres`;
 
 export default defineConfig({
     schema: "./shared/schema.ts",
     out: "./migrations",
     dialect: "postgresql",
     dbCredentials: {
-        url: process.env.DATABASE_URL!,
+        url: databaseUrl,
     },
 });

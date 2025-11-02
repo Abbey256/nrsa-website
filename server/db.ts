@@ -1,30 +1,25 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from "pg";
 import * as schema from "@shared/schema";
 
-// Fix for __dirname in ES module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// ✅ Load environment variables (for production)
-dotenv.config({ path: path.resolve(__dirname, "../.env.production") });
-
-// Debug log (optional)
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
-
 const { Pool } = pkg;
 
-// ✅ Ensure DB URL exists
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set");
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
 }
 
-// ✅ Enable SSL for Supabase
+const hostname = new URL(supabaseUrl).hostname;
+const projectRef = hostname.split('.')[0];
+
+const databaseUrl = `postgresql://postgres.${projectRef}:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres`;
+
+console.log("Connecting to Supabase database...");
+
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: databaseUrl,
   ssl: { rejectUnauthorized: false },
 });
 
