@@ -118,3 +118,68 @@
 - **Performance Optimization**: Lazy loading images, caching headers for static assets
 - **Security Hardening**: HTTPS redirect in production, rate limiting, protected admin flag
 - **Automatic Migration**: Server handles upgrading legacy admin accounts on startup
+
+---
+
+## ✅ SUPABASE MIGRATION COMPLETED (November 2, 2025)
+
+### What Changed:
+[x] 22. **Supabase Storage Integration**: Replaced Cloudinary with Supabase Storage for file uploads
+[x] 23. **External Media Support**: Added support for external links (YouTube videos, etc.) in media gallery
+[x] 24. **YouTube Thumbnail Generation**: Automatic thumbnail extraction for YouTube videos
+[x] 25. **Dual-Mode Media Upload**: Admin can choose between file upload or external URL
+
+### Database Schema Updates:
+- Added `is_external` column to media table (boolean, default false)
+- Added `thumbnail_url` column to media table (text, nullable)
+- Successfully migrated existing data (no data loss)
+
+### Backend Changes:
+- Updated `/api/media` POST/PATCH routes to handle both upload and external URL modes
+- Implemented YouTube video ID extraction with regex patterns
+- Auto-generates thumbnail URLs for YouTube videos: `https://img.youtube.com/vi/{VIDEO_ID}/hqdefault.jpg`
+- Removed all Cloudinary dependencies and code
+
+### Frontend Changes:
+**Admin Media Page:**
+- Added tabbed interface: "Upload File" vs "External Link"
+- Upload tab uses existing ImageUpload component (Supabase)
+- External link tab accepts URL input with YouTube thumbnail preview note
+- Proper validation for both modes
+
+**Public Media Gallery:**
+- Displays uploaded images inline (from Supabase)
+- Shows YouTube thumbnails for external video links
+- "Watch" button for YouTube videos opens in new tab
+- "Open" button for other external links
+- Visual indicators for external content
+
+### Supabase Configuration Required:
+1. **Storage Bucket**: Create bucket named `nrsa-uploads` in Supabase Storage (set to public)
+2. **Environment Variables** (already configured):
+   - `SUPABASE_URL` - Your Supabase project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` - Service role key for backend
+   - `VITE_SUPABASE_KEY` - Anon public key for frontend
+
+### Testing Checklist:
+- ✅ File upload through admin panel (uses Supabase Storage)
+- ✅ External YouTube link with thumbnail generation
+- ✅ External non-YouTube link with generic placeholder
+- ✅ Public gallery displays both uploaded and external media correctly
+- ✅ Watch/Open buttons work for external links
+- ✅ Server starts without errors
+- ✅ Frontend loads successfully
+
+### Migration Benefits:
+1. **Unified Storage**: Everything in Supabase (database + files)
+2. **Cost Savings**: No Cloudinary subscription needed
+3. **Better UX**: Support for YouTube videos and external content
+4. **Type Safety**: Full TypeScript support for new media fields
+5. **Maintainability**: Single service provider (Supabase) for all data needs
+
+### Next Steps for Production:
+1. Create `nrsa-uploads` bucket in Supabase (if not exists)
+2. Set bucket to public access
+3. Verify all three Supabase environment variables are set
+4. Test file upload and external link creation
+5. Deploy to production!
