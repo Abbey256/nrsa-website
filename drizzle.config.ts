@@ -1,15 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabasePassword = process.env.SUPABASE_DB_PASSWORD;
+const databaseUrl = process.env.DATABASE_URL;
 
-if (!supabaseUrl || !supabasePassword) {
-  throw new Error("SUPABASE_URL and SUPABASE_DB_PASSWORD must be set");
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL must be set");
 }
-
-const hostname = new URL(supabaseUrl).hostname;
-const projectRef = hostname.split('.')[0];
-const databaseUrl = `postgresql://postgres.${projectRef}:${encodeURIComponent(supabasePassword)}@${hostname.replace('.supabase.co', '.supabase.com')}:5432/postgres`;
 
 export default defineConfig({
     schema: "./shared/schema.ts",
