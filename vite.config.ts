@@ -1,15 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig(async () => {
-  const plugins = [react(), runtimeErrorOverlay()];
+  const plugins = [react()];
 
+  // ✅ Load Replit plugins only in development mode
   if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
-    const { cartographer } = await import("@replit/vite-plugin-cartographer");
-    const { devBanner } = await import("@replit/vite-plugin-dev-banner");
-    plugins.push(cartographer(), devBanner());
+    try {
+      const { default: runtimeErrorOverlay } = await import("@replit/vite-plugin-runtime-error-modal");
+      const { cartographer } = await import("@replit/vite-plugin-cartographer");
+      const { devBanner } = await import("@replit/vite-plugin-dev-banner");
+
+      plugins.push(runtimeErrorOverlay(), cartographer(), devBanner());
+    } catch (err) {
+      console.warn("⚠️ Replit dev plugins not found — skipping (safe to ignore in production)");
+    }
   }
 
   return {
