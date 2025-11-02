@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash, Edit2 } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
@@ -27,10 +28,9 @@ import axios from "axios";
 export default function AdminMedia() {
   const queryClient = useQueryClient();
 
-  // Dialog open/close
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [uploadMode, setUploadMode] = useState<"upload" | "external">("upload");
 
-  // Fetch all media
   const { data: mediaItems = [] } = useQuery<Media[]>({
     queryKey: ["/api/media"],
     queryFn: async () => {
@@ -44,12 +44,12 @@ export default function AdminMedia() {
     title: "",
     description: "",
     imageUrl: "",
+    externalUrl: "",
     category: "",
   });
 
-  // Save (add/edit) - use payload passed to mutate, don't close over editingMedia
   const saveMedia = useMutation({
-    mutationFn: async (mediaPayload: Partial<Media>) => {
+    mutationFn: async (mediaPayload: any) => {
       const token = localStorage.getItem("adminToken");
       if (!token) throw new Error("Unauthorized - No token found");
 
@@ -57,7 +57,6 @@ export default function AdminMedia() {
         headers: { Authorization: `Bearer ${token}` },
       };
 
-      // If an id is provided use PATCH otherwise POST
       if (mediaPayload.id) {
         const res = await axios.patch(`/api/media/${mediaPayload.id}`, mediaPayload, config);
         return res.data;
@@ -69,8 +68,9 @@ export default function AdminMedia() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });
       setEditingMedia(null);
-      setForm({ title: "", description: "", imageUrl: "", category: "" });
+      setForm({ title: "", description: "", imageUrl: "", externalUrl: "", category: "" });
       setIsDialogOpen(false);
+      setUploadMode("upload");
     },
     onError: (err: any) => {
       console.error("Failed to save media:", err?.response?.data || err.message || err);
@@ -95,19 +95,33 @@ export default function AdminMedia() {
     },
   });
 
-  // Submit handler - build payload and pass it to the mutation
   const handleSubmit = () => {
-    if (!form.title || !form.imageUrl || !form.category) {
+    if (!form.title || !form.category) {
       alert("Please fill all required fields.");
       return;
     }
 
-    const payload: Partial<Media> = {
+    if (uploadMode === "upload" && !form.imageUrl) {
+      alert("Please upload an image.");
+      return;
+    }
+
+    if (uploadMode === "external" && !form.externalUrl) {
+      alert("Please enter an external URL.");
+      return;
+    }
+
+    const payload: any = {
       title: form.title,
       description: form.description,
-      imageUrl: form.imageUrl,
       category: form.category,
     };
+
+    if (uploadMode === "external") {
+      payload.externalUrl = form.externalUrl;
+    } else {
+      payload.imageUrl = form.imageUrl;
+    }
 
     if (editingMedia) {
       payload.id = editingMedia.id;
@@ -116,22 +130,23 @@ export default function AdminMedia() {
     saveMedia.mutate(payload);
   };
 
-  // Edit handler - populate form and open dialog
   const handleEdit = (item: Media) => {
     setEditingMedia(item);
+    setUploadMode(item.isExternal ? "external" : "upload");
     setForm({
       title: item.title,
       description: item.description || "",
-      imageUrl: item.imageUrl || "",
+      imageUrl: item.isExternal ? "" : (item.imageUrl || ""),
+      externalUrl: item.isExternal ? (item.imageUrl || "") : "",
       category: item.category || "",
     });
     setIsDialogOpen(true);
   };
 
-  // Add new - reset form and open dialog
   const handleAddNew = () => {
     setEditingMedia(null);
-    setForm({ title: "", description: "", imageUrl: "", category: "" });
+    setUploadMode("upload");
+    setForm({ title: "", description: "", imageUrl: "", externalUrl: "", category: "" });
     setIsDialogOpen(true);
   };
 
@@ -151,7 +166,6 @@ export default function AdminMedia() {
         </Button>
       </div>
 
-      {/* Controlled Modal Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -162,6 +176,7 @@ export default function AdminMedia() {
             <div>
               <Label>Title *</Label>
               <Input
+                data-testid="input-media-title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="Media title"
@@ -171,17 +186,42 @@ export default function AdminMedia() {
             <div>
               <Label>Description</Label>
               <Textarea
+                data-testid="input-media-description"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Short description (optional)"
               />
             </div>
 
-            <ImageUpload
-              label="Media Image *"
-              value={form.imageUrl}
-              onChange={(url) => setForm({ ...form, imageUrl: url })}
-            />
+            <Tabs value={uploadMode} onValueChange={(v) => setUploadMode(v as "upload" | "external")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload" data-testid="tab-upload">Upload File</TabsTrigger>
+                <TabsTrigger value="external" data-testid="tab-external">External Link</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="mt-4">
+                <ImageUpload
+                  label="Media Image *"
+                  value={form.imageUrl}
+                  onChange={(url) => setForm({ ...form, imageUrl: url })}
+                />
+              </TabsContent>
+              
+              <TabsContent value="external" className="mt-4">
+                <div>
+                  <Label>External URL * (YouTube, Vimeo, etc.)</Label>
+                  <Input
+                    data-testid="input-external-url"
+                    value={form.externalUrl}
+                    onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    For YouTube videos, we'll automatically generate a thumbnail
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
 
             <div>
               <Label>Category *</Label>
@@ -189,7 +229,7 @@ export default function AdminMedia() {
                 value={form.category}
                 onValueChange={(value) => setForm({ ...form, category: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-media-category">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -202,11 +242,12 @@ export default function AdminMedia() {
             </div>
 
             <Button
+              data-testid="button-save-media"
               className="w-full bg-primary hover:bg-primary/90"
               onClick={handleSubmit}
-              disabled={saveMedia.isLoading}
+              disabled={saveMedia.isPending}
             >
-              {saveMedia.isLoading
+              {saveMedia.isPending
                 ? "Saving..."
                 : editingMedia
                 ? "Update Media"
@@ -216,7 +257,6 @@ export default function AdminMedia() {
         </DialogContent>
       </Dialog>
 
-      {/* MEDIA LIST */}
       {mediaItems.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -228,18 +268,38 @@ export default function AdminMedia() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mediaItems.map((item) => (
-            <Card key={item.id} className="overflow-hidden p-4">
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="w-full h-48 object-cover object-top rounded-md"
-              />
+            <Card key={item.id} className="overflow-hidden p-4" data-testid={`card-media-${item.id}`}>
+              {item.isExternal && item.thumbnailUrl ? (
+                <div className="relative">
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.title}
+                    className="w-full h-48 object-cover object-top rounded-md"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
+                    <div className="bg-white/90 px-3 py-1 rounded text-sm font-medium">
+                      External Link
+                    </div>
+                  </div>
+                </div>
+              ) : item.isExternal ? (
+                <div className="w-full h-48 bg-muted rounded-md flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">External Link</p>
+                </div>
+              ) : (
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="w-full h-48 object-cover object-top rounded-md"
+                />
+              )}
               <h3 className="font-semibold mt-3">{item.title}</h3>
               <p className="text-sm text-muted-foreground mb-2">
-                {item.category}
+                {item.category} {item.isExternal && "• External"}
               </p>
               <div className="flex justify-between">
                 <Button
+                  data-testid={`button-edit-${item.id}`}
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(item)}
@@ -247,6 +307,7 @@ export default function AdminMedia() {
                   <Edit2 className="w-4 h-4 mr-1" /> Edit
                 </Button>
                 <Button
+                  data-testid={`button-delete-${item.id}`}
                   variant="destructive"
                   size="sm"
                   onClick={() => {

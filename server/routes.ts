@@ -278,6 +278,19 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
   }
 });
   // ---------- MEDIA ----------
+  function extractYouTubeVideoId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  }
+
   app.get("/api/media", async (req, res) => {
     try { res.json(await storage.getAllMedia()); }
     catch (e: any) { res.status(500).json({ error: e.message }); }
@@ -293,7 +306,32 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
 
   app.post("/api/media", requireAdmin, async (req, res) => {
     try {
-      const item = await storage.createMedia(insertMediaSchema.parse(req.body));
+      const body = req.body;
+      let mediaData: any = {
+        title: body.title,
+        description: body.description,
+        category: body.category,
+      };
+
+      if (body.externalUrl) {
+        mediaData.imageUrl = body.externalUrl;
+        mediaData.isExternal = true;
+        const videoId = extractYouTubeVideoId(body.externalUrl);
+        if (videoId) {
+          mediaData.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+      } else {
+        mediaData.imageUrl = body.imageUrl;
+        mediaData.isExternal = false;
+        mediaData.thumbnailUrl = null;
+      }
+
+      const validatedData = insertMediaSchema.parse(mediaData);
+      const item = await storage.createMedia({
+        ...validatedData,
+        isExternal: mediaData.isExternal,
+        thumbnailUrl: mediaData.thumbnailUrl,
+      });
       res.status(201).json(item);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
@@ -301,9 +339,34 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
  app.patch("/api/media/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedData = insertMediaSchema.partial().parse(req.body);
+    const body = req.body;
+    let updateData: any = {
+      title: body.title,
+      description: body.description,
+      category: body.category,
+    };
 
-    const updatedItem = await storage.updateMedia(parseInt(id), updatedData);
+    if (body.externalUrl) {
+      updateData.imageUrl = body.externalUrl;
+      updateData.isExternal = true;
+      const videoId = extractYouTubeVideoId(body.externalUrl);
+      if (videoId) {
+        updateData.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      } else {
+        updateData.thumbnailUrl = null;
+      }
+    } else if (body.imageUrl) {
+      updateData.imageUrl = body.imageUrl;
+      updateData.isExternal = false;
+      updateData.thumbnailUrl = null;
+    }
+
+    const validatedData = insertMediaSchema.partial().parse(updateData);
+    const updatedItem = await storage.updateMedia(parseInt(id), {
+      ...validatedData,
+      isExternal: updateData.isExternal,
+      thumbnailUrl: updateData.thumbnailUrl,
+    });
 
     if (!updatedItem) return res.status(404).json({ error: "Media not found" });
 
