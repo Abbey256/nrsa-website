@@ -4,33 +4,51 @@ import { supabase } from "./lib/supabase";
 import { requireAdmin } from "./authMiddleware";
 
 const router = express.Router();
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
   fileFilter: (_req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
-    }
-  }
+    const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error("Invalid file type. Only images are allowed."));
+  },
 });
 
 router.post("/upload", requireAdmin, upload.single("file"), async (req: Request, res: Response) => {
   try {
+    // ✅ Handle YouTube or external link uploads
+    if (req.body.url) {
+      const url = req.body.url.trim();
+      let thumbnail = null;
+
+      // If YouTube link, extract thumbnail
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+      if (ytMatch) {
+        const videoId = ytMatch[1];
+        thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      }
+
+      return res.status(200).json({
+        type: ytMatch ? "youtube" : "external",
+        url,
+        thumbnail,
+        message: "External media link stored successfully",
+      });
+    }
+
+    // ✅ Handle file uploads
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
 
-    const filename = `${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`;
+    const filename = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
     const filepath = `uploads/${filename}`;
 
     const { data, error } = await supabase.storage
       .from("nrsa-uploads")
       .upload(filepath, file.buffer, {
         contentType: file.mimetype,
-        cacheControl: '3600',
-        upsert: false
+        cacheControl: "3600",
+        upsert: false,
       });
 
     if (error) {
@@ -38,11 +56,15 @@ router.post("/upload", requireAdmin, upload.single("file"), async (req: Request,
       return res.status(500).json({ error: error.message });
     }
 
-    const { data: { publicUrl } } = supabase.storage
+    const { data: publicData } = supabase.storage
       .from("nrsa-uploads")
       .getPublicUrl(data.path);
 
-    res.status(200).json({ url: publicUrl });
+    res.status(200).json({
+      type: "image",
+      url: publicData.publicUrl,
+      message: "File uploaded successfully",
+    });
   } catch (error: any) {
     console.error("Upload error:", error);
     res.status(500).json({ error: error.message || "Upload failed" });
