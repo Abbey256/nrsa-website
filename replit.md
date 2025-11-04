@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 4, 2025 - Production Deployment Ready**:
+- **Route Consolidation**: Removed duplicate `apiRoutes.ts`, consolidated all API routes into single `routes.ts` file
+- **TypeScript Build Fixes**: Resolved all TypeScript compilation errors, clean build to `dist/` directory
+- **API Route Protection**: Fixed `vite.ts` to correctly skip `/api/*` routes in SPA fallback (prevents HTML responses from API endpoints)
+- **Conditional Supabase**: Made Supabase initialization optional - server runs gracefully without credentials, file uploads return informative 503 error
+- **Production Documentation**: Created comprehensive `DEPLOYMENT.md` with step-by-step cPanel deployment instructions
+- **Environment Documentation**: Updated `.env.example` with optional Supabase configuration
+- **Critical Bug Fix**: Fixed DELETE `/api/admins/:id` route that was accidentally nested inside POST handler
+
 **October 27, 2025**:
 - **Admin Portal Standardization**: Updated Leaders and Players admin components to use React Query + Toast notifications pattern (consistent with Events, Media, Contacts)
 - **Event Registration Links**: Added `registrationLink` field to Events schema, admin form input, and functional "Register Now" button on frontend that opens links in new tab
@@ -44,7 +53,7 @@ Preferred communication style: Simple, everyday language.
 
 **Authentication System**: JWT-based authentication with bcrypt password hashing (10 rounds). Admin login returns a token valid for 8 hours. The `requireAdmin` middleware validates JWT tokens on protected routes. Tokens are stored in localStorage on the client and sent via Authorization header.
 
-**File Upload Strategy**: Multer middleware configured with Cloudinary permanent storage. Files are uploaded directly to Cloudinary using the `multer-storage-cloudinary` package, resolving ephemeral filesystem issues on platforms like Render. Images are stored in the `nrsa-website-uploads` folder with a 5MB file size limit and type validation (JPEG, PNG, GIF, WebP).
+**File Upload Strategy**: Multer middleware configured with Supabase Storage for permanent file hosting. Files are uploaded to the `nrsa-uploads` bucket with a 10MB file size limit and type validation (JPEG, PNG, GIF, WebP). The system supports both direct file uploads and external URLs (YouTube videos, etc.). Supabase initialization is conditional - the server runs gracefully without credentials, returning a 503 error for upload attempts when not configured.
 
 **Database Layer**: Drizzle ORM with PostgreSQL via the standard `pg` driver (not Neon serverless). The `storage` object in `server/storage.ts` provides a clean abstraction layer for all database operations, implementing methods for CRUD operations on all entities. Database credentials are configured via the `DATABASE_URL` environment variable.
 
