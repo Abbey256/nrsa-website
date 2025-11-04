@@ -1,6 +1,6 @@
 // server/registerRoutes.ts
 import { Express } from "express";
-import { registerAllRoutes } from "./routes";
+import { registerAllRoutes } from "./routes.js";
 
 /**
  * Main route registration function.

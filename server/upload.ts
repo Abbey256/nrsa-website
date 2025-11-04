@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import multer from "multer";
 import { supabase } from "./lib/supabase";
-import { requireAdmin } from "./authMiddleware";
+import { requireAdmin } from "./authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({

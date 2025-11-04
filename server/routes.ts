@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { requireAdmin, requireSuperAdmin, type AdminRequest } from "./authMiddleware";
+import { storage } from "./storage.js";
+import { requireAdmin, requireSuperAdmin, type AdminRequest } from "./authMiddleware.js";
 import bcrypt from "bcrypt";
 import {
   insertHeroSlideSchema,

@@ -5,7 +5,7 @@ import path from "path";
 export default defineConfig(async () => {
   const plugins = [
     react({
-      jsxRuntime: 'automatic',
+      jsxRuntime: "automatic",
     }),
   ];
 
@@ -16,9 +16,12 @@ export default defineConfig(async () => {
       const { cartographer } = await import("@replit/vite-plugin-cartographer");
       const { devBanner } = await import("@replit/vite-plugin-dev-banner");
 
-      plugins.push(runtimeErrorOverlay());
-      plugins.push(cartographer());
-      plugins.push(devBanner());
+      const replitPlugins = [
+  runtimeErrorOverlay(),
+  cartographer(),
+  devBanner(),
+];
+
     } catch (err) {
       console.warn("⚠️ Replit dev plugins not found — skipping (safe to ignore in production)");
     }
