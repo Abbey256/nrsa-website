@@ -1,5 +1,4 @@
 import { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { requireAdmin, requireSuperAdmin, type AdminRequest } from "./authMiddleware.js";
 import bcrypt from "bcrypt";
@@ -20,7 +19,7 @@ import {
  * Registers all CRUD API routes for the application.
  * Includes endpoints for all entities. Admin protection added where necessary.
  */
-export function registerAllRoutes(app: Express): Server {
+export function registerAllRoutes(app: Express): void {
 
   // ---------- HERO SLIDES ----------
   app.get("/api/hero-slides", async (req, res) => {
@@ -464,43 +463,6 @@ app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
       }
       const existing = await storage.getAdminByEmail(email);
       if (existing) return res.status(409).json({ error: "Admin already exists" });
-      // ---------- ADMINS ----------
-// Add this DELETE handler to server/routes.ts (near other /api/admins handlers)
-app.delete("/api/admins/:id", requireSuperAdmin, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-
-    // req.adminId should be set by requireSuperAdmin/requireAdmin middleware
-    // prevent deleting yourself
-    if ((req as any).adminId === id) {
-      return res.status(400).json({ error: "Cannot delete your own account" });
-    }
-
-    // check admin exists
-    const existing = await storage.getAdminById(id);
-    if (!existing) {
-      return res.status(404).json({ error: "Admin not found" });
-    }
-
-    // If the target is a super-admin, ensure we don't delete the last super-admin
-    if (existing.role === "super-admin") {
-      const allAdmins = await storage.getAllAdmins();
-      const superAdminCount = allAdmins.filter((a) => a.role === "super-admin").length;
-      if (superAdminCount <= 1) {
-        return res.status(400).json({ error: "Cannot delete the last super-admin account" });
-      }
-    }
-
-    // perform delete
-    await storage.deleteAdmin(id);
-
-    // success (204 No Content)
-    res.status(204).send();
-  } catch (e: any) {
-    console.error("DELETE /api/admins/:id error:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
 
       const passwordHash = await bcrypt.hash(password, 10);
       const admin = await storage.createAdmin({ name, email, passwordHash, role: role || "admin" });
@@ -508,5 +470,38 @@ app.delete("/api/admins/:id", requireSuperAdmin, async (req, res) => {
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
 
-  return createServer(app);
+  app.delete("/api/admins/:id", requireSuperAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+
+      // prevent deleting yourself
+      if ((req as any).adminId === id) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+
+      // check admin exists
+      const existing = await storage.getAdminById(id);
+      if (!existing) {
+        return res.status(404).json({ error: "Admin not found" });
+      }
+
+      // If the target is a super-admin, ensure we don't delete the last super-admin
+      if (existing.role === "super-admin") {
+        const allAdmins = await storage.getAllAdmins();
+        const superAdminCount = allAdmins.filter((a) => a.role === "super-admin").length;
+        if (superAdminCount <= 1) {
+          return res.status(400).json({ error: "Cannot delete the last super-admin account" });
+        }
+      }
+
+      // perform delete
+      await storage.deleteAdmin(id);
+
+      // success (204 No Content)
+      res.status(204).send();
+    } catch (e: any) {
+      console.error("DELETE /api/admins/:id error:", e);
+      res.status(500).json({ error: e.message });
+    }
+  });
 }

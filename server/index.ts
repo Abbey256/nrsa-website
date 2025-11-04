@@ -5,7 +5,6 @@ import { registerAllRoutes as registerRoutes } from "./routes";
 import { registerAuthRoutes } from "./auth";
 import { registerUploadRoutes } from "./upload";
 import { setupVite, serveStatic, log } from "./vite";
-import { registerAllRoutes as registerApiRoutes } from "./apiRoutes.js"; // if you have API routes
 
 // Create Express app
 const app = express();
@@ -50,7 +49,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 registerAuthRoutes(app);
 registerUploadRoutes(app);
 registerRoutes(app);
-registerApiRoutes(app); // optional, if you have API routes
 
 // Error handling
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

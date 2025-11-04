@@ -40,6 +40,12 @@ router.post("/upload", requireAdmin, upload.single("file"), async (req: Request,
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
 
+    if (!supabase) {
+      return res.status(503).json({ 
+        error: "File upload service not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables." 
+      });
+    }
+
     const filename = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
     const filepath = `uploads/${filename}`;
 
