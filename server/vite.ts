@@ -77,22 +77,27 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+// Corrected serveStatic function in vite.ts
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
-
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
-  }
-
-  app.use(express.static(distPath));
-
-  // SPA fallback - MUST NOT catch /api/* routes
-  app.use("*", (req, res, next) => {
-    if (req.originalUrl.startsWith("/api/")) {
-      return next();
+    // ✅ FIX 2: Resolving the path: 
+    // /home/gdmythjq/backend -> /home/gdmythjq -> /home/gdmythjq/public_html
+    const finalDistPath = path.resolve(process.cwd(), "..", "public_html");
+    
+    // ... (rest of the file existence check and app.use code)
+    if (!fs.existsSync(finalDistPath)) {
+        throw new Error(
+            `Could not find the public_html directory at: ${finalDistPath}.`,
+        );
     }
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+
+    // 1. Serve static assets
+    app.use(express.static(finalDistPath));
+
+    // 2. SPA fallback
+    app.use("*", (req, res, next) => {
+        if (req.originalUrl.startsWith("/api/")) {
+            return next();
+        }
+        res.sendFile(path.resolve(finalDistPath, "index.html"));
+    });
 }
