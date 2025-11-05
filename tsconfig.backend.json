@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "rootDir": ".",
-    "outDir": "dist",
+    "outDir": "./dist/server",
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"]
@@ -16,4 +16,3 @@
   },
   "include": ["server/**/*", "shared/**/*"]
 }
-
