@@ -4,7 +4,8 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "rootDir": ".",
-    "outDir": "./dist/server",
+    // ✅ FIX: Change outDir to './dist' to avoid a nested 'server/server/' folder.
+    "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"]
