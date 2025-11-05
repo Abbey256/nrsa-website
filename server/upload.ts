@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import multer from "multer";
-import { supabase } from "./lib/supabase";
+import { supabase } from "./lib/supabase.js";
 import { requireAdmin } from "./authMiddleware.js";
 
 const router = express.Router();

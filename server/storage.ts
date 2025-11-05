@@ -11,7 +11,7 @@ import {
   media, affiliations, contacts, siteSettings
 } from "@shared/schema";
 
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, desc } from "drizzle-orm";
 
 export const storage = {
