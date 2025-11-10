@@ -41,12 +41,12 @@ async function main() {
   const existing = await storage.getAdminByEmail(email);
   
   if (existing) {
-    // Update existing admin
+    // Update existing admin to ensure it's a super-admin with protection
     await storage.updateAdmin(existing.id, {
       name,
       passwordHash: hashedPassword,
       role: "super-admin",
-      protected: true
+      protected: true as any  // TypeScript workaround - field exists in DB schema
     });
     console.log("✅ Super-admin account updated successfully");
     console.log(`   Email: ${email}`);
@@ -57,9 +57,12 @@ async function main() {
       name,
       email,
       passwordHash: hashedPassword,
-      role: "super-admin",
-      protected: true
+      role: "super-admin"
     });
+    
+    // Immediately update to set protected flag
+    await storage.updateAdmin(admin.id, { protected: true as any });
+    
     console.log("✅ Super-admin account created successfully");
     console.log(`   Email: ${admin.email}`);
     console.log(`   Name: ${admin.name}`);
