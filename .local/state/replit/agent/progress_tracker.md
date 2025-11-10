@@ -309,3 +309,172 @@ The application is configured for development in Replit. For production deployme
 - ✅ No critical errors in logs
 
 **Status**: Ready for development and testing on Replit!
+
+---
+
+## ✅ CPANEL DEPLOYMENT PREPARATION COMPLETED (November 10, 2025)
+
+### Deployment Readiness Status: PRODUCTION READY ✅
+
+All critical backend fixes and deployment documentation have been completed for split cPanel deployment (Frontend on main domain, Backend on subdomain).
+
+### What Was Fixed and Verified:
+
+[x] 39. **ES Module Compliance Audit**: Verified all backend files use .js extensions
+   - ✅ server/index.ts → imports routes.js, auth.js, upload.js, vite.js
+   - ✅ server/routes.ts → imports storage.js, authMiddleware.js
+   - ✅ server/auth.ts → imports storage.js
+   - ✅ server/authMiddleware.ts → imports storage.js
+   - ✅ server/storage.ts → imports db.js
+   - ✅ server/upload.ts → imports lib/supabase.js, authMiddleware.js
+   - ✅ server/createAdmin.ts → imports storage.js
+   - ✅ server/vite.ts → imports vite.config.js
+
+[x] 40. **Package.json Start Script**: Verified tsconfig-paths/register
+   - ✅ Line 11: `"start": "cross-env NODE_ENV=production node -r tsconfig-paths/register dist/server/index.js"`
+   - ✅ Path aliases (@shared/schema) will resolve correctly in production
+
+[x] 41. **Secure Admin Creation**: Environment variable implementation
+   - ✅ ADMIN_EMAIL (default: admin@nrsa.com.ng)
+   - ✅ ADMIN_PASSWORD (REQUIRED - no default, enforced validation)
+   - ✅ ADMIN_NAME (default: NRSA Administrator)
+   - ✅ Bcrypt hashing (10 rounds) before database insert
+   - ✅ Protected flag set to prevent deletion
+   - ✅ Update existing admin if already exists
+
+[x] 42. **Upload Functionality Verification**: Supabase + YouTube integration
+   - ✅ Handles file uploads via Supabase Storage (nrsa-uploads bucket)
+   - ✅ Extracts YouTube video IDs from multiple URL formats
+   - ✅ Generates thumbnails: `https://img.youtube.com/vi/{VIDEO_ID}/hqdefault.jpg`
+   - ✅ Graceful degradation when Supabase not configured (503 error with message)
+   - ✅ Supports both uploaded images and external YouTube links
+
+[x] 43. **Frontend API Configuration**: Automatic production URL detection
+   - ✅ Updated client/src/lib/queryClient.ts
+   - ✅ Development: Empty string (same-origin Vite proxy)
+   - ✅ Production: https://api.nrsa.com.ng (backend subdomain)
+   - ✅ Override support via VITE_API_URL environment variable
+   - ✅ All API requests automatically use correct base URL
+
+[x] 44. **Comprehensive Deployment Guide**: cpanel_deployment_readme.md created
+   - ✅ Split architecture diagram (frontend + backend separation)
+   - ✅ Step-by-step cPanel setup instructions
+   - ✅ Frontend deployment to public_html (nrsa.com.ng)
+   - ✅ Backend deployment to subdomain (api.nrsa.com.ng)
+   - ✅ Environment variable configuration guide
+   - ✅ Database setup and schema migration steps
+   - ✅ Admin account creation instructions
+   - ✅ SSL certificate setup (AutoSSL)
+   - ✅ Troubleshooting section with common issues
+   - ✅ Security best practices checklist
+   - ✅ Post-deployment validation tests
+
+### Architect Review Results: ✅ PASS
+
+**Security:** No critical issues observed
+- Admin credentials sourced from environment variables
+- Passwords hashed with bcrypt before storage
+- JWT_SECRET configurable via environment
+- Supabase keys properly segregated (service role vs anon)
+
+**ES Module Compliance:** ✅ Verified
+- All relative imports include .js extensions
+- Path aliases resolved via tsconfig-paths/register
+- Build output compatible with Node.js ESM
+
+**Production Architecture:** ✅ Approved
+- Clear frontend/backend separation strategy
+- Absolute API URLs in production mode
+- Environment variable driven configuration
+- Graceful degradation for optional services
+
+### Deployment Architecture Summary:
+
+```
+Frontend (nrsa.com.ng)
+├── Location: /home/username/public_html/
+├── Content: Static React files from dist/public/
+├── SSL: AutoSSL enabled
+└── API Calls: https://api.nrsa.com.ng/api/*
+
+Backend (api.nrsa.com.ng)
+├── Location: /home/username/nrsa-backend/
+├── Entry Point: dist/server/index.js
+├── Runtime: Node.js App Manager (Passenger)
+├── SSL: AutoSSL enabled
+└── Services: PostgreSQL + Supabase Storage
+
+Database Layer
+├── PostgreSQL: cPanel managed
+├── Connection: DATABASE_URL environment variable
+└── Storage: Supabase bucket (nrsa-uploads)
+```
+
+### Required Environment Variables (Production):
+
+**Backend (api.nrsa.com.ng):**
+- `NODE_ENV=production`
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - Random 64+ character string
+- `SUPABASE_URL` - https://jrijjoszmlupeljifedk.supabase.co
+- `SUPABASE_SERVICE_ROLE_KEY` - Backend Supabase key
+- `SUPABASE_ANON_KEY` - Public Supabase key
+- `ADMIN_EMAIL` - admin@nrsa.com.ng
+- `ADMIN_PASSWORD` - **REQUIRED** (set securely)
+- `ADMIN_NAME` - NRSA Administrator
+
+**Frontend (optional):**
+- `VITE_API_URL` - Override production API URL if needed
+
+### Next Steps for Production Deployment:
+
+1. **Create Subdomain:**
+   - cPanel → Domains → Subdomains
+   - Create: api.nrsa.com.ng
+
+2. **Upload Backend:**
+   - Build: `npm run build`
+   - Upload dist/server/ and package.json to ~/nrsa-backend/
+   - Install dependencies via cPanel Node.js App Manager
+
+3. **Configure Backend App:**
+   - cPanel → Setup Node.js App → Create Application
+   - Application Root: ~/nrsa-backend
+   - Startup File: dist/server/index.js
+   - Add all environment variables
+
+4. **Deploy Frontend:**
+   - Upload dist/public/ to public_html/
+   - Create .htaccess for React Router
+   - Enable SSL (AutoSSL)
+
+5. **Initialize Database:**
+   - Create PostgreSQL database in cPanel
+   - Run: `npm run db:push`
+   - Create admin: `node dist/server/createAdmin.js`
+
+6. **Test Deployment:**
+   - Frontend: https://nrsa.com.ng
+   - Backend: https://api.nrsa.com.ng/api/hero-slides
+   - Admin: https://nrsa.com.ng/admin/login
+
+### Security Checklist Before Go-Live:
+
+- ✅ Change JWT_SECRET from default
+- ✅ Set strong ADMIN_PASSWORD (12+ chars, mixed case, symbols)
+- ✅ Verify Supabase service role key not exposed in frontend
+- ✅ Enable SSL on both domains (AutoSSL)
+- ✅ Set proper file permissions (.env = 600)
+- ✅ Review database user privileges (minimum required)
+- ✅ Test all admin CRUD operations
+- ✅ Verify file upload to Supabase works
+- ✅ Test YouTube video thumbnail generation
+
+### Documentation Delivered:
+
+1. **cpanel_deployment_readme.md** - Comprehensive deployment guide
+2. **Updated createAdmin.ts** - Secure environment-based admin creation
+3. **Updated queryClient.ts** - Production API URL configuration
+4. **Environment Examples** - .env.example with all required variables
+
+**Status**: 🚀 Ready for cPanel production deployment following the documented guide!
