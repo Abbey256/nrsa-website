@@ -89,3 +89,6 @@ certs/
 *.pem
 *.key
 *.crt
+
+# Allow server config file
+!vite.config.server.js
