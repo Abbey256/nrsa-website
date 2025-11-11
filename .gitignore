@@ -58,6 +58,7 @@ replit.nix
 replit.*
 *.replit
 *.lock
+.local/state/replit/agent/*.bin
 
 # === Frontend Generated ===
 server/public/
