@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "npm run build:frontend && npm run build:backend",
-    "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "vite build",
     "start": "cross-env NODE_ENV=production node -r tsconfig-paths/register dist/server/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "drizzle:push": "drizzle-kit push"
+    "drizzle:push": "drizzle-kit push",
+    "build:backend": "tsup server/index.ts --format esm --out-dir dist/server --dts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.917.0",
@@ -123,6 +123,7 @@
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
