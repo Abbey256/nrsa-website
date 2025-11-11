@@ -1,6 +1,5 @@
 # === Dependencies & Build ===
 node_modules/
-dist/
 build/
 .cache/
 .next/
@@ -28,7 +27,6 @@ drizzle.config.ts
 
 # === Vite / Bundler ===
 vite.config.ts
-vite.config.js
 vite.config.*.ts
 vite.config.*.js
 .vite/
