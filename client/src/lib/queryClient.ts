@@ -1,17 +1,15 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 /**
- * API base configuration for cPanel split deployment:
+ * API base configuration:
  * - Development: Empty string (same-origin proxy via Vite)
- * - Production: https://api.nrsa.com.ng (backend subdomain)
+ * - Production (Render): Empty string (same-origin - frontend and backend on same service)
+ * - Production (cPanel): Set VITE_API_URL to backend subdomain (e.g., https://api.nrsa.com.ng)
  * 
- * Can be overridden with VITE_API_URL environment variable.
+ * For Render deployment: Leave VITE_API_URL unset for same-origin API calls
+ * For cPanel split deployment: Set VITE_API_URL=https://api.nrsa.com.ng
  */
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD 
-    ? "https://api.nrsa.com.ng"  // Production: Backend subdomain
-    : ""  // Development: Same origin (Vite proxy)
-  );
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || "";
 
 // Build full URL: if absolute return it as-is, otherwise prefix with API_BASE
 function buildUrl(url: string) {
