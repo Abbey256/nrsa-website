@@ -1099,11 +1099,9 @@ const viteConfig = defineConfig(async () => {
       const { default: runtimeErrorOverlay } = await import("@replit/vite-plugin-runtime-error-modal");
       const { cartographer } = await import("@replit/vite-plugin-cartographer");
       const { devBanner } = await import("@replit/vite-plugin-dev-banner");
-      const replitPlugins = [
-        runtimeErrorOverlay(),
-        cartographer(),
-        devBanner()
-      ];
+      plugins.push(runtimeErrorOverlay());
+      plugins.push(cartographer());
+      plugins.push(devBanner());
     } catch (err) {
       console.warn("⚠️ Replit dev plugins not found — skipping (safe to ignore in production)");
     }
@@ -1189,50 +1187,57 @@ async function setupVite(app2, server2) {
     }
   });
 }
-import express from "express";
-import path from "path";
-import fs from "fs";
-import { createServer as createViteServer } from "vite";
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-const isDev = process.env.NODE_ENV !== "production";
-const root = process.cwd();
-const clientRoot = path.resolve(root, "client"); // your frontend source folder
-
-async function startServer() {
-  let vite;
-
-  if (isDev) {
-    // --- DEV: Vite middleware ---
-    vite = await createViteServer({
-      root: clientRoot,
-      server: { middlewareMode: true },
-    });
-    app.use(vite.middlewares);
-  } else {
-    // --- PROD: serve built static files ---
-    const clientDist = path.resolve(root, "dist/public"); // adjust if different
-    app.use(express.static(clientDist));
-
-    // SPA fallback for client-side routing
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(clientDist, "index.html"));
-    });
+function serveStatic(app2) {
+  const distPath = path.resolve(process.cwd(), "dist", "public");
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build output directory at: ${distPath}. Run 'npm run build' first.`
+    );
   }
-
-  // Example API route
-  app.get("/api/hello", (req, res) => {
-    res.json({ message: "Hello from API" });
-  });
-
-  app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port} [${isDev ? "dev" : "prod"}]`);
+  log(`Serving static files from: ${distPath}`, "express");
+  app2.use(express.static(distPath));
+  app2.use("*", (req, res, next) => {
+    if (req.originalUrl.startsWith("/api/")) {
+      return next();
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
-
-startServer();
+const app = express();
+app.use(express.json());
+app.set("trust proxy", 1);
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1e3,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false
+}));
+app.use((req, res, next) => {
+  const start = Date.now();
+  let jsonResponse = null;
+  const originalJson = res.json.bind(res);
+  res.json = function(body) {
+    jsonResponse = body;
+    return originalJson(body);
+  };
+  res.on("finish", () => {
+    if (req.path.startsWith("/api")) {
+      let logLine = `${req.method} ${req.path} ${res.statusCode} in ${Date.now() - start}ms`;
+      if (jsonResponse) logLine += ` :: ${JSON.stringify(jsonResponse)}`;
+      if (logLine.length > 80) logLine = logLine.slice(0, 79) + "…";
+      console.log(logLine);
+    }
+  });
+  next();
+});
+registerAuthRoutes(app);
+registerUploadRoutes(app);
+registerAllRoutes(app);
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(status).json({ message });
+});
 if (process.env.NODE_ENV === "production") {
   serveStatic(app);
 }

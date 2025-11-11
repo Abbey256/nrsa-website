@@ -77,27 +77,27 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-// Corrected serveStatic function in vite.ts
+// Serve static files in production from the Vite build output
 export function serveStatic(app: Express) {
-    // ✅ FIX 2: Resolving the path: 
-    // /home/gdmythjq/backend -> /home/gdmythjq -> /home/gdmythjq/public_html
-    const finalDistPath = path.resolve(process.cwd(), "..", "public_html");
+    const distPath = path.resolve(process.cwd(), "dist", "public");
     
-    // ... (rest of the file existence check and app.use code)
-    if (!fs.existsSync(finalDistPath)) {
+    if (!fs.existsSync(distPath)) {
         throw new Error(
-            `Could not find the public_html directory at: ${finalDistPath}.`,
+            `Could not find the build output directory at: ${distPath}. Run 'npm run build' first.`,
         );
     }
 
-    // 1. Serve static assets
-    app.use(express.static(finalDistPath));
+    log(`Serving static files from: ${distPath}`, "express");
 
-    // 2. SPA fallback
+    // 1. Serve static assets
+    app.use(express.static(distPath));
+
+    // 2. SPA fallback - must come after static file serving
     app.use("*", (req, res, next) => {
+        // Skip API routes
         if (req.originalUrl.startsWith("/api/")) {
             return next();
         }
-        res.sendFile(path.resolve(finalDistPath, "index.html"));
+        res.sendFile(path.resolve(distPath, "index.html"));
     });
 }
