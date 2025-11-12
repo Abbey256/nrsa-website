@@ -85,7 +85,7 @@ export const storage = {
   // Events
   getAllEvents: async () => {
     if (!supabase) return [];
-    const { data } = await supabase.from('events').select('*').order('date', { ascending: false });
+    const { data } = await supabase.from('events').select('*').order('event_date', { ascending: false });
     return data || [];
   },
   getEvent: async (id: number) => {
@@ -164,7 +164,7 @@ export const storage = {
   getAllLeaders: async () => {
     if (!supabase) return [];
     try {
-      const { data, error } = await supabase.from('leaders').select('*').order('order_index');
+      const { data, error } = await supabase.from('leaders').select('*').order('order');
       if (error) throw error;
       return data || [];
     } catch (error: any) {

@@ -135,7 +135,7 @@ export function registerAllRoutes(app: Express): void {
   app.get("/api/events", async (req, res) => {
     try {
       if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('events').select('*').order('date', { ascending: false });
+      const { data, error } = await supabase.from('events').select('*').order('event_date', { ascending: false });
       if (error) throw error;
       res.json(data || []);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
@@ -294,7 +294,7 @@ app.get("/api/leaders", async (req, res) => {
     if (!supabase) {
       return res.status(500).json({ error: "Database not configured" });
     }
-    const { data, error } = await supabase.from('leaders').select('*').order('order_index');
+    const { data, error } = await supabase.from('leaders').select('*').order('order');
     if (error) throw error;
     console.log('Leaders data:', data);
     res.json(data || []);
