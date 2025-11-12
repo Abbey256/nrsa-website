@@ -19,7 +19,8 @@
     "cache:clear": "rmdir /s /q node_modules\\.vite dist 2>nul || echo done",
     "db:init": "npm run db:push",
     "db:test": "tsx server/testDb.ts",
-    "test:all": "tsx server/testAll.ts"
+    "test:all": "tsx server/testAll.ts",
+    "setup-admin": "tsx server/setupSuperAdmin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.917.0",

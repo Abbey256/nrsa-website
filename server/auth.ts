@@ -38,22 +38,26 @@ export function registerAuthRoutes(app: Express) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Get additional admin info from your database if needed
+      // Get additional admin info from your database using EMAIL (not ID)
       const { data: adminData } = await supabase
         .from('admins')
-        .select('name, role')
-        .eq('id', data.user.id)
+        .select('id, name, role')
+        .eq('email', data.user.email)
         .single();
+
+      if (!adminData) {
+        return res.status(403).json({ error: "Admin account not found in database" });
+      }
 
       console.log("Login successful, sending JSON response");
       // Return everything to frontend
       res.json({
-        token: data.session?.access_token || data.session?.token, // JWT token
+        token: data.session?.access_token, // JWT token from Supabase
         admin: {
-          id: data.user.id,
+          id: adminData.id, // Use the admins table ID (serial integer)
           email: data.user.email,
-          name: adminData?.name,
-          role: adminData?.role
+          name: adminData.name,
+          role: adminData.role
         }
       });
       
