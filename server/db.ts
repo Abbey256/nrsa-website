@@ -1,18 +1,28 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import pkg from "pg";
-import * as schema from "@shared/schema";
+import { supabase } from './lib/supabase.js';
 
-const { Pool } = pkg;
+// Use Supabase client for all database operations
+export const db = supabase;
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  console.error("DATABASE_URL environment variable is not set");
-  throw new Error("DATABASE_URL must be set");
+export async function createTables() {
+  if (!supabase) {
+    console.warn('Supabase not configured');
+    return false;
+  }
+  
+  try {
+    // Test if tables exist by querying them
+    const tables = ['leaders', 'news', 'events', 'players', 'clubs', 'media', 'contacts'];
+    for (const table of tables) {
+      try {
+        await supabase.from(table).select('count').limit(0);
+      } catch (tableError: any) {
+        console.log(`Table ${table} needs to be created manually in Supabase: ${tableError.message || 'Unknown error'}`);
+      }
+    }
+    console.log('✅ Database connection successful');
+    return true;
+  } catch (error: any) {
+    console.warn('Database not ready:', error.message);
+    return false;
+  }
 }
-
-export const pool = new Pool({
-  connectionString: databaseUrl,
-});
-
-export const db = drizzle(pool, { schema });

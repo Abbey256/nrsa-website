@@ -37,11 +37,34 @@ export default defineConfig(async () => {
     build: {
       outDir: path.resolve(import.meta.dirname, "dist/public"),
       emptyOutDir: true,
+      rollupOptions: {
+        onwarn: () => {},
+      },
     },
     server: {
+      host: true,
+      port: 5173,
       fs: {
         strict: false,
       },
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+      hmr: {
+        overlay: false,
+      },
+    },
+    optimizeDeps: {
+      force: true,
+      include: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime'
+      ]
     },
   };
 });

@@ -11,262 +11,252 @@ import {
   media, affiliations, contacts, siteSettings
 } from "@shared/schema";
 
-import { db } from "./db.js";
-import { eq, desc } from "drizzle-orm";
+import { supabase } from "./lib/supabase.js";
 
 export const storage = {
   // Admin methods
   getAdminByEmail: async (email: string) => {
-    const [admin] = await db.select().from(admins).where(eq(admins.email, email));
-    return admin || undefined;
+    if (!supabase) return undefined;
+    try {
+      const { data, error } = await supabase.from('admins').select('*').eq('email', email).single();
+      if (error) throw error;
+      return data || undefined;
+    } catch (error: any) {
+      console.error('Error getting admin by email:', error.message);
+      return undefined;
+    }
   },
   getAdminById: async (id: number) => {
-    const [admin] = await db.select().from(admins).where(eq(admins.id, id));
-    return admin || undefined;
+    if (!supabase) return undefined;
+    try {
+      const { data, error } = await supabase.from('admins').select('*').eq('id', id).single();
+      if (error) throw error;
+      return data || undefined;
+    } catch (error: any) {
+      console.error('Error getting admin by ID:', error.message);
+      return undefined;
+    }
   },
   createAdmin: async (adminData: InsertAdmin) => {
-    const [created] = await db.insert(admins).values(adminData).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('admins').insert(adminData).select().single();
+    return data;
   },
-  /**
-   * Get all admin accounts (excluding password hashes for security)
-   * Used by admin management interface to list all administrators
-   */
   getAllAdmins: async () => {
-    return await db.select({
-      id: admins.id,
-      name: admins.name,
-      email: admins.email,
-      role: admins.role,
-      protected: admins.protected,
-      createdAt: admins.createdAt
-    }).from(admins).orderBy(desc(admins.createdAt));
+    if (!supabase) return [];
+    const { data } = await supabase.from('admins').select('id, name, email, role, created_at').order('created_at', { ascending: false });
+    return data || [];
   },
   updateAdmin: async (id: number, data: Partial<Admin>) => {
-    const [updated] = await db.update(admins).set(data).where(eq(admins.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('admins').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteAdmin: async (id: number) => {
-    await db.delete(admins).where(eq(admins.id, id));
+    if (!supabase) return;
+    await supabase.from('admins').delete().eq('id', id);
   },
-  // Users
-  getUser: async (id: string) => {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
-  },
-  getUserByUsername: async (username: string) => {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  },
-  createUser: async (user: InsertUser) => {
-    const [created] = await db.insert(users).values(user).returning();
-    return created;
-  },
-
-  // Hero Slides
-  getAllHeroSlides: async () => {
-    return await db.select().from(heroSlides).orderBy(heroSlides.order);
-  },
-  getHeroSlide: async (id: number) => {
-    const [slide] = await db.select().from(heroSlides).where(eq(heroSlides.id, id));
-    return slide || undefined;
-  },
-  createHeroSlide: async (slide: InsertHeroSlide) => {
-    const [created] = await db.insert(heroSlides).values(slide).returning();
-    return created;
-  },
-  updateHeroSlide: async (id: number, data: Partial<InsertHeroSlide>) => {
-    const [updated] = await db.update(heroSlides).set(data).where(eq(heroSlides.id, id)).returning();
-    return updated || undefined;
-  },
-  deleteHeroSlide: async (id: number) => {
-    await db.delete(heroSlides).where(eq(heroSlides.id, id));
-  },
-
   // News
   getAllNews: async () => {
-    return await db.select().from(news).orderBy(desc(news.publishedAt));
+    if (!supabase) return [];
+    const { data } = await supabase.from('news').select('*').order('published_at', { ascending: false });
+    return data || [];
   },
   getNews: async (id: number) => {
-    const [article] = await db.select().from(news).where(eq(news.id, id));
-    return article || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('news').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createNews: async (article: InsertNews) => {
-    const [created] = await db.insert(news).values(article).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('news').insert(article).select().single();
+    return data;
   },
   updateNews: async (id: number, data: Partial<InsertNews>) => {
-    const [updated] = await db.update(news).set(data).where(eq(news.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('news').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteNews: async (id: number) => {
-    await db.delete(news).where(eq(news.id, id));
+    if (!supabase) return;
+    await supabase.from('news').delete().eq('id', id);
   },
 
   // Events
   getAllEvents: async () => {
-    return await db.select().from(events).orderBy(desc(events.eventDate));
+    if (!supabase) return [];
+    const { data } = await supabase.from('events').select('*').order('date', { ascending: false });
+    return data || [];
   },
   getEvent: async (id: number) => {
-    const [event] = await db.select().from(events).where(eq(events.id, id));
-    return event || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('events').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createEvent: async (event: InsertEvent) => {
-    const [created] = await db.insert(events).values(event).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('events').insert(event).select().single();
+    return data;
   },
   updateEvent: async (id: number, data: Partial<InsertEvent>) => {
-    const [updated] = await db.update(events).set(data).where(eq(events.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('events').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteEvent: async (id: number) => {
-    await db.delete(events).where(eq(events.id, id));
+    if (!supabase) return;
+    await supabase.from('events').delete().eq('id', id);
   },
 
   // Players
   getAllPlayers: async () => {
-    return await db.select().from(players).orderBy(desc(players.totalPoints));
+    if (!supabase) return [];
+    const { data } = await supabase.from('players').select('*').order('name');
+    return data || [];
   },
   getPlayer: async (id: number) => {
-    const [player] = await db.select().from(players).where(eq(players.id, id));
-    return player || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('players').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createPlayer: async (player: InsertPlayer) => {
-    const [created] = await db.insert(players).values(player).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('players').insert(player).select().single();
+    return data;
   },
   updatePlayer: async (id: number, data: Partial<InsertPlayer>) => {
-    const [updated] = await db.update(players).set(data).where(eq(players.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('players').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deletePlayer: async (id: number) => {
-    await db.delete(players).where(eq(players.id, id));
+    if (!supabase) return;
+    await supabase.from('players').delete().eq('id', id);
   },
 
   // Clubs
   getAllClubs: async () => {
-    return await db.select().from(clubs).orderBy(clubs.name);
+    if (!supabase) return [];
+    const { data } = await supabase.from('clubs').select('*').order('name');
+    return data || [];
   },
   getClub: async (id: number) => {
-    const [club] = await db.select().from(clubs).where(eq(clubs.id, id));
-    return club || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('clubs').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createClub: async (club: InsertClub) => {
-    const [created] = await db.insert(clubs).values(club).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('clubs').insert(club).select().single();
+    return data;
   },
   updateClub: async (id: number, data: Partial<InsertClub>) => {
-    const [updated] = await db.update(clubs).set(data).where(eq(clubs.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('clubs').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteClub: async (id: number) => {
-    await db.delete(clubs).where(eq(clubs.id, id));
+    if (!supabase) return;
+    await supabase.from('clubs').delete().eq('id', id);
   },
-
-  getAllMemberStates: async () => {
-  return await db.select().from(memberStates).orderBy(memberStates.name);
-},
-getMemberState: async (id: number) => {
-  const [state] = await db.select().from(memberStates).where(eq(memberStates.id, id));
-  return state || undefined;
-},
-createMemberState: async (state: InsertMemberState) => {
-  const [created] = await db.insert(memberStates).values(state).returning();
-  return created;
-},
-updateMemberState: async (id: number, data: Partial<InsertMemberState>) => {
-  const [updated] = await db.update(memberStates).set(data).where(eq(memberStates.id, id)).returning();
-  return updated || undefined;
-},
-deleteMemberState: async (id: number) => {
-  await db.delete(memberStates).where(eq(memberStates.id, id));
-},
 
   // Leaders
   getAllLeaders: async () => {
-    return await db.select().from(leaders).orderBy(leaders.order);
+    if (!supabase) return [];
+    try {
+      const { data, error } = await supabase.from('leaders').select('*').order('order_index');
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      console.error('Error getting all leaders:', error.message);
+      return [];
+    }
   },
   getLeader: async (id: number) => {
-    const [leader] = await db.select().from(leaders).where(eq(leaders.id, id));
-    return leader || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('leaders').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createLeader: async (leader: InsertLeader) => {
-    const [created] = await db.insert(leaders).values(leader).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('leaders').insert(leader).select().single();
+    return data;
   },
   updateLeader: async (id: number, data: Partial<InsertLeader>) => {
-    const [updated] = await db.update(leaders).set(data).where(eq(leaders.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('leaders').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteLeader: async (id: number) => {
-    await db.delete(leaders).where(eq(leaders.id, id));
+    if (!supabase) return;
+    await supabase.from('leaders').delete().eq('id', id);
   },
 
   // Media
   getAllMedia: async () => {
-    return await db.select().from(media).orderBy(desc(media.createdAt));
+    if (!supabase) return [];
+    const { data } = await supabase.from('media').select('*').order('created_at', { ascending: false });
+    return data || [];
   },
   getMediaItem: async (id: number) => {
-    const [item] = await db.select().from(media).where(eq(media.id, id));
-    return item || undefined;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('media').select('*').eq('id', id).single();
+    return data || undefined;
   },
   createMedia: async (item: InsertMedia) => {
-    const [created] = await db.insert(media).values(item).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('media').insert(item).select().single();
+    return data;
   },
   updateMedia: async (id: number, data: Partial<InsertMedia>) => {
-    const [updated] = await db.update(media).set(data).where(eq(media.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('media').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteMedia: async (id: number) => {
-    await db.delete(media).where(eq(media.id, id));
-  },
-
-  // Affiliations
-  getAllAffiliations: async () => {
-    return await db.select().from(affiliations).orderBy(affiliations.order);
-  },
-  createAffiliation: async (affiliation: InsertAffiliation) => {
-    const [created] = await db.insert(affiliations).values(affiliation).returning();
-    return created;
-  },
-  updateAffiliation: async (id: number, data: Partial<InsertAffiliation>) => {
-    const [updated] = await db.update(affiliations).set(data).where(eq(affiliations.id, id)).returning();
-    return updated || undefined;
-  },
-  deleteAffiliation: async (id: number) => {
-    await db.delete(affiliations).where(eq(affiliations.id, id));
+    if (!supabase) return;
+    await supabase.from('media').delete().eq('id', id);
   },
 
   // Contacts
   getAllContacts: async () => {
-    return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+    if (!supabase) return [];
+    const { data } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
+    return data || [];
   },
   createContact: async (contact: InsertContact) => {
-    const [created] = await db.insert(contacts).values(contact).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('contacts').insert(contact).select().single();
+    return data;
   },
   updateContact: async (id: number, data: Partial<InsertContact>) => {
-    const [updated] = await db.update(contacts).set(data).where(eq(contacts.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('contacts').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteContact: async (id: number) => {
-    await db.delete(contacts).where(eq(contacts.id, id));
+    if (!supabase) return;
+    await supabase.from('contacts').delete().eq('id', id);
   },
 
   // Site Settings
   getAllSiteSettings: async () => {
-    return await db.select().from(siteSettings);
+    if (!supabase) return [];
+    const { data } = await supabase.from('site_settings').select('*');
+    return data || [];
   },
   createSiteSetting: async (setting: InsertSiteSetting) => {
-    const [created] = await db.insert(siteSettings).values(setting).returning();
-    return created;
+    if (!supabase) return undefined;
+    const { data } = await supabase.from('site_settings').insert(setting).select().single();
+    return data;
   },
   updateSiteSetting: async (id: number, data: Partial<InsertSiteSetting>) => {
-    const [updated] = await db.update(siteSettings).set(data).where(eq(siteSettings.id, id)).returning();
+    if (!supabase) return undefined;
+    const { data: updated } = await supabase.from('site_settings').update(data).eq('id', id).select().single();
     return updated || undefined;
   },
   deleteSiteSetting: async (id: number) => {
-    await db.delete(siteSettings).where(eq(siteSettings.id, id));
+    if (!supabase) return;
+    await supabase.from('site_settings').delete().eq('id', id);
   },
 };

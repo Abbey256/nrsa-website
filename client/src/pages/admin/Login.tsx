@@ -34,23 +34,39 @@ export default function AdminLogin() {
     setError("");
     setIsLoading(true);
     try {
-      // Send login request to backend API
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/login`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password }),
-});
+      console.log('Making request to: /api/admin/login');
+      const res = await fetch('/api/admin/login', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const contentType = res.headers.get("content-type");
+      const isJson = contentType?.includes("application/json");
+      
+      if (!res.ok) {
+        if (isJson) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Login failed");
+        } else {
+          throw new Error(`Server error (${res.status}): ${res.statusText}`);
+        }
+      }
+      
+      if (!isJson) {
+        throw new Error("Server returned invalid response format");
+      }
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
-
-      // Store JWT token and admin info in localStorage for subsequent API requests
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("admin", JSON.stringify(data.admin));
-      
-      // Redirect to admin dashboard (route fixed in App.tsx)
       window.location.href = "/admin-nrsa-dashboard";
     } catch (err: any) {
-      setError(err.message || "Invalid credentials. Please try again.");
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError("Network error. Please check your connection.");
+      } else {
+        setError(err.message || "Invalid credentials. Please try again.");
+      }
       setIsLoading(false);
     }
   };

@@ -1,14 +1,29 @@
+import dotenv from 'dotenv';
+
+// Load environment variables first
+dotenv.config({ path: '.env.local' });
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from "express";
 import { createServer, Server } from "http";
 import rateLimit from "express-rate-limit";
+import cors from "cors";
 import { registerAllRoutes as registerRoutes } from "./routes.js";
 import { registerAuthRoutes } from "./auth.js";
 import { registerUploadRoutes } from "./upload.js";
-import { setupVite, serveStatic, log } from "./vite.js"; // Assuming these are correctly imported
+import { setupVite, serveStatic, log } from "./vite.js";
+import { createTables } from "./db.js";
 
 // Create Express app
 const app = express();
-app.use(express.json());
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+  next(err);
+});
 app.set("trust proxy", 1);
 
 // Rate limiter
@@ -77,12 +92,20 @@ const PORT = process.env.NODE_ENV === "production"
     : 5000;
 
 (async () => {
-    if (process.env.NODE_ENV === "development") {
-        await setupVite(app, server);
-    } 
-    // The ELSE block is now EMPTY because serveStatic was moved above.
+    try {
+        // Create database tables
+        await createTables();
+        
+        if (process.env.NODE_ENV === "development") {
+            await setupVite(app, server);
+        } 
+        // The ELSE block is now EMPTY because serveStatic was moved above.
 
-    server.listen(PORT, "0.0.0.0", () => {
-        log(`Server running on port ${PORT}`);
-    });
+        server.listen(PORT, "0.0.0.0", () => {
+            log(`Server running on port ${PORT}`);
+        });
+    } catch (error: any) {
+        console.error('Server startup error:', error.message);
+        process.exit(1);
+    }
 })();
