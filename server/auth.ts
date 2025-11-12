@@ -39,13 +39,17 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Get additional admin info from your database using EMAIL (not ID)
-      const { data: adminData } = await supabase
+      console.log("Querying admins table for email:", data.user.email);
+      const { data: adminData, error: adminError } = await supabase
         .from('admins')
-        .select('id, name, role')
+        .select('id, name, role, protected')
         .eq('email', data.user.email)
         .single();
 
+      console.log("Admin query result:", { adminData, adminError: adminError?.message });
+
       if (!adminData) {
+        console.error("Admin record not found for:", data.user.email);
         return res.status(403).json({ error: "Admin account not found in database" });
       }
 
