@@ -107,11 +107,11 @@ export const events = pgTable("events", {
 export const insertEventSchema = createInsertSchema(events, {
   eventDate: z.union([
     z.date(),
-    z.string().transform((str) => new Date(str))
+    z.string().min(1, "Event date is required").transform((str) => new Date(str))
   ]),
   registrationDeadline: z.union([
     z.date(),
-    z.string().transform((str) => str ? new Date(str) : undefined)
+    z.string().transform((str) => str && str.trim() !== "" ? new Date(str) : undefined)
   ]).optional(),
   registrationLink: z
     .string()

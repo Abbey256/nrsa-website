@@ -16,6 +16,7 @@ import { supabase } from "./lib/supabase.js";
 // Helper functions to convert between camelCase and snake_case
 function toSnakeCase(obj: any): any {
   if (obj === null || obj === undefined) return obj;
+  if (obj instanceof Date) return obj;
   if (Array.isArray(obj)) return obj.map(toSnakeCase);
   if (typeof obj !== 'object') return obj;
   
@@ -29,6 +30,7 @@ function toSnakeCase(obj: any): any {
 
 function toCamelCase(obj: any): any {
   if (obj === null || obj === undefined) return obj;
+  if (obj instanceof Date) return obj;
   if (Array.isArray(obj)) return obj.map(toCamelCase);
   if (typeof obj !== 'object') return obj;
   
