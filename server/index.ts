@@ -10,9 +10,9 @@ import rateLimit from "express-rate-limit";
 import cors from "cors";
 import { registerAllRoutes as registerRoutes } from "./routes";
 import { registerAuthRoutes } from "./auth";
-import { registerUploadRoutes } from "./upload";
-import { setupVite, serveStatic, log } from "./vite";
-import { createTables } from "./db";
+// import { registerUploadRoutes } from "./upload";
+// import { setupVite, serveStatic, log } from "./vite";
+// import { createTables } from "./db";
 
 // Create Express app
 const app = express();
@@ -65,7 +65,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ✅ STEP 1: REGISTER ALL API ROUTES (CORRECT)
 registerAuthRoutes(app);
-registerUploadRoutes(app);
+// registerUploadRoutes(app);
 registerRoutes(app);
 
 // Error handling (CORRECTLY PLACED AFTER API ROUTES)
@@ -77,34 +77,24 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // ... (After Error Handling middleware)
 
-// ✅ CRITICAL FIX: Add the serveStatic middleware NOW, before the server is created/listened to.
-if (process.env.NODE_ENV === "production") {
-    serveStatic(app); // THIS MUST BE HERE
-}
+// Static files not needed for API-only backend
 
 // Create HTTP server (This line remains)
 const server: Server = createServer(app);
 
 // Start server
-const PORT = process.env.NODE_ENV === "production"
-    ? parseInt(process.env.PORT || "10000")
-    : 5000;
+const PORT = parseInt(process.env.PORT || "5000");
 
-(async () => {
-    try {
-        // Create database tables
-        await createTables();
-        
-        if (process.env.NODE_ENV === "development") {
-            await setupVite(app, server);
-        } 
-        // The ELSE block is now EMPTY because serveStatic was moved above.
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
-        server.listen(PORT, "0.0.0.0", () => {
-            log(`Server running on port ${PORT}`);
-        });
-    } catch (error: any) {
-        console.error('Server startup error:', error.message);
-        process.exit(1);
-    }
-})();
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
+});
