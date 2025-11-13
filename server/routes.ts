@@ -87,10 +87,8 @@ export function registerAllRoutes(app: Express): void {
   // ---------- NEWS ----------
   app.get("/api/news", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('news').select('*').order('published_at', { ascending: false });
-      if (error) throw error;
-      res.json(data || []);
+      const newsArticles = await storage.getAllNews();
+      res.json(newsArticles);
     } catch (e: any) { 
       console.error('News API error:', e.message);
       res.status(500).json({ error: e.message }); 
@@ -577,6 +575,22 @@ app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
       const existing = await storage.getAdminByEmail(email);
       if (existing) return res.status(409).json({ error: "Admin already exists" });
 
+      // Create user in Supabase Auth first
+      if (!supabase) {
+        return res.status(500).json({ error: "Authentication service not configured" });
+      }
+
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true
+      });
+
+      if (authError) {
+        return res.status(400).json({ error: `Auth creation failed: ${authError.message}` });
+      }
+
+      // Then create admin record in database
       const passwordHash = await bcrypt.hash(password, 10);
       const admin = await storage.createAdmin({ name, email, passwordHash, role: role || "admin" });
       res.status(201).json({ id: admin.id, name: admin.name, email: admin.email, role: admin.role });

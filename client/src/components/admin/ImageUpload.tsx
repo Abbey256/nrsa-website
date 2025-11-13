@@ -72,7 +72,7 @@ export function ImageUpload({ value, onChange, label = "Image" }: ImageUploadPro
 
       // Create form data
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file);
 
       // Upload to server
       const response = await fetch("/api/upload", {

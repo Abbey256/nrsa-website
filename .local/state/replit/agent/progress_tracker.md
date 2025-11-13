@@ -2,6 +2,12 @@
 [x] 2. Restart the workflow to see if the project is working
 [x] 3. Verify the project is working using the feedback tool
 [x] 4. Inform user the import is completed and they can start building, mark the import as completed using the complete_project_import tool
+[x] 5. SYSTEM OVERHAUL - Fixed database schema (added missing columns: subject, is_external, thumbnail_url)
+[x] 6. SYSTEM OVERHAUL - Implemented snake_case ↔ camelCase conversion in storage layer for data persistence
+[x] 7. SYSTEM OVERHAUL - Fixed file upload field name mismatch (image → file)
+[x] 8. SYSTEM OVERHAUL - Added Supabase Auth user creation to admin creation flow
+[x] 9. SYSTEM OVERHAUL - Fixed News route to use storage layer (returns properly converted camelCase data)
+[x] 10. SYSTEM OVERHAUL - Restarted workflow to apply all fixes
 [x] 43. **EMERGENCY FIX** - (Nov 13, 2025) Received and configured all Supabase secrets (URL, ANON_KEY, SERVICE_ROLE_KEY, VITE_SUPABASE_KEY, JWT_SECRET)
 [x] 44. **EMERGENCY FIX** - Created admin user in Supabase Auth using setupSupabaseAdmin.ts script
 [x] 45. **EMERGENCY FIX** - Fixed rate limiter to be more permissive in development (1000 requests per 15min vs 300 in production)
