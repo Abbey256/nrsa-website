@@ -175,15 +175,12 @@ export const clubs = pgTable("clubs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertClubSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  logoUrl: z.string().optional(),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  managerName: z.string().min(1, "Manager name is required"),
-  contactEmail: z.string().email("Invalid email address"),
-  contactPhone: z.string().min(1, "Contact phone is required"),
-  isRegistered: z.boolean().default(true),
+export const insertClubSchema = createInsertSchema(clubs, {
+  contactEmail: z.string().trim().email("Invalid email address"),
+  contactPhone: z.string().trim().min(10, "Phone number must be at least 10 characters"),
+}).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertClub = z.infer<typeof insertClubSchema>;
@@ -296,7 +293,15 @@ export const insertContactSchema = createInsertSchema(contacts, {
   isRead: true,
 });
 
+export const updateContactSchema = createInsertSchema(contacts, {
+  subject: z.string().optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertContact = z.infer<typeof insertContactSchema>;
+export type UpdateContact = z.infer<typeof updateContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 
 // Site Settings

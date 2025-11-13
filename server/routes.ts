@@ -12,6 +12,7 @@ import {
   insertLeaderSchema,
   insertMediaSchema,
   insertContactSchema,
+  updateContactSchema,
   insertMemberStateSchema,
   insertSiteSettingSchema,
 } from "@shared/schema";
@@ -55,10 +56,8 @@ export function registerAllRoutes(app: Express): void {
   // ---------- HERO SLIDES ----------
   app.get("/api/hero-slides", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('hero_slides').select('*').order('id');
-      if (error) throw error;
-      res.json(data || []);
+      const slides = await storage.getAllHeroSlides();
+      res.json(slides);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -71,7 +70,8 @@ export function registerAllRoutes(app: Express): void {
 
   app.patch("/api/hero-slides/:id", requireAdmin, async (req, res) => {
     try {
-      const slide = await storage.updateHeroSlide(parseInt(req.params.id), req.body);
+      const validatedBody = insertHeroSlideSchema.partial().parse(req.body);
+      const slide = await storage.updateHeroSlide(parseInt(req.params.id), validatedBody);
       if (!slide) return res.status(404).json({ error: "Slide not found" });
       res.json(slide);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
@@ -119,7 +119,8 @@ export function registerAllRoutes(app: Express): void {
 
   app.patch("/api/news/:id", requireAdmin, async (req, res) => {
     try {
-      const article = await storage.updateNews(parseInt(req.params.id), req.body);
+      const validatedBody = insertNewsSchema.partial().parse(req.body);
+      const article = await storage.updateNews(parseInt(req.params.id), validatedBody);
       if (!article) return res.status(404).json({ error: "News not found" });
       res.json(article);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
@@ -135,10 +136,8 @@ export function registerAllRoutes(app: Express): void {
   // ---------- EVENTS ----------
   app.get("/api/events", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('events').select('*').order('event_date', { ascending: false });
-      if (error) throw error;
-      res.json(data || []);
+      const events = await storage.getAllEvents();
+      res.json(events);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -168,10 +167,8 @@ export function registerAllRoutes(app: Express): void {
   // ---------- PLAYERS ----------
   app.get("/api/players", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('players').select('*').order('name');
-      if (error) throw error;
-      res.json(data || []);
+      const players = await storage.getAllPlayers();
+      res.json(players);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -184,7 +181,8 @@ export function registerAllRoutes(app: Express): void {
 
   app.patch("/api/players/:id", requireAdmin, async (req, res) => {
     try {
-      const player = await storage.updatePlayer(parseInt(req.params.id), req.body);
+      const validatedBody = insertPlayerSchema.partial().parse(req.body);
+      const player = await storage.updatePlayer(parseInt(req.params.id), validatedBody);
       if (!player) return res.status(404).json({ error: "Player not found" });
       res.json(player);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
@@ -200,10 +198,8 @@ export function registerAllRoutes(app: Express): void {
   // ---------- CLUBS ----------
   app.get("/api/clubs", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('clubs').select('*').order('name');
-      if (error) throw error;
-      res.json(data || []);
+      const clubs = await storage.getAllClubs();
+      res.json(clubs);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -216,7 +212,8 @@ export function registerAllRoutes(app: Express): void {
 
   app.patch("/api/clubs/:id", requireAdmin, async (req, res) => {
     try {
-      const club = await storage.updateClub(parseInt(req.params.id), req.body);
+      const validatedBody = insertClubSchema.partial().parse(req.body);
+      const club = await storage.updateClub(parseInt(req.params.id), validatedBody);
       if (!club) return res.status(404).json({ error: "Club not found" });
       res.json(club);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
@@ -232,10 +229,8 @@ export function registerAllRoutes(app: Express): void {
 // ---------- MEMBER STATES ----------
 app.get("/api/member-states", async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
-    const { data, error } = await supabase.from('member_states').select('*').order('name');
-    if (error) throw error;
-    res.json(data || []);
+    const states = await storage.getAllMemberStates();
+    res.json(states);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -243,13 +238,11 @@ app.get("/api/member-states", async (req, res) => {
 
 app.get("/api/member-states/:id", async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const { data, error } = await supabase.from('member_states').select('*').eq('id', id).maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Member State not found" });
-    res.json(data);
+    const state = await storage.getMemberState(id);
+    if (!state) return res.status(404).json({ error: "Member State not found" });
+    res.json(state);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -268,7 +261,8 @@ app.patch("/api/member-states/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const state = await storage.updateMemberState(id, req.body);
+    const validatedBody = insertMemberStateSchema.partial().parse(req.body);
+    const state = await storage.updateMemberState(id, validatedBody);
     if (!state) return res.status(404).json({ error: "Member State not found" });
     res.json(state);
   } catch (e: any) {
@@ -291,14 +285,8 @@ app.delete("/api/member-states/:id", requireAdmin, async (req, res) => {
 // ---------- LEADERS ----------
 app.get("/api/leaders", async (req, res) => {
   try {
-    console.log('Leaders endpoint called');
-    if (!supabase) {
-      return res.status(500).json({ error: "Database not configured" });
-    }
-    const { data, error } = await supabase.from('leaders').select('*').order('order');
-    if (error) throw error;
-    console.log('Leaders data:', data);
-    res.json(data || []);
+    const leaders = await storage.getAllLeaders();
+    res.json(leaders);
   } catch (e: any) {
     console.error('Leaders endpoint error:', e);
     res.status(500).json({ error: e.message });
@@ -308,13 +296,11 @@ app.get("/api/leaders", async (req, res) => {
 // Get a single leader by ID
 app.get("/api/leaders/:id", async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const { data, error } = await supabase.from('leaders').select('*').eq('id', id).maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Leader not found" });
-    res.json(data);
+    const leader = await storage.getLeader(id);
+    if (!leader) return res.status(404).json({ error: "Leader not found" });
+    res.json(leader);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -331,14 +317,12 @@ app.post("/api/leaders", requireAdmin, async (req, res) => {
 
 app.patch("/api/leaders/:id", requireAdmin, async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const updatedData = insertLeaderSchema.partial().parse(req.body);
-    const { data, error } = await supabase.from('leaders').update(updatedData).eq('id', id).select().maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Leader not found" });
-    res.json(data);
+    const validatedBody = insertLeaderSchema.partial().parse(req.body);
+    const leader = await storage.updateLeader(id, validatedBody);
+    if (!leader) return res.status(404).json({ error: "Leader not found" });
+    res.json(leader);
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
@@ -346,11 +330,9 @@ app.patch("/api/leaders/:id", requireAdmin, async (req, res) => {
 
 app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const { error } = await supabase.from('leaders').delete().eq('id', id);
-    if (error) throw error;
+    await storage.deleteLeader(id);
     res.status(204).send();
   } catch (e: any) {
     res.status(500).json({ error: e.message });
@@ -372,22 +354,18 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
 
   app.get("/api/media", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      res.json(data || []);
+      const media = await storage.getAllMedia();
+      res.json(media);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
   app.get("/api/media/:id", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-      const { data, error } = await supabase.from('media').select('*').eq('id', id).maybeSingle();
-      if (error) throw error;
-      if (!data) return res.status(404).json({ error: "Media not found" });
-      res.json(data);
+      const item = await storage.getMediaItem(id);
+      if (!item) return res.status(404).json({ error: "Media not found" });
+      res.json(item);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -481,12 +459,8 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
 // ---------- CONTACTS ----------
 app.post("/api/contacts", async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
-    const contactData = insertContactSchema.parse(req.body);
-    const { data, error } = await supabase.from('contacts').insert(contactData).select().maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(500).json({ error: "Failed to create contact" });
-    res.status(201).json(data);
+    const contact = await storage.createContact(insertContactSchema.parse(req.body));
+    res.status(201).json(contact);
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
@@ -495,10 +469,8 @@ app.post("/api/contacts", async (req, res) => {
 // Admin-only endpoints
 app.get("/api/contacts", async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ error: "Database not configured" });
-    const { data, error } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    res.json(data || []);
+    const contacts = await storage.getAllContacts();
+    res.json(contacts);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -521,7 +493,8 @@ app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const updated = await storage.updateContact(id, req.body);
+    const validatedBody = updateContactSchema.partial().parse(req.body);
+    const updated = await storage.updateContact(id, validatedBody);
     if (!updated) return res.status(404).json({ error: "Contact not found" });
     res.json(updated);
   } catch (e: any) {
@@ -543,10 +516,8 @@ app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
   // ---------- SITE SETTINGS ----------
   app.get("/api/site-settings", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
-      const { data, error } = await supabase.from('site_settings').select('*');
-      if (error) throw error;
-      res.json(data || []);
+      const settings = await storage.getAllSiteSettings();
+      res.json(settings);
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
@@ -554,7 +525,8 @@ app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-      const setting = await storage.updateSiteSetting(id, req.body);
+      const validatedBody = insertSiteSettingSchema.partial().parse(req.body);
+      const setting = await storage.updateSiteSetting(id, validatedBody);
       if (!setting) return res.status(404).json({ error: "Setting not found" });
       res.json(setting);
     } catch (e: any) { res.status(400).json({ error: e.message }); }

@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 13, 2025 - Schema Validation & Data Transformation Standardization**:
+- **Schema Validation Enhancement**: Added `insertSchema.partial().parse()` validation to ALL PATCH endpoints (hero-slides, news, events, players, clubs, member-states, leaders, contacts, site-settings) to prevent undefined → null conversion bugs during partial updates
+- **Clubs Schema Fix**: Restored email/phone validation to `insertClubSchema` using `createInsertSchema` refinements with `.trim()`, `.email()`, and `.min(10)` validators
+- **Contacts Admin Fix**: Created separate `updateContactSchema` that includes `isRead` field (omitted from `insertContactSchema`) to restore admin "mark as read" functionality while preventing clients from manipulating read status on creation
+- **Storage Layer Enforcement**: Verified all API routes exclusively use the storage layer (no direct `supabase.from()` bypasses) ensuring consistent camelCase ↔ snake_case transformation between frontend and database
+- **Upload Pipeline Documentation**: Confirmed `/api/upload` endpoint properly configured for Supabase Storage uploads to `nrsa-uploads` bucket (requires bucket to be created and set to public access in Supabase dashboard)
+- **Architect Review**: All changes architect-reviewed and approved for production
+
 **November 4, 2025 - Production Deployment Ready**:
 - **Route Consolidation**: Removed duplicate `apiRoutes.ts`, consolidated all API routes into single `routes.ts` file
 - **TypeScript Build Fixes**: Resolved all TypeScript compilation errors, clean build to `dist/` directory
