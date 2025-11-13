@@ -2,6 +2,8 @@
 [x] 2. Restart the workflow to see if the project is working
 [x] 3. Verify the project is working using the feedback tool
 [x] 4. Inform user the import is completed and they can start building, mark the import as completed using the complete_project_import tool
+[x] 52. **🚨 CRITICAL DISCOVERY** - (Nov 13, 2025) Identified ROOT CAUSE: Supabase RLS blocking ALL CRUD operations
+[ ] 53. **🚨 USER ACTION REQUIRED** - Must run SQL in Supabase dashboard to disable RLS on all tables (see URGENT_FIX_RLS.md)
 [x] 5. SYSTEM OVERHAUL - Fixed database schema (added missing columns: subject, is_external, thumbnail_url)
 [x] 6. SYSTEM OVERHAUL - Implemented snake_case ↔ camelCase conversion in storage layer for data persistence
 [x] 7. SYSTEM OVERHAUL - Fixed file upload field name mismatch (image → file)
