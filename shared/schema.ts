@@ -276,13 +276,15 @@ export const contacts = pgTable("contacts", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
-  subject: text("subject").notNull(),
+  subject: text("subject"),
   message: text("message").notNull(),
   isRead: boolean("is_read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertContactSchema = createInsertSchema(contacts).omit({
+export const insertContactSchema = createInsertSchema(contacts, {
+  subject: z.string().optional(),
+}).omit({
   id: true,
   createdAt: true,
   isRead: true,
