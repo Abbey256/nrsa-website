@@ -492,8 +492,7 @@ app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const validatedBody = updateContactSchema.partial().parse(req.body);
-    const updated = await storage.updateContact(id, validatedBody);
+    const updated = await storage.updateContact(id, req.body);
     if (!updated) return res.status(404).json({ error: "Contact not found" });
     res.json(updated);
   } catch (e: any) {
