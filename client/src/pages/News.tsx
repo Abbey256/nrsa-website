@@ -95,7 +95,7 @@ export default function News() {
                     )}
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
-                      <span>{format(new Date(item.publishedAt), "MMM dd, yyyy")}</span>
+                      <span>{item.publishedAt ? format(new Date(item.publishedAt), "MMM dd, yyyy") : "No date"}</span>
                     </div>
                   </div>
                   <CardTitle className="text-xl leading-tight">{item.title}</CardTitle>

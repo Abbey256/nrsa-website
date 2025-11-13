@@ -151,7 +151,7 @@ export default function NewsDetail({ id: propId }: { id?: string } = {}) {
               )}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
-                <span className="text-sm">{format(new Date(article.publishedAt), "MMMM dd, yyyy")}</span>
+                <span className="text-sm">{article.publishedAt ? format(new Date(article.publishedAt), "MMMM dd, yyyy") : "No date"}</span>
               </div>
             </div>
 
