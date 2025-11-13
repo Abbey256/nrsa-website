@@ -44,7 +44,7 @@ export function registerAuthRoutes(app: Express) {
         .from('admins')
         .select('id, name, role, protected')
         .eq('email', data.user.email)
-        .single();
+        .maybeSingle();
 
       console.log("Admin query result:", { adminData, adminError: adminError?.message });
 

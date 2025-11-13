@@ -15,10 +15,7 @@ export default function News() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('News component - Loading:', isLoading, 'Error:', error, 'Data:', newsItems);
-  }, [isLoading, error, newsItems]);
+
 
   if (error) {
     console.error('News fetch error:', error);
