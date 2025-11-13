@@ -82,8 +82,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // Create HTTP server (This line remains)
 const server: Server = createServer(app);
 
-// Start server
-const PORT = parseInt(process.env.PORT || "5000");
+// Start server - Railway assigns PORT automatically
+const PORT = parseInt(process.env.PORT || "3000");
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
