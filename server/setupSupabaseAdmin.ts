@@ -1,9 +1,16 @@
 import { supabase } from "./lib/supabase.js";
 
 async function setupAdmin() {
-  const email = "admin@nrsa.com.ng";
-  const password = "nrsa@Admin2024!";
-  const name = "NRSA Super Administrator";
+  const email = process.env.ADMIN_EMAIL || "admin@nrsa.com.ng";
+  const password = process.env.ADMIN_PASSWORD;
+  const name = process.env.ADMIN_NAME || "NRSA Super Administrator";
+
+  if (!password) {
+    console.error("❌ ERROR: ADMIN_PASSWORD environment variable is required");
+    console.error("Set it before running this script:");
+    console.error("  ADMIN_PASSWORD=YourSecurePassword tsx server/setupSupabaseAdmin.ts");
+    process.exit(1);
+  }
 
   console.log("🔧 Setting up Supabase admin account...");
   console.log("Email:", email);
@@ -78,7 +85,7 @@ async function setupAdmin() {
     console.log("\n✅ SETUP COMPLETE!");
     console.log("\nYou can now login with:");
     console.log("Email:", email);
-    console.log("Password: nrsa@Admin2024!");
+    console.log("Password: [password from environment]");
 
   } catch (error: any) {
     console.error("\n❌ Setup failed:", error.message);
