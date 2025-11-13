@@ -1,5 +1,6 @@
 import { Express } from "express";
 import { supabase } from "./lib/supabase";
+import { storage } from "./storage";
 
 export function registerAuthRoutes(app: Express) {
   // Validate Supabase client initialization
@@ -40,13 +41,9 @@ export function registerAuthRoutes(app: Express) {
 
       // Get additional admin info from your database using EMAIL (not ID)
       console.log("Querying admins table for email:", data.user.email);
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select('id, name, role, protected')
-        .eq('email', data.user.email)
-        .maybeSingle();
+      const adminData = await storage.getAdminByEmail(data.user.email!);
 
-      console.log("Admin query result:", { adminData, adminError: adminError?.message });
+      console.log("Admin query result:", { adminData });
 
       if (!adminData) {
         console.error("Admin record not found for:", data.user.email);
