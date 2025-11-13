@@ -47,7 +47,7 @@ export default defineConfig({
 
   // ⚙️ Build Settings
   build: {
-    outDir: path.resolve(rootDir, "dist", "server"),
+    outDir: path.resolve(rootDir, "dist"),
     emptyOutDir: true,
     ssr: true, // Explicitly mark this as a server build
     lib: {

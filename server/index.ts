@@ -8,11 +8,11 @@ import express, { Request, Response, NextFunction } from "express";
 import { createServer, Server } from "http";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
-import { registerAllRoutes as registerRoutes } from "./routes.js";
-import { registerAuthRoutes } from "./auth.js";
-import { registerUploadRoutes } from "./upload.js";
-import { setupVite, serveStatic, log } from "./vite.js";
-import { createTables } from "./db.js";
+import { registerAllRoutes as registerRoutes } from "./routes";
+import { registerAuthRoutes } from "./auth";
+import { registerUploadRoutes } from "./upload";
+import { setupVite, serveStatic, log } from "./vite";
+import { createTables } from "./db";
 
 // Create Express app
 const app = express();
