@@ -10,7 +10,7 @@ import rateLimit from "express-rate-limit";
 import cors from "cors";
 import { registerAllRoutes as registerRoutes } from "./routes";
 import { registerAuthRoutes } from "./auth";
-// import { registerUploadRoutes } from "./upload";
+import { registerUploadRoutes } from "./upload";
 // import { setupVite, serveStatic, log } from "./vite";
 // import { createTables } from "./db";
 
@@ -65,7 +65,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ✅ STEP 1: REGISTER ALL API ROUTES (CORRECT)
 registerAuthRoutes(app);
-// registerUploadRoutes(app);
+registerUploadRoutes(app);
 registerRoutes(app);
 
 // Error handling (CORRECTLY PLACED AFTER API ROUTES)
