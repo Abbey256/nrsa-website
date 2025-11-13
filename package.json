@@ -10,7 +10,7 @@
     "dev:clean": "vite --force",
     "clean": "rmdir /s /q node_modules\\.vite 2>nul || echo done",
     "build:client": "cross-env NODE_ENV=production vite build",
-    "build:server": "vite build --config vite.config.server.js",
+    "build:server": "vite build --config vite.config.server.js --mode production",
     "build": "npm run build:client && npm run build:server",
     "start": "cross-env NODE_ENV=production node dist/server/index.js",
     "check": "tsc",
