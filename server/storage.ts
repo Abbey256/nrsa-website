@@ -13,6 +13,33 @@ import {
 
 import { supabase } from "./lib/supabase.js";
 
+// Helper functions to convert between camelCase and snake_case
+function toSnakeCase(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toSnakeCase);
+  if (typeof obj !== 'object') return obj;
+  
+  const snakeObj: any = {};
+  for (const key in obj) {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    snakeObj[snakeKey] = toSnakeCase(obj[key]);
+  }
+  return snakeObj;
+}
+
+function toCamelCase(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toCamelCase);
+  if (typeof obj !== 'object') return obj;
+  
+  const camelObj: any = {};
+  for (const key in obj) {
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    camelObj[camelKey] = toCamelCase(obj[key]);
+  }
+  return camelObj;
+}
+
 export const storage = {
   // Admin methods
   getAdminByEmail: async (email: string) => {
@@ -20,7 +47,7 @@ export const storage = {
     try {
       const { data, error } = await supabase.from('admins').select('*').eq('email', email).maybeSingle();
       if (error) throw error;
-      return data || undefined;
+      return toCamelCase(data) || undefined;
     } catch (error: any) {
       console.error('Error getting admin by email:', error.message);
       return undefined;
@@ -31,7 +58,7 @@ export const storage = {
     try {
       const { data, error } = await supabase.from('admins').select('*').eq('id', id).maybeSingle();
       if (error) throw error;
-      return data || undefined;
+      return toCamelCase(data) || undefined;
     } catch (error: any) {
       console.error('Error getting admin by ID:', error.message);
       return undefined;
@@ -39,20 +66,20 @@ export const storage = {
   },
   createAdmin: async (adminData: InsertAdmin) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('admins').insert(adminData).select().maybeSingle();
+    const { data, error } = await supabase.from('admins').insert(toSnakeCase(adminData)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   getAllAdmins: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('admins').select('id, name, email, role, created_at').order('created_at', { ascending: false });
-    return data || [];
+    return toCamelCase(data) || [];
   },
   updateAdmin: async (id: number, data: Partial<Admin>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('admins').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('admins').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteAdmin: async (id: number) => {
     if (!supabase) return;
@@ -62,25 +89,25 @@ export const storage = {
   getAllNews: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('news').select('*').order('published_at', { ascending: false });
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getNews: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('news').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createNews: async (article: InsertNews) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('news').insert(article).select().maybeSingle();
+    const { data, error } = await supabase.from('news').insert(toSnakeCase(article)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateNews: async (id: number, data: Partial<InsertNews>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('news').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('news').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteNews: async (id: number) => {
     if (!supabase) return;
@@ -91,25 +118,25 @@ export const storage = {
   getAllEvents: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('events').select('*').order('event_date', { ascending: false });
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getEvent: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('events').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createEvent: async (event: InsertEvent) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('events').insert(event).select().maybeSingle();
+    const { data, error } = await supabase.from('events').insert(toSnakeCase(event)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateEvent: async (id: number, data: Partial<InsertEvent>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('events').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('events').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteEvent: async (id: number) => {
     if (!supabase) return;
@@ -120,25 +147,25 @@ export const storage = {
   getAllPlayers: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('players').select('*').order('name');
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getPlayer: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('players').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createPlayer: async (player: InsertPlayer) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('players').insert(player).select().maybeSingle();
+    const { data, error } = await supabase.from('players').insert(toSnakeCase(player)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updatePlayer: async (id: number, data: Partial<InsertPlayer>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('players').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('players').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deletePlayer: async (id: number) => {
     if (!supabase) return;
@@ -149,25 +176,25 @@ export const storage = {
   getAllClubs: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('clubs').select('*').order('name');
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getClub: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('clubs').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createClub: async (club: InsertClub) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('clubs').insert(club).select().maybeSingle();
+    const { data, error } = await supabase.from('clubs').insert(toSnakeCase(club)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateClub: async (id: number, data: Partial<InsertClub>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('clubs').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('clubs').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteClub: async (id: number) => {
     if (!supabase) return;
@@ -180,7 +207,7 @@ export const storage = {
     try {
       const { data, error } = await supabase.from('leaders').select('*').order('order');
       if (error) throw error;
-      return data || [];
+      return toCamelCase(data) || [];
     } catch (error: any) {
       console.error('Error getting all leaders:', error.message);
       return [];
@@ -190,19 +217,19 @@ export const storage = {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('leaders').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createLeader: async (leader: InsertLeader) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('leaders').insert(leader).select().maybeSingle();
+    const { data, error } = await supabase.from('leaders').insert(toSnakeCase(leader)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateLeader: async (id: number, data: Partial<InsertLeader>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('leaders').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('leaders').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteLeader: async (id: number) => {
     if (!supabase) return;
@@ -213,25 +240,25 @@ export const storage = {
   getAllMedia: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('media').select('*').order('created_at', { ascending: false });
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getMediaItem: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('media').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createMedia: async (item: InsertMedia) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('media').insert(item).select().maybeSingle();
+    const { data, error } = await supabase.from('media').insert(toSnakeCase(item)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateMedia: async (id: number, data: Partial<InsertMedia>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('media').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('media').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteMedia: async (id: number) => {
     if (!supabase) return;
@@ -242,19 +269,19 @@ export const storage = {
   getAllContacts: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
-    return data || [];
+    return toCamelCase(data) || [];
   },
   createContact: async (contact: InsertContact) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('contacts').insert(contact).select().maybeSingle();
+    const { data, error } = await supabase.from('contacts').insert(toSnakeCase(contact)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateContact: async (id: number, data: Partial<InsertContact>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('contacts').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('contacts').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteContact: async (id: number) => {
     if (!supabase) return;
@@ -265,19 +292,19 @@ export const storage = {
   getAllSiteSettings: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('site_settings').select('*');
-    return data || [];
+    return toCamelCase(data) || [];
   },
   createSiteSetting: async (setting: InsertSiteSetting) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('site_settings').insert(setting).select().maybeSingle();
+    const { data, error } = await supabase.from('site_settings').insert(toSnakeCase(setting)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateSiteSetting: async (id: number, data: Partial<InsertSiteSetting>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('site_settings').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('site_settings').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteSiteSetting: async (id: number) => {
     if (!supabase) return;
@@ -288,25 +315,25 @@ export const storage = {
   getAllMemberStates: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('member_states').select('*').order('name');
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getMemberState: async (id: number) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('member_states').select('*').eq('id', id).maybeSingle();
+    const { data, error} = await supabase.from('member_states').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createMemberState: async (state: InsertMemberState) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('member_states').insert(state).select().maybeSingle();
+    const { data, error } = await supabase.from('member_states').insert(toSnakeCase(state)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateMemberState: async (id: number, data: Partial<InsertMemberState>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('member_states').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('member_states').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteMemberState: async (id: number) => {
     if (!supabase) return;
@@ -317,25 +344,25 @@ export const storage = {
   getAllHeroSlides: async () => {
     if (!supabase) return [];
     const { data } = await supabase.from('hero_slides').select('*').order('id');
-    return data || [];
+    return toCamelCase(data) || [];
   },
   getHeroSlide: async (id: number) => {
     if (!supabase) return undefined;
     const { data, error } = await supabase.from('hero_slides').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data || undefined;
+    return toCamelCase(data) || undefined;
   },
   createHeroSlide: async (slide: InsertHeroSlide) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('hero_slides').insert(slide).select().maybeSingle();
+    const { data, error } = await supabase.from('hero_slides').insert(toSnakeCase(slide)).select().maybeSingle();
     if (error) throw error;
-    return data;
+    return toCamelCase(data);
   },
   updateHeroSlide: async (id: number, data: Partial<InsertHeroSlide>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('hero_slides').update(data).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('hero_slides').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
-    return updated || undefined;
+    return toCamelCase(updated) || undefined;
   },
   deleteHeroSlide: async (id: number) => {
     if (!supabase) return;
