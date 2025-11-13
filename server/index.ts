@@ -26,11 +26,10 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 app.set("trust proxy", 1);
 
-// Rate limiter
-// ... (Rate limiter code is fine)
+// Rate limiter - more generous in development
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300,
+    max: process.env.NODE_ENV === 'production' ? 300 : 1000,
     standardHeaders: true,
     legacyHeaders: false,
 }));
