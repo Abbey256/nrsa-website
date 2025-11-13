@@ -175,9 +175,15 @@ export const clubs = pgTable("clubs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertClubSchema = createInsertSchema(clubs).omit({
-  id: true,
-  createdAt: true,
+export const insertClubSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  logoUrl: z.string().optional(),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  managerName: z.string().min(1, "Manager name is required"),
+  contactEmail: z.string().email("Invalid email address"),
+  contactPhone: z.string().min(1, "Contact phone is required"),
+  isRegistered: z.boolean().default(true),
 });
 
 export type InsertClub = z.infer<typeof insertClubSchema>;
