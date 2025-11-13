@@ -245,7 +245,7 @@ app.get("/api/member-states/:id", async (req, res) => {
     if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const { data, error } = await supabase.from('member_states').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('member_states').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: "Member State not found" });
     res.json(data);
@@ -310,7 +310,7 @@ app.get("/api/leaders/:id", async (req, res) => {
     if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const { data, error } = await supabase.from('leaders').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('leaders').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: "Leader not found" });
     res.json(data);
@@ -334,7 +334,7 @@ app.patch("/api/leaders/:id", requireAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const updatedData = insertLeaderSchema.partial().parse(req.body);
-    const { data, error } = await supabase.from('leaders').update(updatedData).eq('id', id).select().single();
+    const { data, error } = await supabase.from('leaders').update(updatedData).eq('id', id).select().maybeSingle();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: "Leader not found" });
     res.json(data);
@@ -383,7 +383,7 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
       if (!supabase) return res.status(500).json({ error: "Database not configured" });
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-      const { data, error } = await supabase.from('media').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('media').select('*').eq('id', id).maybeSingle();
       if (error) throw error;
       if (!data) return res.status(404).json({ error: "Media not found" });
       res.json(data);
@@ -482,8 +482,9 @@ app.post("/api/contacts", async (req, res) => {
   try {
     if (!supabase) return res.status(500).json({ error: "Database not configured" });
     const contactData = insertContactSchema.parse(req.body);
-    const { data, error } = await supabase.from('contacts').insert(contactData).select().single();
+    const { data, error } = await supabase.from('contacts').insert(contactData).select().maybeSingle();
     if (error) throw error;
+    if (!data) return res.status(500).json({ error: "Failed to create contact" });
     res.status(201).json(data);
   } catch (e: any) {
     res.status(400).json({ error: e.message });

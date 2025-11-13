@@ -18,7 +18,7 @@ export const storage = {
   getAdminByEmail: async (email: string) => {
     if (!supabase) return undefined;
     try {
-      const { data, error } = await supabase.from('admins').select('*').eq('email', email).single();
+      const { data, error } = await supabase.from('admins').select('*').eq('email', email).maybeSingle();
       if (error) throw error;
       return data || undefined;
     } catch (error: any) {
@@ -29,7 +29,7 @@ export const storage = {
   getAdminById: async (id: number) => {
     if (!supabase) return undefined;
     try {
-      const { data, error } = await supabase.from('admins').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('admins').select('*').eq('id', id).maybeSingle();
       if (error) throw error;
       return data || undefined;
     } catch (error: any) {
@@ -64,7 +64,8 @@ export const storage = {
   },
   getNews: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('news').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('news').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createNews: async (article: InsertNews) => {
@@ -90,7 +91,8 @@ export const storage = {
   },
   getEvent: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('events').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('events').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createEvent: async (event: InsertEvent) => {
@@ -116,7 +118,8 @@ export const storage = {
   },
   getPlayer: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('players').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('players').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createPlayer: async (player: InsertPlayer) => {
@@ -142,7 +145,8 @@ export const storage = {
   },
   getClub: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('clubs').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('clubs').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createClub: async (club: InsertClub) => {
@@ -174,7 +178,8 @@ export const storage = {
   },
   getLeader: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('leaders').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('leaders').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createLeader: async (leader: InsertLeader) => {
@@ -200,7 +205,8 @@ export const storage = {
   },
   getMediaItem: async (id: number) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('media').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('media').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
     return data || undefined;
   },
   createMedia: async (item: InsertMedia) => {
@@ -258,5 +264,63 @@ export const storage = {
   deleteSiteSetting: async (id: number) => {
     if (!supabase) return;
     await supabase.from('site_settings').delete().eq('id', id);
+  },
+
+  // Member States
+  getAllMemberStates: async () => {
+    if (!supabase) return [];
+    const { data } = await supabase.from('member_states').select('*').order('name');
+    return data || [];
+  },
+  getMemberState: async (id: number) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('member_states').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data || undefined;
+  },
+  createMemberState: async (state: InsertMemberState) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('member_states').insert(state).select().maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  updateMemberState: async (id: number, data: Partial<InsertMemberState>) => {
+    if (!supabase) return undefined;
+    const { data: updated, error } = await supabase.from('member_states').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
+    return updated || undefined;
+  },
+  deleteMemberState: async (id: number) => {
+    if (!supabase) return;
+    await supabase.from('member_states').delete().eq('id', id);
+  },
+
+  // Hero Slides
+  getAllHeroSlides: async () => {
+    if (!supabase) return [];
+    const { data } = await supabase.from('hero_slides').select('*').order('id');
+    return data || [];
+  },
+  getHeroSlide: async (id: number) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('hero_slides').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data || undefined;
+  },
+  createHeroSlide: async (slide: InsertHeroSlide) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('hero_slides').insert(slide).select().maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  updateHeroSlide: async (id: number, data: Partial<InsertHeroSlide>) => {
+    if (!supabase) return undefined;
+    const { data: updated, error } = await supabase.from('hero_slides').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
+    return updated || undefined;
+  },
+  deleteHeroSlide: async (id: number) => {
+    if (!supabase) return;
+    await supabase.from('hero_slides').delete().eq('id', id);
   },
 };
