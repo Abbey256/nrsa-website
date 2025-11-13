@@ -12,7 +12,6 @@ import {
   insertLeaderSchema,
   insertMediaSchema,
   insertContactSchema,
-  updateContactSchema,
   insertMemberStateSchema,
   insertSiteSettingSchema,
 } from "@shared/schema";

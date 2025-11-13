@@ -39,7 +39,14 @@ export default defineConfig(async () => {
       emptyOutDir: true,
       rollupOptions: {
         onwarn: () => {},
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+          },
+        },
       },
+      chunkSizeWarningLimit: 1000,
+      sourcemap: false,
     },
     server: {
       host: true,
