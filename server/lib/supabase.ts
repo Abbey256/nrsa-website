@@ -2,9 +2,10 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config({ path: '.env.development' });
+// Load environment variables in order of priority
 dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env.development' });
+dotenv.config({ path: '.env.production' });
 dotenv.config();
 
 let supabase: SupabaseClient | null = null;
