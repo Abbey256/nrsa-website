@@ -80,17 +80,33 @@ export const getQueryFn: <T>(options: {
     const path = Array.isArray(queryKey) ? queryKey.join("/") : String(queryKey);
     const fullUrl = buildUrl(path);
 
-    const res = await fetch(fullUrl, {
-      credentials: "include",
-      headers: authHeaders,
-    });
+    console.log('Fetching:', fullUrl);
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null as unknown as T;
+    try {
+      const res = await fetch(fullUrl, {
+        credentials: "include",
+        headers: authHeaders,
+      });
+
+      console.log('Response status:', res.status, 'for', fullUrl);
+
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null as unknown as T;
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => res.statusText);
+        console.error('API Error:', res.status, errorText);
+        throw new Error(`${res.status}: ${errorText}`);
+      }
+
+      const data = await res.json();
+      console.log('API Response data:', data);
+      return data as T;
+    } catch (error) {
+      console.error('Fetch error for', fullUrl, ':', error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json() as T;
   };
 
 /**
@@ -102,7 +118,9 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchOnWindowFocus: false,
-      retry: false,
+      retry: 3,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000,
     },
   },
 });

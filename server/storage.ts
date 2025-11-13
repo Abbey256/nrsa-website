@@ -39,7 +39,8 @@ export const storage = {
   },
   createAdmin: async (adminData: InsertAdmin) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('admins').insert(adminData).select().single();
+    const { data, error } = await supabase.from('admins').insert(adminData).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   getAllAdmins: async () => {
@@ -49,7 +50,8 @@ export const storage = {
   },
   updateAdmin: async (id: number, data: Partial<Admin>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('admins').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('admins').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteAdmin: async (id: number) => {
@@ -70,12 +72,14 @@ export const storage = {
   },
   createNews: async (article: InsertNews) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('news').insert(article).select().single();
+    const { data, error } = await supabase.from('news').insert(article).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateNews: async (id: number, data: Partial<InsertNews>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('news').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('news').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteNews: async (id: number) => {
@@ -97,12 +101,14 @@ export const storage = {
   },
   createEvent: async (event: InsertEvent) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('events').insert(event).select().single();
+    const { data, error } = await supabase.from('events').insert(event).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateEvent: async (id: number, data: Partial<InsertEvent>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('events').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('events').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteEvent: async (id: number) => {
@@ -124,12 +130,14 @@ export const storage = {
   },
   createPlayer: async (player: InsertPlayer) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('players').insert(player).select().single();
+    const { data, error } = await supabase.from('players').insert(player).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updatePlayer: async (id: number, data: Partial<InsertPlayer>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('players').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('players').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deletePlayer: async (id: number) => {
@@ -151,12 +159,14 @@ export const storage = {
   },
   createClub: async (club: InsertClub) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('clubs').insert(club).select().single();
+    const { data, error } = await supabase.from('clubs').insert(club).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateClub: async (id: number, data: Partial<InsertClub>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('clubs').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('clubs').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteClub: async (id: number) => {
@@ -184,12 +194,14 @@ export const storage = {
   },
   createLeader: async (leader: InsertLeader) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('leaders').insert(leader).select().single();
+    const { data, error } = await supabase.from('leaders').insert(leader).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateLeader: async (id: number, data: Partial<InsertLeader>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('leaders').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('leaders').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteLeader: async (id: number) => {
@@ -211,12 +223,14 @@ export const storage = {
   },
   createMedia: async (item: InsertMedia) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('media').insert(item).select().single();
+    const { data, error } = await supabase.from('media').insert(item).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateMedia: async (id: number, data: Partial<InsertMedia>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('media').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('media').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteMedia: async (id: number) => {
@@ -232,12 +246,14 @@ export const storage = {
   },
   createContact: async (contact: InsertContact) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('contacts').insert(contact).select().single();
+    const { data, error } = await supabase.from('contacts').insert(contact).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateContact: async (id: number, data: Partial<InsertContact>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('contacts').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('contacts').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteContact: async (id: number) => {
@@ -253,12 +269,14 @@ export const storage = {
   },
   createSiteSetting: async (setting: InsertSiteSetting) => {
     if (!supabase) return undefined;
-    const { data } = await supabase.from('site_settings').insert(setting).select().single();
+    const { data, error } = await supabase.from('site_settings').insert(setting).select().maybeSingle();
+    if (error) throw error;
     return data;
   },
   updateSiteSetting: async (id: number, data: Partial<InsertSiteSetting>) => {
     if (!supabase) return undefined;
-    const { data: updated } = await supabase.from('site_settings').update(data).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('site_settings').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
     return updated || undefined;
   },
   deleteSiteSetting: async (id: number) => {

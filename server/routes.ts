@@ -87,11 +87,22 @@ export function registerAllRoutes(app: Express): void {
   // ---------- NEWS ----------
   app.get("/api/news", async (req, res) => {
     try {
-      if (!supabase) return res.status(500).json({ error: "Database not configured" });
+      console.log('GET /api/news called');
+      if (!supabase) {
+        console.error('Supabase not configured');
+        return res.status(500).json({ error: "Database not configured" });
+      }
       const { data, error } = await supabase.from('news').select('*').order('published_at', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      console.log('News data fetched:', data?.length || 0, 'items');
       res.json(data || []);
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('News API error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   app.get("/api/news/:id", async (req, res) => {

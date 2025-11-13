@@ -9,9 +9,45 @@ import type { News } from "@shared/schema";
 
 export default function News() {
   const [, navigate] = useLocation();
-  const { data: newsItems = [], isLoading } = useQuery<News[]>({
+  const { data: newsItems = [], isLoading, error } = useQuery<News[]>({
     queryKey: ["/api/news"],
+    retry: 3,
+    staleTime: 5 * 60 * 1000,
   });
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('News component - Loading:', isLoading, 'Error:', error, 'Data:', newsItems);
+  }, [isLoading, error, newsItems]);
+
+  if (error) {
+    console.error('News fetch error:', error);
+    return (
+      <div className="min-h-screen bg-background">
+        <section className="bg-primary text-primary-foreground py-20">
+          <div className="max-w-7xl mx-auto px-6 md:px-12">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Latest News</h1>
+            <p className="text-xl md:text-2xl opacity-90 max-w-3xl">
+              Stay updated with the latest news, achievements, and developments from the Nigeria Rope Skipping community.
+            </p>
+          </div>
+        </section>
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-6 md:px-12">
+            <div className="text-center py-20">
+              <p className="text-red-600 text-lg mb-4">Error loading news: {error.message}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-primary text-white px-4 py-2 rounded"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
