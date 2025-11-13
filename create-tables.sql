@@ -52,12 +52,13 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS clubs (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  location TEXT NOT NULL,
-  contact_person TEXT,
-  contact_email TEXT,
-  contact_phone TEXT,
-  description TEXT,
   logo_url TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  manager_name TEXT NOT NULL,
+  contact_email TEXT NOT NULL,
+  contact_phone TEXT NOT NULL,
+  is_registered BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

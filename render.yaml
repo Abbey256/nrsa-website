@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nrsa-api
+    env: node
+    plan: free
+    buildCommand: npm run build:server
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
