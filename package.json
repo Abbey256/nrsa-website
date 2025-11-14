@@ -9,8 +9,8 @@
     "dev:client": "vite",
     "dev:clean": "vite --force",
     "clean": "rmdir /s /q node_modules\\.vite 2>nul || echo done",
-    "build:client": "vite build",
-    "build:server": "vite build --config vite.config.server.js",
+    "build:client": "cross-env NODE_ENV=production vite build --mode production",
+    "build:server": "vite build --config vite.config.server.js --mode production",
     "build": "npm run build:client && npm run build:server",
     "start": "cross-env NODE_ENV=production node dist/server/index.js",
     "check": "tsc",
@@ -20,7 +20,9 @@
     "db:init": "npm run db:push",
     "db:test": "tsx server/testDb.ts",
     "test:all": "tsx server/testAll.ts",
-    "setup-admin": "tsx server/setupSuperAdmin.ts"
+    "setup-admin": "tsx server/setupSuperAdmin.ts",
+    "deploy:cpanel": "npm run build:client && xcopy /E /I /Y dist\\public\\* public_html\\",
+    "package:backend": "npm run build:server && npm pack"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.917.0",
@@ -57,7 +59,6 @@
     "@tanstack/react-query": "^5.90.6",
     "@types/pg": "^8.15.5",
     "@vitejs/plugin-react": "^4.7.0",
-    "autoprefixer": "^10.4.20",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
@@ -124,7 +125,7 @@
     "@types/react": "^18.3.26",
     "@types/react-dom": "^18.3.1",
     "@types/ws": "^8.5.13",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.22",
     "concurrently": "^8.2.2",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.6",
