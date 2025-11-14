@@ -85,7 +85,8 @@ export const storage = {
   },
   deleteAdmin: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('admins').delete().eq('id', id);
+    const { error } = await supabase.from('admins').delete().eq('id', id);
+    if (error) throw error;
   },
   // News
   getAllNews: async (limit = 50, offset = 0) => {
@@ -117,7 +118,8 @@ export const storage = {
   },
   deleteNews: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('news').delete().eq('id', id);
+    const { error } = await supabase.from('news').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Events
@@ -156,7 +158,8 @@ export const storage = {
   },
   deleteEvent: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('events').delete().eq('id', id);
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Players
@@ -188,7 +191,8 @@ export const storage = {
   },
   deletePlayer: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('players').delete().eq('id', id);
+    const { error } = await supabase.from('players').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Clubs
@@ -227,7 +231,8 @@ export const storage = {
   },
   deleteClub: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('clubs').delete().eq('id', id);
+    const { error } = await supabase.from('clubs').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Leaders
@@ -262,7 +267,8 @@ export const storage = {
   },
   deleteLeader: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('leaders').delete().eq('id', id);
+    const { error } = await supabase.from('leaders').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Media
@@ -291,7 +297,8 @@ export const storage = {
   },
   deleteMedia: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('media').delete().eq('id', id);
+    const { error } = await supabase.from('media').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Contacts
@@ -314,7 +321,8 @@ export const storage = {
   },
   deleteContact: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('contacts').delete().eq('id', id);
+    const { error } = await supabase.from('contacts').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Site Settings
@@ -337,7 +345,8 @@ export const storage = {
   },
   deleteSiteSetting: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('site_settings').delete().eq('id', id);
+    const { error } = await supabase.from('site_settings').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Member States
@@ -366,7 +375,8 @@ export const storage = {
   },
   deleteMemberState: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('member_states').delete().eq('id', id);
+    const { error } = await supabase.from('member_states').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Hero Slides
@@ -395,7 +405,8 @@ export const storage = {
   },
   deleteHeroSlide: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('hero_slides').delete().eq('id', id);
+    const { error } = await supabase.from('hero_slides').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // Affiliations
@@ -424,6 +435,7 @@ export const storage = {
   },
   deleteAffiliation: async (id: number) => {
     if (!supabase) return;
-    await supabase.from('affiliations').delete().eq('id', id);
+    const { error } = await supabase.from('affiliations').delete().eq('id', id);
+    if (error) throw error;
   },
 };

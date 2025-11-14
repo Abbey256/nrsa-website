@@ -41,13 +41,17 @@ export default function AdminContacts() {
   const deleteContact = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/contacts/${id}`);
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(["/api/contacts"], (old: Contact[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
       toast({
         title: "Message deleted",
         description: "The contact message has been removed successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
     onError: (error: Error) => {
       toast({

@@ -468,7 +468,7 @@ app.post("/api/contacts", async (req, res) => {
 });
 
 // Admin-only endpoints
-app.get("/api/contacts", async (req, res) => {
+app.get("/api/contacts", requireAdmin, async (req, res) => {
   try {
     const contacts = await storage.getAllContacts();
     res.json(contacts);
@@ -477,7 +477,7 @@ app.get("/api/contacts", async (req, res) => {
   }
 });
 
-app.get("/api/contacts/:id", async (req, res) => {
+app.get("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });

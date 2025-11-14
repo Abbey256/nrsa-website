@@ -7,9 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import type { Player } from "@shared/schema";
 
 export default function Players() {
-  const { data: players = [], isLoading } = useQuery<Player[]>({
+  const { data: players = [], isLoading, error } = useQuery<Player[]>({
     queryKey: ["/api/players"],
   });
+  
+  console.log('🔍 [PLAYERS FRONTEND] Render state:', { playersCount: players.length, isLoading, error });
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,6 +32,10 @@ export default function Players() {
             <div className="text-center py-20">
               <p className="text-muted-foreground text-lg">Loading athletes...</p>
             </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-red-600 text-lg">Failed to load athletes. Please try again later.</p>
+            </div>
           ) : players.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-muted-foreground text-lg">No athletes registered yet.</p>
@@ -45,33 +51,33 @@ export default function Players() {
                 <CardContent className="pt-8 space-y-4">
                   <div className="relative inline-block">
                     <Avatar className="w-24 h-24 mx-auto border-4 border-primary/20">
-                      <AvatarImage src={player.photoUrl || undefined} alt={player.name} />
+                      <AvatarImage src={player.photoUrl || undefined} alt={player.name || 'Player'} />
                       <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-                        {player.name.split(' ').map(n => n[0]).join('')}
+                        {(player.name || 'P').split(' ').map(n => n[0] || '').join('').slice(0, 2) || 'P'}
                       </AvatarFallback>
                     </Avatar>
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-xl text-foreground mb-1">{player.name}</h3>
-                    <Badge variant="secondary" className="mb-2">{player.category}</Badge>
+                    <h3 className="font-bold text-xl text-foreground mb-1">{player.name || 'Unknown Player'}</h3>
+                    <Badge variant="secondary" className="mb-2">{player.category || 'Uncategorized'}</Badge>
                   </div>
 
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Trophy className="w-4 h-4 text-primary" />
-                      <span className="font-semibold text-foreground">{player.club}</span>
+                      <span className="font-semibold text-foreground">{player.club || 'No Club'}</span>
                     </div>
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <MapPin className="w-4 h-4 text-primary" />
-                      <span>{player.state}</span>
+                      <span>{player.state || 'Unknown State'}</span>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t space-y-3">
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">Total Points</div>
-                      <div className="text-2xl font-bold text-primary">{player.totalPoints}</div>
+                      <div className="text-2xl font-bold text-primary">{player.totalPoints || 0}</div>
                     </div>
                     
                     {(player.awardsWon !== undefined && player.awardsWon !== null && player.awardsWon > 0) && (

@@ -80,8 +80,12 @@ export default function AdminPlayers() {
   const deletePlayer = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/players/${id}`);
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(["/api/players"], (old: Player[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });
       toast({
         title: "Player Deleted",
@@ -273,8 +277,9 @@ export default function AdminPlayers() {
               <Button
                 onClick={handleSave}
                 className="w-full bg-primary hover:bg-primary/90"
+                disabled={savePlayer.isPending}
               >
-                {editingPlayer ? "Update Player" : "Save Player"}
+                {savePlayer.isPending ? "Saving..." : editingPlayer ? "Update Player" : "Save Player"}
               </Button>
             </div>
           </DialogContent>
@@ -311,6 +316,7 @@ export default function AdminPlayers() {
                       size="sm"
                       variant="destructive"
                       onClick={() => handleDelete(player.id!)}
+                      disabled={deletePlayer.isPending}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

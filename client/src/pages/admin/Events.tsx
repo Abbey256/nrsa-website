@@ -84,12 +84,23 @@ export default function AdminEvents() {
   const deleteEvent = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/events/${id}`);
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(["/api/events"], (old: Event[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       toast({
         title: "Event Deleted",
         description: "The event has been removed successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete event.",
+        variant: "destructive",
       });
     },
   });
@@ -274,8 +285,9 @@ export default function AdminEvents() {
                     variant="destructive"
                     size="sm"
                     onClick={() => deleteEvent.mutate(event.id)}
+                    disabled={deleteEvent.isPending}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" /> {deleteEvent.isPending ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
               </CardContent>

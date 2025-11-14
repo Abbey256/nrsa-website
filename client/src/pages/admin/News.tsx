@@ -80,8 +80,12 @@ export default function AdminNews() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/news/${id}`);
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(["/api/news"], (old: News[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
       toast({
         title: "Article Deleted",
@@ -200,8 +204,12 @@ export default function AdminNews() {
                 />
                 <Label>Featured Article</Label>
               </div>
-              <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleSave}>
-                {editItem ? "Update Article" : "Save Article"}
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90" 
+                onClick={handleSave}
+                disabled={saveMutation.isPending}
+              >
+                {saveMutation.isPending ? "Saving..." : editItem ? "Update Article" : "Save Article"}
               </Button>
             </div>
           </DialogContent>
@@ -247,8 +255,9 @@ export default function AdminNews() {
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDelete(item.id)}
+                      disabled={deleteMutation.isPending}
                     >
-                      <Trash className="w-4 h-4 mr-1" /> Delete
+                      <Trash className="w-4 h-4 mr-1" /> {deleteMutation.isPending ? "Deleting..." : "Delete"}
                     </Button>
                   </TableCell>
                 </TableRow>
