@@ -117,9 +117,10 @@ export const storage = {
     return toCamelCase(updated) || undefined;
   },
   deleteNews: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('news').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('news').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Events
@@ -157,9 +158,10 @@ export const storage = {
     return toCamelCase(updated) || undefined;
   },
   deleteEvent: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('events').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Players
@@ -190,9 +192,10 @@ export const storage = {
     return toCamelCase(updated) || undefined;
   },
   deletePlayer: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('players').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('players').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Clubs
@@ -230,9 +233,10 @@ export const storage = {
     return toCamelCase(updated) || undefined;
   },
   deleteClub: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('clubs').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('clubs').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Leaders
@@ -266,9 +270,10 @@ export const storage = {
     return toCamelCase(updated) || undefined;
   },
   deleteLeader: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('leaders').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('leaders').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Media
@@ -313,16 +318,17 @@ export const storage = {
     if (error) throw error;
     return toCamelCase(data);
   },
-  updateContact: async (id: number, data: Partial<InsertContact>) => {
+  updateContact: async (id: number, data: any) => {
     if (!supabase) return undefined;
     const { data: updated, error } = await supabase.from('contacts').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
     if (error) throw error;
     return toCamelCase(updated) || undefined;
   },
   deleteContact: async (id: number) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('contacts').delete().eq('id', id);
+    if (!supabase) throw new Error('Database not available');
+    const { error, count } = await supabase.from('contacts').delete().eq('id', id);
     if (error) throw error;
+    if (count === 0) throw new Error('Item not found');
   },
 
   // Site Settings

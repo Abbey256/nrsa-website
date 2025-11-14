@@ -40,7 +40,8 @@ export default function AdminContacts() {
 
   const deleteContact = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/contacts/${id}`);
+      const res = await apiRequest("DELETE", `/api/contacts/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
       return id;
     },
     onMutate: async (deletedId) => {
@@ -52,7 +53,9 @@ export default function AdminContacts() {
       return { previousContacts };
     },
     onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/contacts"], context?.previousContacts);
+      if (context?.previousContacts) {
+        queryClient.setQueryData(["/api/contacts"], context.previousContacts);
+      }
       toast({
         title: "Error",
         description: error.message || "Failed to delete message.",
@@ -73,14 +76,26 @@ export default function AdminContacts() {
   // Mark contact as read when viewing
   const markRead = useMutation({
     mutationFn: async (id: number) => {
-      // patch only isRead to true
-      await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
+      const res = await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
+      if (!res.ok) throw new Error('Failed to mark as read');
+      return await res.json();
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/contacts"] });
+      const previousContacts = queryClient.getQueryData(["/api/contacts"]);
+      queryClient.setQueryData(["/api/contacts"], (old: Contact[] = []) => 
+        old.map(contact => contact.id === id ? { ...contact, isRead: true } : contact)
+      );
+      return { previousContacts };
+    },
+    onError: (error, id, context) => {
+      if (context?.previousContacts) {
+        queryClient.setQueryData(["/api/contacts"], context.previousContacts);
+      }
+      console.error("Failed to mark contact read:", error);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
-    },
-    onError: (err: Error) => {
-      console.error("Failed to mark contact read:", err);
     },
   });
 

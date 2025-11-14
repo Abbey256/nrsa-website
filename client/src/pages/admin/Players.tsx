@@ -79,7 +79,8 @@ export default function AdminPlayers() {
 
   const deletePlayer = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/players/${id}`);
+      const res = await apiRequest("DELETE", `/api/players/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
       return id;
     },
     onMutate: async (deletedId) => {

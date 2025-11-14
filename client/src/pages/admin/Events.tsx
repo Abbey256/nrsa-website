@@ -83,7 +83,8 @@ export default function AdminEvents() {
   // Delete Event
   const deleteEvent = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/events/${id}`);
+      const res = await apiRequest("DELETE", `/api/events/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
       return id;
     },
     onMutate: async (deletedId) => {

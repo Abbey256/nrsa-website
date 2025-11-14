@@ -83,7 +83,8 @@ export default function AdminManagement() {
 
   const deleteAdmin = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admins/${id}`);
+      const res = await apiRequest("DELETE", `/api/admins/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
       return id;
     },
     onMutate: async (deletedId) => {

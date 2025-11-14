@@ -80,7 +80,8 @@ export default function AdminLeaders() {
   // --- Delete leader ---
   const deleteLeader = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/leaders/${id}`);
+      const res = await apiRequest("DELETE", `/api/leaders/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
       return id;
     },
     onMutate: async (deletedId) => {
