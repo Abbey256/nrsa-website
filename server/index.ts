@@ -11,8 +11,8 @@ import cors from "cors";
 import { registerAllRoutes as registerRoutes } from "./routes";
 import { registerAuthRoutes } from "./auth";
 import { registerUploadRoutes } from "./upload";
-// import { setupVite, serveStatic, log } from "./vite";
-// import { createTables } from "./db";
+import { setupVite, serveStatic, log } from "./vite";
+import { createTables } from "./db";
 
 // Create Express app
 const app = express();
@@ -69,21 +69,22 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ... (All imports, app setup, rate limiter, and logging middleware are fine)
 
-// ✅ STEP 1: REGISTER ALL API ROUTES (CORRECT)
+// API routes first
 registerAuthRoutes(app);
 registerUploadRoutes(app);
 registerRoutes(app);
 
-// Error handling (CORRECTLY PLACED AFTER API ROUTES)
+// Serve React build in production
+if (process.env.NODE_ENV === "production") {
+    serveStatic(app);
+}
+
+// Error handling last
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({ message });
 });
-
-// ... (After Error Handling middleware)
-
-// Static files not needed for API-only backend
 
 // Create HTTP server (This line remains)
 const server: Server = createServer(app);
@@ -91,9 +92,22 @@ const server: Server = createServer(app);
 // Start server - Railway assigns PORT automatically
 const PORT = parseInt(process.env.PORT || "3000");
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+(async () => {
+    try {
+        await createTables();
+        
+        if (process.env.NODE_ENV === "development") {
+            await setupVite(app, server);
+        }
+
+        server.listen(PORT, () => {
+            log(`Server running on port ${PORT}`);
+        });
+    } catch (error: any) {
+        console.error('Server startup error:', error.message);
+        process.exit(1);
+    }
+})();
 
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);

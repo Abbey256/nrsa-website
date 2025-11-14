@@ -77,27 +77,21 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-// Serve static files in production from the Vite build output
+// Serve React build files and handle SPA routing
 export function serveStatic(app: Express) {
     const distPath = path.resolve(process.cwd(), "dist", "public");
     
-    if (!fs.existsSync(distPath)) {
-        throw new Error(
-            `Could not find the build output directory at: ${distPath}. Run 'npm run build' first.`,
-        );
-    }
+    // Serve static assets (JS, CSS, images)
+    app.use(express.static(distPath, {
+        maxAge: '1y',
+        etag: false
+    }));
 
-    log(`Serving static files from: ${distPath}`, "express");
-
-    // 1. Serve static assets
-    app.use(express.static(distPath));
-
-    // 2. SPA fallback - must come after static file serving
-    app.use("*", (req, res, next) => {
-        // Skip API routes
-        if (req.originalUrl.startsWith("/api/")) {
+    // SPA fallback for React Router
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api/')) {
             return next();
         }
-        res.sendFile(path.resolve(distPath, "index.html"));
+        res.sendFile(path.join(distPath, 'index.html'));
     });
 }
