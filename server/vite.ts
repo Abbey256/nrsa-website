@@ -81,10 +81,16 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
     const distPath = path.resolve(process.cwd(), "dist", "public");
     
-    // Serve static assets (JS, CSS, images)
+    // Serve static assets with aggressive caching
     app.use(express.static(distPath, {
         maxAge: '1y',
-        etag: false
+        etag: true,
+        lastModified: true,
+        setHeaders: (res, path) => {
+            if (path.endsWith('.html')) {
+                res.setHeader('Cache-Control', 'no-cache');
+            }
+        }
     }));
 
     // SPA fallback for React Router

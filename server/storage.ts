@@ -370,4 +370,33 @@ export const storage = {
     if (!supabase) return;
     await supabase.from('hero_slides').delete().eq('id', id);
   },
+
+  // Affiliations
+  getAllAffiliations: async () => {
+    if (!supabase) return [];
+    const { data } = await supabase.from('affiliations').select('*').order('order');
+    return data || [];
+  },
+  getAffiliation: async (id: number) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('affiliations').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data || undefined;
+  },
+  createAffiliation: async (affiliation: InsertAffiliation) => {
+    if (!supabase) return undefined;
+    const { data, error } = await supabase.from('affiliations').insert(affiliation).select().maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  updateAffiliation: async (id: number, data: Partial<InsertAffiliation>) => {
+    if (!supabase) return undefined;
+    const { data: updated, error } = await supabase.from('affiliations').update(data).eq('id', id).select().maybeSingle();
+    if (error) throw error;
+    return updated || undefined;
+  },
+  deleteAffiliation: async (id: number) => {
+    if (!supabase) return;
+    await supabase.from('affiliations').delete().eq('id', id);
+  },
 };

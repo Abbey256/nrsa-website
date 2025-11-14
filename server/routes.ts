@@ -500,6 +500,41 @@ app.delete("/api/contacts/:id", requireAdmin, async (req, res) => {
   }
 });
 
+  // ---------- AFFILIATIONS ----------
+  app.get("/api/affiliations", async (req, res) => {
+    try {
+      const affiliations = await storage.getAllAffiliations();
+      res.json(affiliations);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  app.post("/api/affiliations", requireAdmin, async (req, res) => {
+    try {
+      const affiliation = await storage.createAffiliation(insertAffiliationSchema.parse(req.body));
+      res.status(201).json(affiliation);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.patch("/api/affiliations/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      const validatedBody = insertAffiliationSchema.partial().parse(req.body);
+      const affiliation = await storage.updateAffiliation(id, validatedBody);
+      if (!affiliation) return res.status(404).json({ error: "Affiliation not found" });
+      res.json(affiliation);
+    } catch (e: any) { res.status(400).json({ error: e.message }); }
+  });
+
+  app.delete("/api/affiliations/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      await storage.deleteAffiliation(id);
+      res.status(204).send();
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
   // ---------- SITE SETTINGS ----------
   app.get("/api/site-settings", async (req, res) => {
     try {
