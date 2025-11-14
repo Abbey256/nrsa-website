@@ -28,28 +28,17 @@ export function registerAllRoutes(app: Express): void {
 
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
-    const health = {
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      database: "disconnected",
-      tables: {}
-    };
-    
-    if (supabase) {
-      const tables = ['leaders', 'news', 'events', 'players', 'clubs'];
-      for (const table of tables) {
-        try {
-          await supabase.from(table).select('count').limit(0);
-          health.tables[table] = 'ok';
-        } catch (error: any) {
-          console.error(`Health check failed for table ${table}:`, error?.message || error);
-          health.tables[table] = 'error';
-        }
-      }
-      health.database = Object.values(health.tables).includes('ok') ? 'connected' : 'error';
-    }
-    
-    res.json(health);
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Keep-alive endpoint
+  app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+  });
+
+  // Ping endpoint
+  app.get("/ping", (req, res) => {
+    res.status(200).json({ message: "pong", uptime: process.uptime() });
   });
 
   // ---------- HERO SLIDES ----------
