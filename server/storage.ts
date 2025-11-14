@@ -88,9 +88,13 @@ export const storage = {
     await supabase.from('admins').delete().eq('id', id);
   },
   // News
-  getAllNews: async () => {
+  getAllNews: async (limit = 50, offset = 0) => {
     if (!supabase) return [];
-    const { data } = await supabase.from('news').select('*').order('published_at', { ascending: false });
+    const { data } = await supabase
+      .from('news')
+      .select('id, title, content, image_url, published_at, created_at')
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
     return toCamelCase(data) || [];
   },
   getNews: async (id: number) => {
@@ -119,7 +123,10 @@ export const storage = {
   // Events
   getAllEvents: async () => {
     if (!supabase) return [];
-    const { data } = await supabase.from('events').select('*').order('event_date', { ascending: false });
+    const { data } = await supabase
+      .from('events')
+      .select('id, title, description, event_date, location, image_url')
+      .order('event_date', { ascending: false });
     return toCamelCase(data) || [];
   },
   getEvent: async (id: number) => {
@@ -148,7 +155,10 @@ export const storage = {
   // Players
   getAllPlayers: async () => {
     if (!supabase) return [];
-    const { data } = await supabase.from('players').select('*').order('name');
+    const { data } = await supabase
+      .from('players')
+      .select('id, name, position, club, image_url, age')
+      .order('name');
     return toCamelCase(data) || [];
   },
   getPlayer: async (id: number) => {
@@ -177,7 +187,10 @@ export const storage = {
   // Clubs
   getAllClubs: async () => {
     if (!supabase) return [];
-    const { data } = await supabase.from('clubs').select('*').order('name');
+    const { data } = await supabase
+      .from('clubs')
+      .select('id, name, location, logo_url, founded_year')
+      .order('name');
     return toCamelCase(data) || [];
   },
   getClub: async (id: number) => {

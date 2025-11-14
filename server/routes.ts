@@ -75,7 +75,9 @@ export function registerAllRoutes(app: Express): void {
   // ---------- NEWS ----------
   app.get("/api/news", async (req, res) => {
     try {
-      const newsArticles = await storage.getAllNews();
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const newsArticles = await storage.getAllNews(limit, offset);
       res.json(newsArticles);
     } catch (e: any) { 
       console.error('News API error:', e.message);

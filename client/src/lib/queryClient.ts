@@ -103,8 +103,10 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 10 * 60 * 1000,
-      gcTime: 15 * 60 * 1000,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     },
   },
 });

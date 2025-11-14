@@ -48,6 +48,7 @@ export default defineConfig(async () => {
       chunkSizeWarningLimit: 1000,
       sourcemap: false,
     },
+    appType: 'spa',
     server: {
       host: true,
       port: 5173,

@@ -8,6 +8,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { createServer, Server } from "http";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
+import compression from "compression";
 import { registerAllRoutes as registerRoutes } from "./routes";
 import { registerAuthRoutes } from "./auth";
 import { registerUploadRoutes } from "./upload";
@@ -27,10 +28,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression middleware
+app.use(compression());
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  if (req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600');
+  }
   next();
 });
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
