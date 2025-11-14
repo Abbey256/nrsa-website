@@ -103,8 +103,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // Create HTTP server (This line remains)
 const server: Server = createServer(app);
 
-// Start server - Railway assigns PORT automatically
-const PORT = parseInt(process.env.PORT || "3000");
+// Start server - Replit uses port 5000 for web preview
+const PORT = parseInt(process.env.PORT || "5000");
 
 (async () => {
     try {
