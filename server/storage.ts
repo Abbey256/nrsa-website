@@ -122,12 +122,19 @@ export const storage = {
 
   // Events
   getAllEvents: async () => {
-    if (!supabase) return [];
-    const { data } = await supabase
+    if (!supabase) {
+      console.log('🔍 [EVENTS DEBUG] No supabase client');
+      return [];
+    }
+    console.log('🔍 [EVENTS DEBUG] Fetching events from database...');
+    const { data, error } = await supabase
       .from('events')
-      .select('id, title, description, event_date, location, image_url')
+      .select('*')
       .order('event_date', { ascending: false });
-    return toCamelCase(data) || [];
+    console.log('🔍 [EVENTS DEBUG] Raw database response:', { data, error, count: data?.length });
+    const result = toCamelCase(data) || [];
+    console.log('🔍 [EVENTS DEBUG] Processed result:', result);
+    return result;
   },
   getEvent: async (id: number) => {
     if (!supabase) return undefined;

@@ -127,9 +127,14 @@ export function registerAllRoutes(app: Express): void {
   // ---------- EVENTS ----------
   app.get("/api/events", async (req, res) => {
     try {
+      console.log('🔍 [EVENTS API] Request received');
       const events = await storage.getAllEvents();
+      console.log('🔍 [EVENTS API] Sending response:', { count: events.length, sample: events[0] });
       res.json(events);
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('🔍 [EVENTS API] Error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   app.post("/api/events", requireAdmin, async (req, res) => {
