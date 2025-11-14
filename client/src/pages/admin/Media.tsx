@@ -24,8 +24,10 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Media } from "@shared/schema";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminMedia() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -67,6 +69,10 @@ export default function AdminMedia() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+      toast({
+        title: editingMedia ? "Media Updated" : "Media Created",
+        description: "Media item saved successfully!",
+      });
       setEditingMedia(null);
       setForm({ title: "", description: "", imageUrl: "", externalUrl: "", category: "" });
       setIsDialogOpen(false);
@@ -74,40 +80,83 @@ export default function AdminMedia() {
     },
     onError: (err: any) => {
       console.error("Failed to save media:", err?.response?.data || err.message || err);
-      alert("Failed to save media: " + (err?.response?.data?.error || err.message || "Unknown error"));
+      toast({
+        title: "Error",
+        description: err?.response?.data?.error || err.message || "Failed to save media.",
+        variant: "destructive",
+      });
     },
   });
 
-  // Delete mutation
+  // Delete mutation with optimistic updates
   const deleteMedia = useMutation({
     mutationFn: async (id: number) => {
       const token = localStorage.getItem("adminToken");
       if (!token) throw new Error("Unauthorized - No token found");
 
-      await axios.delete(`/api/media/${id}`, {
+      const res = await axios.delete(`/api/media/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error('Delete failed');
+      }
+      return id;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/media"] }),
-    onError: (err: any) => {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/media"] });
+      const previousMedia = queryClient.getQueryData<Media[]>(["/api/media"]) ?? [];
+      queryClient.setQueryData<Media[]>(["/api/media"], (old) => 
+        (old ?? []).filter(item => item.id !== deletedId)
+      );
+      return { previousMedia };
+    },
+    onError: (err: any, deletedId, context) => {
+      if (context?.previousMedia) {
+        queryClient.setQueryData(["/api/media"], context.previousMedia);
+      }
       console.error("Failed to delete media:", err?.response?.data || err.message || err);
-      alert("Failed to delete media: " + (err?.response?.data?.error || err.message || "Unknown error"));
+      toast({
+        title: "Error",
+        description: err?.response?.data?.error || err.message || "Failed to delete media.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Media Deleted",
+        description: "Media item removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
     },
   });
 
   const handleSubmit = () => {
     if (!form.title || !form.category) {
-      alert("Please fill all required fields.");
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (uploadMode === "upload" && !form.imageUrl) {
-      alert("Please upload an image.");
+      toast({
+        title: "Validation Error",
+        description: "Please upload an image.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (uploadMode === "external" && !form.externalUrl) {
-      alert("Please enter an external URL.");
+      toast({
+        title: "Validation Error",
+        description: "Please enter an external URL.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -315,6 +364,7 @@ export default function AdminMedia() {
                       deleteMedia.mutate(item.id);
                     }
                   }}
+                  disabled={deleteMedia.isPending}
                 >
                   <Trash className="w-4 h-4 mr-1" /> Delete
                 </Button>

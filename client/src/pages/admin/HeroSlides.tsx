@@ -12,6 +12,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { HeroSlide } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Hero Slides Admin Page
@@ -26,6 +27,7 @@ import type { HeroSlide } from "@shared/schema";
  * - All changes update live site immediately
  */
 export default function AdminHeroSlides() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: slides = [] } = useQuery<HeroSlide[]>({
     queryKey: ["/api/hero-slides"],
@@ -48,28 +50,71 @@ export default function AdminHeroSlides() {
     mutationFn: async () => {
       const method = editSlide ? "PATCH" : "POST";
       const url = editSlide ? `/api/hero-slides/${editSlide.id}` : "/api/hero-slides";
-      return await apiRequest(method, url, formData);
+      const res = await apiRequest(method, url, formData);
+      if (!res.ok) throw new Error('Failed to save slide');
+      return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
+      toast({
+        title: editSlide ? "Slide Updated" : "Slide Created",
+        description: "Hero slide saved successfully!",
+      });
       setDialogOpen(false);
       resetForm();
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save slide.",
+        variant: "destructive",
+      });
+    },
   });
 
-  // Delete mutation
+  // Delete mutation with optimistic updates
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/hero-slides/${id}`);
+      const res = await apiRequest("DELETE", `/api/hero-slides/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
+      return id;
+    },
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/hero-slides"] });
+      const previousSlides = queryClient.getQueryData<HeroSlide[]>(["/api/hero-slides"]) ?? [];
+      queryClient.setQueryData<HeroSlide[]>(["/api/hero-slides"], (old) => 
+        (old ?? []).filter(item => item.id !== deletedId)
+      );
+      return { previousSlides };
+    },
+    onError: (error, deletedId, context) => {
+      if (context?.previousSlides) {
+        queryClient.setQueryData(["/api/hero-slides"], context.previousSlides);
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete slide.",
+        variant: "destructive",
+      });
     },
     onSuccess: () => {
+      toast({
+        title: "Slide Deleted",
+        description: "Hero slide removed successfully.",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
     },
   });
 
   const handleSave = () => {
     if (!formData.imageUrl || !formData.headline) {
-      alert("Please provide an image and headline");
+      toast({
+        title: "Validation Error",
+        description: "Please provide an image and headline.",
+        variant: "destructive",
+      });
       return;
     }
     saveMutation.mutate();
@@ -115,9 +160,9 @@ export default function AdminHeroSlides() {
           <h1 className="text-3xl font-bold text-foreground">Hero Slides</h1>
           <p className="text-muted-foreground mt-2">Manage homepage hero carousel slides</p>
         </div>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90" data-testid="button-add-slide">
+            <Button className="bg-primary hover:bg-primary/90" data-testid="button-add-slide" onClick={() => { setEditSlide(null); resetForm(); }}>
               <Plus className="w-4 h-4 mr-2" />
               Add Slide
             </Button>
@@ -245,6 +290,7 @@ export default function AdminHeroSlides() {
                       variant="destructive" 
                       size="icon"
                       onClick={() => handleDelete(slide.id)}
+                      disabled={deleteMutation.isPending}
                     >
                       <Trash className="w-4 h-4" />
                     </Button>

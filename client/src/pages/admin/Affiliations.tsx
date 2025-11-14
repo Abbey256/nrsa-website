@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import type { Affiliation } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Affiliations Admin Page
@@ -19,6 +20,7 @@ import type { Affiliation } from "@shared/schema";
  * Affiliations are now saved to the database and appear on the live site
  */
 export default function AdminAffiliations() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const { data: affiliations = [] } = useQuery<Affiliation[]>({
@@ -39,28 +41,71 @@ export default function AdminAffiliations() {
     mutationFn: async () => {
       const method = editingAffiliation ? "PATCH" : "POST";
       const url = editingAffiliation ? `/api/affiliations/${editingAffiliation.id}` : "/api/affiliations";
-      await apiRequest(method, url, form);
+      const res = await apiRequest(method, url, form);
+      if (!res.ok) throw new Error('Failed to save affiliation');
+      return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/affiliations"] });
+      toast({
+        title: editingAffiliation ? "Affiliation Updated" : "Affiliation Created",
+        description: "Affiliation saved successfully!",
+      });
       setOpen(false);
       setEditingAffiliation(null);
       setForm({ name: "", logoUrl: "", website: "", description: "", order: 0 });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save affiliation.",
+        variant: "destructive",
+      });
     },
   });
 
   const deleteAffiliation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/affiliations/${id}`);
+      const res = await apiRequest("DELETE", `/api/affiliations/${id}`);
+      if (!res.ok) throw new Error('Delete failed');
+      return id;
+    },
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/affiliations"] });
+      const previousAffiliations = queryClient.getQueryData<Affiliation[]>(["/api/affiliations"]) ?? [];
+      queryClient.setQueryData<Affiliation[]>(["/api/affiliations"], (old) => 
+        (old ?? []).filter(item => item.id !== deletedId)
+      );
+      return { previousAffiliations };
+    },
+    onError: (error, deletedId, context) => {
+      if (context?.previousAffiliations) {
+        queryClient.setQueryData(["/api/affiliations"], context.previousAffiliations);
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete affiliation.",
+        variant: "destructive",
+      });
     },
     onSuccess: () => {
+      toast({
+        title: "Affiliation Deleted",
+        description: "Affiliation removed successfully.",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/affiliations"] });
     },
   });
 
   const handleSave = () => {
     if (!form.name || !form.logoUrl) {
-      alert("Name and logo are required!");
+      toast({
+        title: "Validation Error",
+        description: "Name and logo are required!",
+        variant: "destructive",
+      });
       return;
     }
     saveAffiliation.mutate();
@@ -197,7 +242,7 @@ export default function AdminAffiliations() {
                     <Button variant="outline" size="sm" onClick={() => handleEdit(affiliation)}>
                       <Edit className="w-4 h-4 mr-1" /> Edit
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(affiliation.id)}>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(affiliation.id)} disabled={deleteAffiliation.isPending}>
                       <Trash className="w-4 h-4 mr-1" /> Delete
                     </Button>
                   </div>
