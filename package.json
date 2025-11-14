@@ -22,6 +22,8 @@
     "db:test": "tsx server/testDb.ts",
     "test:all": "tsx server/testAll.ts",
     "setup-admin": "tsx server/setupSuperAdmin.ts",
+    "test:crud": "tsx server/scripts/testCRUD.ts",
+    "disable-rls": "tsx server/scripts/disableRLS.ts",
     "deploy:cpanel": "npm run build:client && xcopy /E /I /Y dist\\public\\* public_html\\",
     "package:backend": "npm run build:server && npm pack"
   },
