@@ -87,7 +87,7 @@ export const storage = {
     if (!supabase) throw new Error('Database not available');
     try {
       const updateData = toSnakeCase(data);
-      const { data: updated, error } = await supabase.from('admins').update(updateData).eq('id', id).select().single();
+      const { data: updated, error } = await supabase.from('admins').update(updateData).eq('id', id).select().maybeSingle();
       if (error) throw error;
       return toCamelCase(updated);
     } catch (error: any) {
@@ -145,7 +145,7 @@ export const storage = {
     try {
       const updateData = toSnakeCase(data);
       console.log('🔍 [NEWS UPDATE] Updating ID', id, 'with:', updateData);
-      const { data: updated, error } = await supabase.from('news').update(updateData).eq('id', id).select().single();
+      const { data: updated, error } = await supabase.from('news').update(updateData).eq('id', id).select().maybeSingle();
       if (error) {
         console.error('🔍 [NEWS UPDATE] Database error:', error);
         throw error;
@@ -207,7 +207,7 @@ export const storage = {
     if (!supabase) throw new Error('Database not available');
     try {
       const updateData = toSnakeCase(data);
-      const { data: updated, error } = await supabase.from('events').update(updateData).eq('id', id).select().single();
+      const { data: updated, error } = await supabase.from('events').update(updateData).eq('id', id).select().maybeSingle();
       if (error) throw error;
       return toCamelCase(updated);
     } catch (error: any) {
@@ -253,7 +253,7 @@ export const storage = {
     if (!supabase) throw new Error('Database not available');
     try {
       const updateData = toSnakeCase(data);
-      const { data: updated, error } = await supabase.from('players').update(updateData).eq('id', id).select().single();
+      const { data: updated, error } = await supabase.from('players').update(updateData).eq('id', id).select().maybeSingle();
       if (error) throw error;
       return toCamelCase(updated);
     } catch (error: any) {
@@ -421,21 +421,15 @@ export const storage = {
   },
   createContact: async (contact: InsertContact) => {
     if (!supabase) return undefined;
-    const insertData = toSnakeCase(contact);
-    console.log('🔍 [CONTACT STORAGE] Inserting:', insertData);
-    const { data, error } = await supabase.from('contacts').insert(insertData).select().single();
-    if (error) {
-      console.error('🔍 [CONTACT STORAGE] Insert error:', error);
-      throw error;
-    }
-    console.log('🔍 [CONTACT STORAGE] Inserted:', data);
+    const { data, error } = await supabase.from('contacts').insert(toSnakeCase(contact)).select().maybeSingle();
+    if (error) throw error;
     return toCamelCase(data);
   },
   updateContact: async (id: number, data: any) => {
     if (!supabase) return undefined;
     const updateData = toSnakeCase(data);
     console.log('🔍 [CONTACT UPDATE] Updating ID', id, 'with:', updateData);
-    const { data: updated, error } = await supabase.from('contacts').update(updateData).eq('id', id).select().single();
+    const { data: updated, error } = await supabase.from('contacts').update(updateData).eq('id', id).select().maybeSingle();
     if (error) {
       console.error('🔍 [CONTACT UPDATE] Error:', error);
       throw error;
