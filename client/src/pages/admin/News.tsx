@@ -54,12 +54,24 @@ export default function AdminNews() {
       const method = editItem ? "PATCH" : "POST";
       const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
 
+      console.log('🔍 [NEWS MUTATION] Starting:', { method, url, data: formData });
       const res = await apiRequest(method, url, formData);
-      if (!res.ok) throw new Error('Save failed');
-      return res.json();
+      console.log('🔍 [NEWS MUTATION] Response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('🔍 [NEWS MUTATION] Error response:', errorText);
+        throw new Error(`Save failed: ${res.status} ${errorText}`);
+      }
+      
+      const result = await res.json();
+      console.log('🔍 [NEWS MUTATION] Success result:', result);
+      return result;
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      console.log('🔍 [NEWS MUTATION] onSuccess called with:', result);
       await forceRefresh(["/api/news"]);
+      console.log('🔍 [NEWS MUTATION] Cache refreshed');
       toast({
         title: editItem ? "Article Updated" : "Article Created",
         description: "News article saved successfully!",
@@ -69,6 +81,7 @@ export default function AdminNews() {
       resetForm();
     },
     onError: (error: Error) => {
+      console.error('🔍 [NEWS MUTATION] onError:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to save article.",
@@ -80,18 +93,30 @@ export default function AdminNews() {
   // 🔹 Delete
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
+      console.log('🔍 [NEWS DELETE] Starting delete for ID:', id);
       const res = await apiRequest("DELETE", `/api/news/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
+      console.log('🔍 [NEWS DELETE] Response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('🔍 [NEWS DELETE] Error response:', errorText);
+        throw new Error(`Delete failed: ${res.status} ${errorText}`);
+      }
+      
+      console.log('🔍 [NEWS DELETE] Success');
       return id;
     },
-    onSuccess: async () => {
+    onSuccess: async (deletedId) => {
+      console.log('🔍 [NEWS DELETE] onSuccess called for ID:', deletedId);
       await forceRefresh(["/api/news"]);
+      console.log('🔍 [NEWS DELETE] Cache refreshed');
       toast({
         title: "Article Deleted",
         description: "News article removed successfully.",
       });
     },
     onError: (error: Error) => {
+      console.error('🔍 [NEWS DELETE] onError:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete article.",

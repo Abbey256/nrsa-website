@@ -127,8 +127,13 @@ export const storage = {
     if (!supabase) throw new Error('Database not available');
     try {
       const insertData = toSnakeCase(article);
+      console.log('🔍 [NEWS CREATE] Inserting:', insertData);
       const { data, error } = await supabase.from('news').insert(insertData).select().single();
-      if (error) throw error;
+      if (error) {
+        console.error('🔍 [NEWS CREATE] Database error:', error);
+        throw error;
+      }
+      console.log('🔍 [NEWS CREATE] Success:', data);
       return toCamelCase(data);
     } catch (error: any) {
       console.error('Error creating news:', error.message);
@@ -139,8 +144,13 @@ export const storage = {
     if (!supabase) throw new Error('Database not available');
     try {
       const updateData = toSnakeCase(data);
+      console.log('🔍 [NEWS UPDATE] Updating ID', id, 'with:', updateData);
       const { data: updated, error } = await supabase.from('news').update(updateData).eq('id', id).select().single();
-      if (error) throw error;
+      if (error) {
+        console.error('🔍 [NEWS UPDATE] Database error:', error);
+        throw error;
+      }
+      console.log('🔍 [NEWS UPDATE] Success:', updated);
       return toCamelCase(updated);
     } catch (error: any) {
       console.error('Error updating news:', error.message);
@@ -149,8 +159,13 @@ export const storage = {
   },
   deleteNews: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error } = await supabase.from('news').delete().eq('id', id);
-    if (error) throw error;
+    console.log('🔍 [NEWS DELETE] Deleting ID:', id);
+    const { error, count } = await supabase.from('news').delete().eq('id', id);
+    if (error) {
+      console.error('🔍 [NEWS DELETE] Database error:', error);
+      throw error;
+    }
+    console.log('🔍 [NEWS DELETE] Deleted count:', count);
     return true;
   },
 

@@ -27,6 +27,31 @@ export function registerAllRoutes(app: Express): void {
     res.json({ status: "API is working", timestamp: new Date().toISOString() });
   });
 
+  // Database connection test
+  app.get("/api/db-test", async (req, res) => {
+    try {
+      if (!supabase) {
+        return res.status(500).json({ error: "Supabase client not initialized" });
+      }
+      
+      // Test database connection
+      const { data, error } = await supabase.from('news').select('count').limit(1);
+      if (error) {
+        console.error('Database test error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+      
+      res.json({ 
+        status: "Database connected", 
+        supabase: !!supabase,
+        timestamp: new Date().toISOString() 
+      });
+    } catch (e: any) {
+      console.error('Database test failed:', e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
