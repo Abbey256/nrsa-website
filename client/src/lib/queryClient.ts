@@ -9,9 +9,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
  * For Render deployment: Leave VITE_API_URL unset for same-origin API calls
  * For cPanel split deployment: Set VITE_API_URL=https://api.nrsa.com.ng
  */
-const API_BASE = import.meta.env.PROD 
-  ? "https://api.nrsa.com.ng" 
-  : (import.meta.env.VITE_API_URL as string | undefined) || "";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 // Build full URL: if absolute return it as-is, otherwise prefix with API_BASE
 function buildUrl(url: string) {
