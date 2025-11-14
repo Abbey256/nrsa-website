@@ -12,8 +12,10 @@ import {
   insertLeaderSchema,
   insertMediaSchema,
   insertContactSchema,
+  updateContactSchema,
   insertMemberStateSchema,
   insertSiteSettingSchema,
+  insertAffiliationSchema,
 } from "@shared/schema";
 
 /**
@@ -188,9 +190,14 @@ export function registerAllRoutes(app: Express): void {
   // ---------- CLUBS ----------
   app.get("/api/clubs", async (req, res) => {
     try {
+      console.log('🔍 [CLUBS API] Request received');
       const clubs = await storage.getAllClubs();
+      console.log('🔍 [CLUBS API] Sending response:', { count: clubs.length, sample: clubs[0] });
       res.json(clubs);
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('🔍 [CLUBS API] Error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   app.post("/api/clubs", requireAdmin, async (req, res) => {
@@ -483,7 +490,8 @@ app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const updated = await storage.updateContact(id, req.body);
+    const validatedBody = updateContactSchema.partial().parse(req.body);
+    const updated = await storage.updateContact(id, validatedBody);
     if (!updated) return res.status(404).json({ error: "Contact not found" });
     res.json(updated);
   } catch (e: any) {

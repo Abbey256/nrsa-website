@@ -6,9 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import type { Club } from "@shared/schema";
 
 export default function Clubs() {
-  const { data: clubs = [], isLoading } = useQuery<Club[]>({
+  const { data: clubs = [], isLoading, error } = useQuery<Club[]>({
     queryKey: ["/api/clubs"],
+    onSuccess: (data) => console.log('🔍 [CLUBS FRONTEND] Data received:', data),
+    onError: (err) => console.error('🔍 [CLUBS FRONTEND] Error:', err),
   });
+  
+  console.log('🔍 [CLUBS FRONTEND] Render state:', { clubsCount: clubs.length, isLoading, error });
 
   return (
     <div className="min-h-screen bg-background">

@@ -186,12 +186,19 @@ export const storage = {
 
   // Clubs
   getAllClubs: async () => {
-    if (!supabase) return [];
-    const { data } = await supabase
+    if (!supabase) {
+      console.log('🔍 [CLUBS DEBUG] No supabase client');
+      return [];
+    }
+    console.log('🔍 [CLUBS DEBUG] Fetching clubs from database...');
+    const { data, error } = await supabase
       .from('clubs')
-      .select('id, name, location, logo_url, founded_year')
+      .select('*')
       .order('name');
-    return toCamelCase(data) || [];
+    console.log('🔍 [CLUBS DEBUG] Raw database response:', { data, error, count: data?.length });
+    const result = toCamelCase(data) || [];
+    console.log('🔍 [CLUBS DEBUG] Processed result:', result);
+    return result;
   },
   getClub: async (id: number) => {
     if (!supabase) return undefined;
