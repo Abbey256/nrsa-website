@@ -8,9 +8,12 @@ import type { Club } from "@shared/schema";
 export default function Clubs() {
   const { data: clubs = [], isLoading, error } = useQuery<Club[]>({
     queryKey: ["/api/clubs"],
-    onSuccess: (data) => console.log('🔍 [CLUBS FRONTEND] Data received:', data),
-    onError: (err) => console.error('🔍 [CLUBS FRONTEND] Error:', err),
   });
+  
+  React.useEffect(() => {
+    if (clubs.length > 0) console.log('🔍 [CLUBS FRONTEND] Data received:', clubs);
+    if (error) console.error('🔍 [CLUBS FRONTEND] Error:', error);
+  }, [clubs, error]);
   
   console.log('🔍 [CLUBS FRONTEND] Render state:', { clubsCount: clubs.length, isLoading, error });
 
