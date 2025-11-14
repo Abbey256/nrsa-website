@@ -60,6 +60,7 @@ export default function Contact() {
   });
 
   const onSubmit = (data: z.infer<typeof contactFormSchema>) => {
+    console.log('🔍 [CONTACT FORM] Submitting data:', data);
     createContact.mutate(data);
   };
 
@@ -182,8 +183,8 @@ export default function Contact() {
                         </FormItem>
                       )} />
 
-                      <Button type="submit" className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8" disabled={createContact.isLoading} data-testid="button-submit">
-                        {createContact.isLoading ? "Sending..." : "Send Message"}
+                      <Button type="submit" className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8" disabled={createContact.isPending} data-testid="button-submit">
+                        {createContact.isPending ? "Sending..." : "Send Message"}
                       </Button>
                     </form>
                   </Form>

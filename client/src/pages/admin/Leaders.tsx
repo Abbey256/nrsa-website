@@ -43,7 +43,7 @@ export default function AdminLeaders() {
 
   // --- Fetch leaders ---
   const { data: leaders = [], isLoading, isError, error } = useQuery<Leader[]>({
-    queryKey: ["leaders"],
+    queryKey: ["/api/leaders"],
     queryFn: async () => {
       // parse the JSON here - apiRequest returns a Response
       const res = await apiRequest("GET", "/api/leaders");
@@ -59,7 +59,7 @@ export default function AdminLeaders() {
       await apiRequest(method, url, form);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["leaders"]);
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
       toast({
         title: editingLeader ? "Leader Updated" : "Leader Added",
         description: "Leader profile saved successfully!",
@@ -84,15 +84,15 @@ export default function AdminLeaders() {
       return id;
     },
     onMutate: async (deletedId) => {
-      await queryClient.cancelQueries(["leaders"]);
-      const previousLeaders = queryClient.getQueryData(["leaders"]);
-      queryClient.setQueryData(["leaders"], (old: Leader[] = []) => 
+      await queryClient.cancelQueries({ queryKey: ["/api/leaders"] });
+      const previousLeaders = queryClient.getQueryData(["/api/leaders"]);
+      queryClient.setQueryData(["/api/leaders"], (old: Leader[] = []) => 
         old.filter(item => item.id !== deletedId)
       );
       return { previousLeaders };
     },
     onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["leaders"], context?.previousLeaders);
+      queryClient.setQueryData(["/api/leaders"], context?.previousLeaders);
       toast({
         title: "Error",
         description: error.message || "Failed to delete leader.",
@@ -106,7 +106,7 @@ export default function AdminLeaders() {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["leaders"]);
+      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
     },
   });
 
@@ -127,7 +127,7 @@ export default function AdminLeaders() {
   };
 
   const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this leader?")) return;
+    if (!window.confirm("Are you sure you want to delete this leader?")) return;
     deleteLeader.mutate(id);
   };
 
