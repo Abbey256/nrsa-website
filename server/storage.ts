@@ -167,7 +167,7 @@ export const storage = {
     if (!supabase) return [];
     const { data } = await supabase
       .from('players')
-      .select('id, name, position, club, image_url, age')
+      .select('*')
       .order('name');
     return toCamelCase(data) || [];
   },

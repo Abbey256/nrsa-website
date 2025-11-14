@@ -43,22 +43,30 @@ export default function AdminContacts() {
       await apiRequest("DELETE", `/api/contacts/${id}`);
       return id;
     },
-    onSuccess: (deletedId) => {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/contacts"] });
+      const previousContacts = queryClient.getQueryData(["/api/contacts"]);
       queryClient.setQueryData(["/api/contacts"], (old: Contact[] = []) => 
         old.filter(item => item.id !== deletedId)
       );
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
-      toast({
-        title: "Message deleted",
-        description: "The contact message has been removed successfully.",
-      });
+      return { previousContacts };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/contacts"], context?.previousContacts);
       toast({
         title: "Error",
         description: error.message || "Failed to delete message.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Message deleted",
+        description: "The contact message has been removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
   });
 

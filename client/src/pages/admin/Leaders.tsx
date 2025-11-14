@@ -81,20 +81,32 @@ export default function AdminLeaders() {
   const deleteLeader = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/leaders/${id}`);
+      return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["leaders"]);
-      toast({
-        title: "Leader Deleted",
-        description: "The leader profile has been removed successfully.",
-      });
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries(["leaders"]);
+      const previousLeaders = queryClient.getQueryData(["leaders"]);
+      queryClient.setQueryData(["leaders"], (old: Leader[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
+      return { previousLeaders };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["leaders"], context?.previousLeaders);
       toast({
         title: "Error",
         description: error.message || "Failed to delete leader.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Leader Deleted",
+        description: "The leader profile has been removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["leaders"]);
     },
   });
 

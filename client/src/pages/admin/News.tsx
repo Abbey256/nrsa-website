@@ -82,22 +82,30 @@ export default function AdminNews() {
       await apiRequest("DELETE", `/api/news/${id}`);
       return id;
     },
-    onSuccess: (deletedId) => {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/news"] });
+      const previousNews = queryClient.getQueryData(["/api/news"]);
       queryClient.setQueryData(["/api/news"], (old: News[] = []) => 
         old.filter(item => item.id !== deletedId)
       );
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
-      toast({
-        title: "Article Deleted",
-        description: "News article removed successfully.",
-      });
+      return { previousNews };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/news"], context?.previousNews);
       toast({
         title: "Error",
         description: error.message || "Failed to delete article.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Article Deleted",
+        description: "News article removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
     },
   });
 

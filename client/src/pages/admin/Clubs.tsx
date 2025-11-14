@@ -61,10 +61,23 @@ export default function AdminClubs() {
   // --- Delete Club mutation ---
   const deleteClub = useMutation({
     mutationFn: async (id: string | number) => {
-      const res = await apiRequest("DELETE", `/api/clubs/${id}`);
-      return res.status === 204 ? null : res.json();
+      await apiRequest("DELETE", `/api/clubs/${id}`);
+      return id;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/clubs"] }),
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/clubs"] });
+      const previousClubs = queryClient.getQueryData(["/api/clubs"]);
+      queryClient.setQueryData(["/api/clubs"], (old: Club[] = []) => 
+        old.filter(item => (item as any).id !== deletedId)
+      );
+      return { previousClubs };
+    },
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/clubs"], context?.previousClubs);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
+    },
   });
 
   // Form state for Add

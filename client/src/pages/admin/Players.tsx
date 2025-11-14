@@ -82,22 +82,30 @@ export default function AdminPlayers() {
       await apiRequest("DELETE", `/api/players/${id}`);
       return id;
     },
-    onSuccess: (deletedId) => {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/players"] });
+      const previousPlayers = queryClient.getQueryData(["/api/players"]);
       queryClient.setQueryData(["/api/players"], (old: Player[] = []) => 
         old.filter(item => item.id !== deletedId)
       );
-      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
-      toast({
-        title: "Player Deleted",
-        description: "The player profile has been removed successfully.",
-      });
+      return { previousPlayers };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/players"], context?.previousPlayers);
       toast({
         title: "Error",
         description: error.message || "Failed to delete player.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Player Deleted",
+        description: "The player profile has been removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
     },
   });
 
@@ -125,12 +133,12 @@ export default function AdminPlayers() {
   const handleEdit = (player: Player) => {
     setEditingPlayer(player);
     setForm({
-      name: player.name,
+      name: player.name || "",
       photoUrl: player.photoUrl || "",
-      club: player.club,
-      state: player.state,
-      category: player.category,
-      totalPoints: player.totalPoints,
+      club: player.club || "",
+      state: player.state || "",
+      category: player.category || "",
+      totalPoints: player.totalPoints || 0,
       achievements: player.achievements || "",
       awardsWon: player.awardsWon || 0,
       gamesPlayed: player.gamesPlayed || 0,

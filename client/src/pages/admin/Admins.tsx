@@ -84,20 +84,32 @@ export default function AdminManagement() {
   const deleteAdmin = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/admins/${id}`);
+      return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admins"] });
-      toast({
-        title: "Admin Deleted",
-        description: "Admin account removed successfully.",
-      });
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/admins"] });
+      const previousAdmins = queryClient.getQueryData(["/api/admins"]);
+      queryClient.setQueryData(["/api/admins"], (old: Admin[] = []) => 
+        old.filter(item => item.id !== deletedId)
+      );
+      return { previousAdmins };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/admins"], context?.previousAdmins);
       toast({
         title: "Error",
         description: error.message || "Failed to delete admin.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Admin Deleted",
+        description: "Admin account removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admins"] });
     },
   });
 
@@ -115,7 +127,7 @@ export default function AdminManagement() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this admin account?")) {
+    if (window.confirm("Are you sure you want to delete this admin account?")) {
       deleteAdmin.mutate(id);
     }
   };

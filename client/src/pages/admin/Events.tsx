@@ -86,22 +86,30 @@ export default function AdminEvents() {
       await apiRequest("DELETE", `/api/events/${id}`);
       return id;
     },
-    onSuccess: (deletedId) => {
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/events"] });
+      const previousEvents = queryClient.getQueryData(["/api/events"]);
       queryClient.setQueryData(["/api/events"], (old: Event[] = []) => 
         old.filter(item => item.id !== deletedId)
       );
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
-      toast({
-        title: "Event Deleted",
-        description: "The event has been removed successfully.",
-      });
+      return { previousEvents };
     },
-    onError: (error: Error) => {
+    onError: (error, deletedId, context) => {
+      queryClient.setQueryData(["/api/events"], context?.previousEvents);
       toast({
         title: "Error",
         description: error.message || "Failed to delete event.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Event Deleted",
+        description: "The event has been removed successfully.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
     },
   });
 
