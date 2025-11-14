@@ -116,5 +116,6 @@ export const forceRefresh = async (queryKey: string[], client?: QueryClient) => 
   const qc = client || queryClient;
   await qc.cancelQueries({ queryKey });
   qc.removeQueries({ queryKey });
+  qc.clear(); // Clear entire cache
   await qc.refetchQueries({ queryKey });
 };
