@@ -114,8 +114,8 @@ export const queryClient = new QueryClient({
 // Force complete cache refresh for critical operations
 export const forceRefresh = async (queryKey: string[], client?: QueryClient) => {
   const qc = client || queryClient;
-  await qc.cancelQueries({ queryKey });
-  qc.removeQueries({ queryKey });
-  qc.clear(); // Clear entire cache
-  await qc.refetchQueries({ queryKey });
+  await qc.cancelQueries({ queryKey, exact: true });
+  qc.removeQueries({ queryKey, exact: true });
+  await qc.refetchQueries({ queryKey, exact: true, type: 'active' });
+  await qc.invalidateQueries({ queryKey, exact: true, refetchType: 'all' });
 };
