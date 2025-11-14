@@ -114,7 +114,7 @@ export default function AdminPlayers() {
   };
 
   const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this player?")) return;
+    if (!window.confirm("Are you sure you want to delete this player?")) return;
     deletePlayer.mutate(id);
   };
 

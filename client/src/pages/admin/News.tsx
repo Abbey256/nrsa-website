@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 type News = {
   id: number;
@@ -31,6 +32,7 @@ type News = {
 };
 
 export default function AdminNews() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: newsItems = [] } = useQuery<News[]>({
     queryKey: ["/api/news"],
@@ -57,24 +59,51 @@ export default function AdminNews() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      toast({
+        title: editItem ? "Article Updated" : "Article Created",
+        description: "News article saved successfully!",
+      });
       setDialogOpen(false);
       setEditItem(null);
       resetForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save article.",
+        variant: "destructive",
+      });
     },
   });
 
   // 🔹 Delete
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/news/${id}`);
-      return res.status === 204 ? null : res.json();
+      await apiRequest("DELETE", `/api/news/${id}`);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/news"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      toast({
+        title: "Article Deleted",
+        description: "News article removed successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete article.",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleSave = () => {
     if (!formData.title || !formData.excerpt || !formData.content) {
-      alert("Please fill in all required fields");
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
       return;
     }
     saveMutation.mutate();
@@ -93,7 +122,7 @@ export default function AdminNews() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this article?")) {
+    if (window.confirm("Are you sure you want to delete this article?")) {
       deleteMutation.mutate(id);
     }
   };
