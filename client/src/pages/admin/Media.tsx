@@ -67,8 +67,8 @@ export default function AdminMedia() {
         return res.data;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/media"]);
       toast({
         title: editingMedia ? "Media Updated" : "Media Created",
         description: "Media item saved successfully!",

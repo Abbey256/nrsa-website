@@ -52,8 +52,8 @@ export default function AdminEvents() {
       if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/events"]);
       toast({
         title: editEvent ? "Event Updated" : "Event Added",
         description: "Event details saved successfully!",

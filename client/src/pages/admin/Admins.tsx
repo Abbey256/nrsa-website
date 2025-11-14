@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type Admin = {
@@ -65,8 +65,8 @@ export default function AdminManagement() {
       if (!res.ok) throw new Error('Create failed');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admins"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/admins"]);
       toast({
         title: "Admin Created",
         description: "New admin account created successfully!",
@@ -89,30 +89,19 @@ export default function AdminManagement() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/admins"] });
-      const previousAdmins = queryClient.getQueryData(["/api/admins"]);
-      queryClient.setQueryData(["/api/admins"], (old: Admin[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousAdmins };
-    },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/admins"], context?.previousAdmins);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete admin.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/admins"]);
       toast({
         title: "Admin Deleted",
         description: "Admin account removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admins"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete admin.",
+        variant: "destructive",
+      });
     },
   });
 

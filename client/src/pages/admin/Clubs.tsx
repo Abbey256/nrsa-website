@@ -42,8 +42,8 @@ export default function AdminClubs() {
       const res = await apiRequest("POST", "/api/clubs", newClub);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/clubs"]);
     },
   });
 
@@ -53,8 +53,8 @@ export default function AdminClubs() {
       const res = await apiRequest("PATCH", `/api/clubs/${payload.id}`, payload.data);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/clubs"]);
     },
   });
 

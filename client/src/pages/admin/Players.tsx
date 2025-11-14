@@ -49,8 +49,8 @@ export default function AdminPlayers() {
       if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/players"]);
       toast({
         title: editingPlayer ? "Player Updated" : "Player Added",
         description: "Player profile saved successfully!",

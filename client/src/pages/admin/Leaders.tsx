@@ -60,8 +60,8 @@ export default function AdminLeaders() {
       if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/leaders"]);
       toast({
         title: editingLeader ? "Leader Updated" : "Leader Added",
         description: "Leader profile saved successfully!",
