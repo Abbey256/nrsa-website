@@ -103,25 +103,40 @@ export function registerAllRoutes(app: Express): void {
 
   app.post("/api/news", requireAdmin, async (req, res) => {
     try {
-      const article = await storage.createNews(insertNewsSchema.parse(req.body));
+      const validatedData = insertNewsSchema.parse(req.body);
+      const article = await storage.createNews(validatedData);
+      if (!article) return res.status(500).json({ error: "Failed to create news article" });
       res.status(201).json(article);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Create news error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.patch("/api/news/:id", requireAdmin, async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
       const validatedBody = insertNewsSchema.partial().parse(req.body);
-      const article = await storage.updateNews(parseInt(req.params.id), validatedBody);
+      const article = await storage.updateNews(id, validatedBody);
       if (!article) return res.status(404).json({ error: "News not found" });
       res.json(article);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Update news error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.delete("/api/news/:id", requireAdmin, async (req, res) => {
     try {
-      await storage.deleteNews(parseInt(req.params.id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      await storage.deleteNews(id);
       res.status(204).send();
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Delete news error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   // ---------- EVENTS ----------
@@ -139,25 +154,40 @@ export function registerAllRoutes(app: Express): void {
 
   app.post("/api/events", requireAdmin, async (req, res) => {
     try {
-      const event = await storage.createEvent(insertEventSchema.parse(req.body));
+      const validatedData = insertEventSchema.parse(req.body);
+      const event = await storage.createEvent(validatedData);
+      if (!event) return res.status(500).json({ error: "Failed to create event" });
       res.status(201).json(event);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Create event error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.patch("/api/events/:id", requireAdmin, async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
       const validatedBody = insertEventSchema.partial().parse(req.body);
-      const event = await storage.updateEvent(parseInt(req.params.id), validatedBody);
+      const event = await storage.updateEvent(id, validatedBody);
       if (!event) return res.status(404).json({ error: "Event not found" });
       res.json(event);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Update event error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.delete("/api/events/:id", requireAdmin, async (req, res) => {
     try {
-      await storage.deleteEvent(parseInt(req.params.id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      await storage.deleteEvent(id);
       res.status(204).send();
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Delete event error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   // ---------- PLAYERS ----------
@@ -170,25 +200,40 @@ export function registerAllRoutes(app: Express): void {
 
   app.post("/api/players", requireAdmin, async (req, res) => {
     try {
-      const player = await storage.createPlayer(insertPlayerSchema.parse(req.body));
+      const validatedData = insertPlayerSchema.parse(req.body);
+      const player = await storage.createPlayer(validatedData);
+      if (!player) return res.status(500).json({ error: "Failed to create player" });
       res.status(201).json(player);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Create player error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.patch("/api/players/:id", requireAdmin, async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
       const validatedBody = insertPlayerSchema.partial().parse(req.body);
-      const player = await storage.updatePlayer(parseInt(req.params.id), validatedBody);
+      const player = await storage.updatePlayer(id, validatedBody);
       if (!player) return res.status(404).json({ error: "Player not found" });
       res.json(player);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Update player error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.delete("/api/players/:id", requireAdmin, async (req, res) => {
     try {
-      await storage.deletePlayer(parseInt(req.params.id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      await storage.deletePlayer(id);
       res.status(204).send();
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Delete player error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   // ---------- CLUBS ----------
@@ -206,25 +251,40 @@ export function registerAllRoutes(app: Express): void {
 
   app.post("/api/clubs", requireAdmin, async (req, res) => {
     try {
-      const club = await storage.createClub(insertClubSchema.parse(req.body));
+      const validatedData = insertClubSchema.parse(req.body);
+      const club = await storage.createClub(validatedData);
+      if (!club) return res.status(500).json({ error: "Failed to create club" });
       res.status(201).json(club);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Create club error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.patch("/api/clubs/:id", requireAdmin, async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
       const validatedBody = insertClubSchema.partial().parse(req.body);
-      const club = await storage.updateClub(parseInt(req.params.id), validatedBody);
+      const club = await storage.updateClub(id, validatedBody);
       if (!club) return res.status(404).json({ error: "Club not found" });
       res.json(club);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Update club error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
   app.delete("/api/clubs/:id", requireAdmin, async (req, res) => {
     try {
-      await storage.deleteClub(parseInt(req.params.id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+      await storage.deleteClub(id);
       res.status(204).send();
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Delete club error:', e.message);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
 // ---------- MEMBER STATES ----------
@@ -309,9 +369,12 @@ app.get("/api/leaders/:id", async (req, res) => {
 
 app.post("/api/leaders", requireAdmin, async (req, res) => {
   try {
-    const leader = await storage.createLeader(insertLeaderSchema.parse(req.body));
+    const validatedData = insertLeaderSchema.parse(req.body);
+    const leader = await storage.createLeader(validatedData);
+    if (!leader) return res.status(500).json({ error: "Failed to create leader" });
     res.status(201).json(leader);
   } catch (e: any) {
+    console.error('Create leader error:', e.message);
     res.status(400).json({ error: e.message });
   }
 });
@@ -400,8 +463,12 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
         isExternal: mediaData.isExternal,
         thumbnailUrl: mediaData.thumbnailUrl,
       });
+      if (!item) return res.status(500).json({ error: "Failed to create media" });
       res.status(201).json(item);
-    } catch (e: any) { res.status(400).json({ error: e.message }); }
+    } catch (e: any) { 
+      console.error('Create media error:', e.message);
+      res.status(400).json({ error: e.message }); 
+    }
   });
 
  app.patch("/api/media/:id", requireAdmin, async (req, res) => {
@@ -463,6 +530,7 @@ app.post("/api/contacts", async (req, res) => {
     console.log('🔍 [CONTACT API] Received:', req.body);
     const validatedData = insertContactSchema.parse(req.body);
     const contact = await storage.createContact(validatedData);
+    if (!contact) return res.status(500).json({ error: "Failed to create contact" });
     console.log('🔍 [CONTACT API] Created:', contact?.id);
     res.status(201).json(contact);
   } catch (e: any) {
