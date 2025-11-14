@@ -48,7 +48,9 @@ export default function AdminEvents() {
     mutationFn: async () => {
       const method = editEvent ? "PATCH" : "POST";
       const url = editEvent ? `/api/events/${editEvent.id}` : "/api/events";
-      await apiRequest(method, url, form);
+      const res = await apiRequest(method, url, form);
+      if (!res.ok) throw new Error('Save failed');
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });

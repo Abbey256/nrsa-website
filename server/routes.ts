@@ -498,10 +498,13 @@ app.patch("/api/contacts/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-    const updated = await storage.updateContact(id, { isRead: req.body.isRead });
+    console.log('🔍 [CONTACT PATCH] Updating contact', id, 'with:', req.body);
+    const updated = await storage.updateContact(id, req.body);
     if (!updated) return res.status(404).json({ error: "Contact not found" });
+    console.log('🔍 [CONTACT PATCH] Updated:', updated);
     res.json(updated);
   } catch (e: any) {
+    console.error('🔍 [CONTACT PATCH] Error:', e.message);
     res.status(400).json({ error: e.message });
   }
 });

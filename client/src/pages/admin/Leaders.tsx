@@ -56,7 +56,9 @@ export default function AdminLeaders() {
     mutationFn: async () => {
       const method = editingLeader ? "PATCH" : "POST";
       const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
-      await apiRequest(method, url, form);
+      const res = await apiRequest(method, url, form);
+      if (!res.ok) throw new Error('Save failed');
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });

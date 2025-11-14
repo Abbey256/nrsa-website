@@ -45,7 +45,9 @@ export default function AdminPlayers() {
     mutationFn: async () => {
       const method = editingPlayer ? "PATCH" : "POST";
       const url = editingPlayer ? `/api/players/${editingPlayer.id}` : "/api/players";
-      await apiRequest(method, url, form);
+      const res = await apiRequest(method, url, form);
+      if (!res.ok) throw new Error('Save failed');
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/players"] });

@@ -61,7 +61,9 @@ export default function AdminManagement() {
 
   const createAdmin = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/admins", form);
+      const res = await apiRequest("POST", "/api/admins", form);
+      if (!res.ok) throw new Error('Create failed');
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admins"] });

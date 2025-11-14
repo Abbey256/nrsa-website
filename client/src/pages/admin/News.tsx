@@ -55,6 +55,7 @@ export default function AdminNews() {
       const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
 
       const res = await apiRequest(method, url, formData);
+      if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
     onSuccess: () => {

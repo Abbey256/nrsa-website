@@ -68,7 +68,7 @@ export const storage = {
   },
   createAdmin: async (adminData: InsertAdmin) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('admins').insert(toSnakeCase(adminData)).select().maybeSingle();
+    const { data, error } = await supabase.from('admins').insert(toSnakeCase(adminData)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
@@ -79,9 +79,9 @@ export const storage = {
   },
   updateAdmin: async (id: number, data: Partial<Admin>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('admins').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('admins').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteAdmin: async (id: number) => {
     if (!supabase) return;
@@ -106,15 +106,15 @@ export const storage = {
   },
   createNews: async (article: InsertNews) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('news').insert(toSnakeCase(article)).select().maybeSingle();
+    const { data, error } = await supabase.from('news').insert(toSnakeCase(article)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateNews: async (id: number, data: Partial<InsertNews>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('news').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('news').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteNews: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -146,15 +146,15 @@ export const storage = {
   },
   createEvent: async (event: InsertEvent) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('events').insert(toSnakeCase(event)).select().maybeSingle();
+    const { data, error } = await supabase.from('events').insert(toSnakeCase(event)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateEvent: async (id: number, data: Partial<InsertEvent>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('events').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('events').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteEvent: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -179,15 +179,15 @@ export const storage = {
   },
   createPlayer: async (player: InsertPlayer) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('players').insert(toSnakeCase(player)).select().maybeSingle();
+    const { data, error } = await supabase.from('players').insert(toSnakeCase(player)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updatePlayer: async (id: number, data: Partial<InsertPlayer>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('players').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('players').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deletePlayer: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -219,15 +219,15 @@ export const storage = {
   },
   createClub: async (club: InsertClub) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('clubs').insert(toSnakeCase(club)).select().maybeSingle();
+    const { data, error } = await supabase.from('clubs').insert(toSnakeCase(club)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateClub: async (id: number, data: Partial<InsertClub>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('clubs').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('clubs').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteClub: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -255,15 +255,15 @@ export const storage = {
   },
   createLeader: async (leader: InsertLeader) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('leaders').insert(toSnakeCase(leader)).select().maybeSingle();
+    const { data, error } = await supabase.from('leaders').insert(toSnakeCase(leader)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateLeader: async (id: number, data: Partial<InsertLeader>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('leaders').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('leaders').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteLeader: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -285,15 +285,15 @@ export const storage = {
   },
   createMedia: async (item: InsertMedia) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('media').insert(toSnakeCase(item)).select().maybeSingle();
+    const { data, error } = await supabase.from('media').insert(toSnakeCase(item)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateMedia: async (id: number, data: Partial<InsertMedia>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('media').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('media').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteMedia: async (id: number) => {
     if (!supabase) return;
@@ -309,15 +309,27 @@ export const storage = {
   },
   createContact: async (contact: InsertContact) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('contacts').insert(toSnakeCase(contact)).select().maybeSingle();
-    if (error) throw error;
+    const insertData = toSnakeCase(contact);
+    console.log('🔍 [CONTACT STORAGE] Inserting:', insertData);
+    const { data, error } = await supabase.from('contacts').insert(insertData).select().single();
+    if (error) {
+      console.error('🔍 [CONTACT STORAGE] Insert error:', error);
+      throw error;
+    }
+    console.log('🔍 [CONTACT STORAGE] Inserted:', data);
     return toCamelCase(data);
   },
   updateContact: async (id: number, data: any) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('contacts').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
-    if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    const updateData = toSnakeCase(data);
+    console.log('🔍 [CONTACT UPDATE] Updating ID', id, 'with:', updateData);
+    const { data: updated, error } = await supabase.from('contacts').update(updateData).eq('id', id).select().single();
+    if (error) {
+      console.error('🔍 [CONTACT UPDATE] Error:', error);
+      throw error;
+    }
+    console.log('🔍 [CONTACT UPDATE] Result:', updated);
+    return toCamelCase(updated);
   },
   deleteContact: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
@@ -393,15 +405,15 @@ export const storage = {
   },
   createHeroSlide: async (slide: InsertHeroSlide) => {
     if (!supabase) return undefined;
-    const { data, error } = await supabase.from('hero_slides').insert(toSnakeCase(slide)).select().maybeSingle();
+    const { data, error } = await supabase.from('hero_slides').insert(toSnakeCase(slide)).select().single();
     if (error) throw error;
     return toCamelCase(data);
   },
   updateHeroSlide: async (id: number, data: Partial<InsertHeroSlide>) => {
     if (!supabase) return undefined;
-    const { data: updated, error } = await supabase.from('hero_slides').update(toSnakeCase(data)).eq('id', id).select().maybeSingle();
+    const { data: updated, error } = await supabase.from('hero_slides').update(toSnakeCase(data)).eq('id', id).select().single();
     if (error) throw error;
-    return toCamelCase(updated) || undefined;
+    return toCamelCase(updated);
   },
   deleteHeroSlide: async (id: number) => {
     if (!supabase) return;
