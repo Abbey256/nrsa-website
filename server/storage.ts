@@ -118,9 +118,8 @@ export const storage = {
   },
   deleteNews: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('news').delete().eq('id', id);
+    const { error } = await supabase.from('news').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Events
@@ -159,9 +158,8 @@ export const storage = {
   },
   deleteEvent: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('events').delete().eq('id', id);
+    const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Players
@@ -193,9 +191,8 @@ export const storage = {
   },
   deletePlayer: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('players').delete().eq('id', id);
+    const { error } = await supabase.from('players').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Clubs
@@ -234,9 +231,8 @@ export const storage = {
   },
   deleteClub: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('clubs').delete().eq('id', id);
+    const { error } = await supabase.from('clubs').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Leaders
@@ -271,9 +267,8 @@ export const storage = {
   },
   deleteLeader: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('leaders').delete().eq('id', id);
+    const { error } = await supabase.from('leaders').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Media
@@ -326,9 +321,8 @@ export const storage = {
   },
   deleteContact: async (id: number) => {
     if (!supabase) throw new Error('Database not available');
-    const { error, count } = await supabase.from('contacts').delete().eq('id', id);
+    const { error } = await supabase.from('contacts').delete().eq('id', id);
     if (error) throw error;
-    if (count === 0) throw new Error('Item not found');
   },
 
   // Site Settings

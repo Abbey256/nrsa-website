@@ -460,9 +460,10 @@ app.delete("/api/leaders/:id", requireAdmin, async (req, res) => {
 // ---------- CONTACTS ----------
 app.post("/api/contacts", async (req, res) => {
   try {
-    console.log('🔍 [CONTACT API] Received data:', req.body);
-    const contact = await storage.createContact(insertContactSchema.parse(req.body));
-    console.log('🔍 [CONTACT API] Created contact:', contact);
+    console.log('🔍 [CONTACT API] Received:', req.body);
+    const validatedData = insertContactSchema.parse(req.body);
+    const contact = await storage.createContact(validatedData);
+    console.log('🔍 [CONTACT API] Created:', contact?.id);
     res.status(201).json(contact);
   } catch (e: any) {
     console.error('🔍 [CONTACT API] Error:', e.message);

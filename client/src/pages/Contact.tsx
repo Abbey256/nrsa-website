@@ -39,21 +39,27 @@ export default function Contact() {
 
   const createContact = useMutation({
     mutationFn: async (data: z.infer<typeof contactFormSchema>) => {
+      console.log('🔍 [CONTACT FORM] Submitting:', data);
       const res = await apiRequest("POST", "/api/contacts", data);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to send message');
+      }
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🔍 [CONTACT FORM] Success:', data);
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
     },
     onError: (error: any) => {
+      console.error('🔍 [CONTACT FORM] Error:', error);
       toast({
         title: "Error",
-        description: (error?.message || "Failed to send message. Please try again."),
+        description: error.message || "Failed to send message. Please try again.",
         variant: "destructive",
       });
     },
