@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Player } from "@shared/schema";
 
@@ -85,30 +85,19 @@ export default function AdminPlayers() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/players"] });
-      const previousPlayers = queryClient.getQueryData(["/api/players"]);
-      queryClient.setQueryData(["/api/players"], (old: Player[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousPlayers };
-    },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/players"], context?.previousPlayers);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete player.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/players"]);
       toast({
         title: "Player Deleted",
         description: "The player profile has been removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/players"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete player.",
+        variant: "destructive",
+      });
     },
   });
 

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@shared/schema";
 
@@ -89,30 +89,19 @@ export default function AdminEvents() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/events"] });
-      const previousEvents = queryClient.getQueryData(["/api/events"]);
-      queryClient.setQueryData(["/api/events"], (old: Event[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousEvents };
-    },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/events"], context?.previousEvents);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete event.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/events"]);
       toast({
         title: "Event Deleted",
         description: "The event has been removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete event.",
+        variant: "destructive",
+      });
     },
   });
 

@@ -103,10 +103,17 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
     },
   },
 });
+
+// Force complete cache refresh for critical operations
+export const forceRefresh = async (queryKey: string[]) => {
+  await queryClient.cancelQueries({ queryKey });
+  queryClient.removeQueries({ queryKey });
+  await queryClient.refetchQueries({ queryKey });
+};

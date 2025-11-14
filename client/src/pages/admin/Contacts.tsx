@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Contact } from "@shared/schema";
 
@@ -44,32 +44,19 @@ export default function AdminContacts() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/contacts"] });
-      const previousContacts = queryClient.getQueryData(["/api/contacts"]);
-      queryClient.setQueryData(["/api/contacts"], (old: Contact[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousContacts };
-    },
-    onError: (error, deletedId, context) => {
-      if (context?.previousContacts) {
-        queryClient.setQueryData(["/api/contacts"], context.previousContacts);
-      }
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete message.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/contacts"]);
       toast({
         title: "Message deleted",
         description: "The contact message has been removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete message.",
+        variant: "destructive",
+      });
     },
   });
 

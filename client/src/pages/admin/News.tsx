@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type News = {
@@ -58,8 +58,8 @@ export default function AdminNews() {
       if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/news"]);
       toast({
         title: editItem ? "Article Updated" : "Article Created",
         description: "News article saved successfully!",
@@ -84,30 +84,19 @@ export default function AdminNews() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/news"] });
-      const previousNews = queryClient.getQueryData(["/api/news"]);
-      queryClient.setQueryData(["/api/news"], (old: News[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousNews };
-    },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/news"], context?.previousNews);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete article.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/news"]);
       toast({
         title: "Article Deleted",
         description: "News article removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete article.",
+        variant: "destructive",
+      });
     },
   });
 

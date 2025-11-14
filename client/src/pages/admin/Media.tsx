@@ -88,7 +88,7 @@ export default function AdminMedia() {
     },
   });
 
-  // Delete mutation with optimistic updates
+  // Delete mutation with immediate cache refresh
   const deleteMedia = useMutation({
     mutationFn: async (id: number) => {
       const token = localStorage.getItem("adminToken");
@@ -102,33 +102,20 @@ export default function AdminMedia() {
       }
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/media"] });
-      const previousMedia = queryClient.getQueryData<Media[]>(["/api/media"]) ?? [];
-      queryClient.setQueryData<Media[]>(["/api/media"], (old) => 
-        (old ?? []).filter(item => item.id !== deletedId)
-      );
-      return { previousMedia };
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/media"] });
+      toast({
+        title: "Media Deleted",
+        description: "Media item removed successfully.",
+      });
     },
-    onError: (err: any, deletedId, context) => {
-      if (context?.previousMedia) {
-        queryClient.setQueryData(["/api/media"], context.previousMedia);
-      }
+    onError: (err: any) => {
       console.error("Failed to delete media:", err?.response?.data || err.message || err);
       toast({
         title: "Error",
         description: err?.response?.data?.error || err.message || "Failed to delete media.",
         variant: "destructive",
       });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Media Deleted",
-        description: "Media item removed successfully.",
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
     },
   });
 

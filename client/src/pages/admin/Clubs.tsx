@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import type { Club, InsertClub } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
 /**
@@ -64,19 +64,11 @@ export default function AdminClubs() {
       await apiRequest("DELETE", `/api/clubs/${id}`);
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/clubs"] });
-      const previousClubs = queryClient.getQueryData(["/api/clubs"]);
-      queryClient.setQueryData(["/api/clubs"], (old: Club[] = []) => 
-        old.filter(item => (item as any).id !== deletedId)
-      );
-      return { previousClubs };
+    onSuccess: async () => {
+      await forceRefresh(["/api/clubs"]);
     },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/clubs"], context?.previousClubs);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs"] });
+    onError: (error: Error) => {
+      console.error('Delete club error:', error);
     },
   });
 

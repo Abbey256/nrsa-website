@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface Leader {
@@ -86,30 +86,19 @@ export default function AdminLeaders() {
       if (!res.ok) throw new Error('Delete failed');
       return id;
     },
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/leaders"] });
-      const previousLeaders = queryClient.getQueryData(["/api/leaders"]);
-      queryClient.setQueryData(["/api/leaders"], (old: Leader[] = []) => 
-        old.filter(item => item.id !== deletedId)
-      );
-      return { previousLeaders };
-    },
-    onError: (error, deletedId, context) => {
-      queryClient.setQueryData(["/api/leaders"], context?.previousLeaders);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete leader.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await forceRefresh(["/api/leaders"]);
       toast({
         title: "Leader Deleted",
         description: "The leader profile has been removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leaders"] });
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete leader.",
+        variant: "destructive",
+      });
     },
   });
 
