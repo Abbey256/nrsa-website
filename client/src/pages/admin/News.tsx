@@ -70,7 +70,7 @@ export default function AdminNews() {
     },
     onSuccess: async (result) => {
       console.log('🔍 [NEWS MUTATION] onSuccess called with:', result);
-      await forceRefresh(["/api/news"]);
+      await forceRefresh(["/api/news"], queryClient);
       console.log('🔍 [NEWS MUTATION] Cache refreshed');
       toast({
         title: editItem ? "Article Updated" : "Article Created",
@@ -108,7 +108,7 @@ export default function AdminNews() {
     },
     onSuccess: async (deletedId) => {
       console.log('🔍 [NEWS DELETE] onSuccess called for ID:', deletedId);
-      await forceRefresh(["/api/news"]);
+      await forceRefresh(["/api/news"], queryClient);
       console.log('🔍 [NEWS DELETE] Cache refreshed');
       toast({
         title: "Article Deleted",

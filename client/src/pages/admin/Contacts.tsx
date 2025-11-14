@@ -45,7 +45,7 @@ export default function AdminContacts() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/contacts"]);
+      await forceRefresh(["/api/contacts"], queryClient);
       toast({
         title: "Message deleted",
         description: "The contact message has been removed successfully.",

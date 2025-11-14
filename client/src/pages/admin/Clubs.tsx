@@ -43,7 +43,7 @@ export default function AdminClubs() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/clubs"]);
+      await forceRefresh(["/api/clubs"], queryClient);
     },
   });
 
@@ -54,7 +54,7 @@ export default function AdminClubs() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/clubs"]);
+      await forceRefresh(["/api/clubs"], queryClient);
     },
   });
 
@@ -65,7 +65,7 @@ export default function AdminClubs() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/clubs"]);
+      await forceRefresh(["/api/clubs"], queryClient);
     },
     onError: (error: Error) => {
       console.error('Delete club error:', error);

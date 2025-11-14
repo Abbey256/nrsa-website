@@ -61,7 +61,7 @@ export default function AdminLeaders() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/leaders"]);
+      await forceRefresh(["/api/leaders"], queryClient);
       toast({
         title: editingLeader ? "Leader Updated" : "Leader Added",
         description: "Leader profile saved successfully!",
@@ -87,7 +87,7 @@ export default function AdminLeaders() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/leaders"]);
+      await forceRefresh(["/api/leaders"], queryClient);
       toast({
         title: "Leader Deleted",
         description: "The leader profile has been removed successfully.",

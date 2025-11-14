@@ -50,7 +50,7 @@ export default function AdminPlayers() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/players"]);
+      await forceRefresh(["/api/players"], queryClient);
       toast({
         title: editingPlayer ? "Player Updated" : "Player Added",
         description: "Player profile saved successfully!",
@@ -86,7 +86,7 @@ export default function AdminPlayers() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/players"]);
+      await forceRefresh(["/api/players"], queryClient);
       toast({
         title: "Player Deleted",
         description: "The player profile has been removed successfully.",

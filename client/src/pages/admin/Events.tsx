@@ -53,7 +53,7 @@ export default function AdminEvents() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/events"]);
+      await forceRefresh(["/api/events"], queryClient);
       toast({
         title: editEvent ? "Event Updated" : "Event Added",
         description: "Event details saved successfully!",
@@ -90,7 +90,7 @@ export default function AdminEvents() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/events"]);
+      await forceRefresh(["/api/events"], queryClient);
       toast({
         title: "Event Deleted",
         description: "The event has been removed successfully.",

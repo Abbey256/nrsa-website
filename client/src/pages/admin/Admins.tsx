@@ -66,7 +66,7 @@ export default function AdminManagement() {
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/admins"]);
+      await forceRefresh(["/api/admins"], queryClient);
       toast({
         title: "Admin Created",
         description: "New admin account created successfully!",
@@ -90,7 +90,7 @@ export default function AdminManagement() {
       return id;
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/admins"]);
+      await forceRefresh(["/api/admins"], queryClient);
       toast({
         title: "Admin Deleted",
         description: "Admin account removed successfully.",

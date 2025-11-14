@@ -68,7 +68,7 @@ export default function AdminMedia() {
       }
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/media"]);
+      await forceRefresh(["/api/media"], queryClient);
       toast({
         title: editingMedia ? "Media Updated" : "Media Created",
         description: "Media item saved successfully!",

@@ -38,7 +38,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/member-states"]);
+      await forceRefresh(["/api/member-states"], queryClient);
     },
   });
 
@@ -48,7 +48,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
       return res.json();
     },
     onSuccess: async () => {
-      await forceRefresh(["/api/member-states"]);
+      await forceRefresh(["/api/member-states"], queryClient);
     },
   });
 
@@ -57,7 +57,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
       const res = await apiRequest("DELETE", `/api/member-states/${id}`);
       return res.status === 204 ? null : res.json();
     },
-    onSuccess: async () => await forceRefresh(["/api/member-states"]),
+    onSuccess: async () => await forceRefresh(["/api/member-states"], queryClient),
   });
   // -------------------------------------
 
