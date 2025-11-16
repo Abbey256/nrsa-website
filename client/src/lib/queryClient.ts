@@ -46,3 +46,13 @@ export async function apiRequest(
 export function forceRefresh() {
   // No-op function for compatibility
 }
+
+export const queryClient = {
+  invalidateQueries: () => {},
+  setQueryData: () => {},
+  getQueryData: () => null,
+};
+
+export function forceRefresh() {
+  // No-op function for compatibility
+}
