@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type News = {
@@ -33,11 +32,8 @@ type News = {
 
 export default function AdminNews() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { data: newsItems = [] } = useQuery<News[]>({
-    queryKey: ["/api/news"],
-  });
-
+  const [newsItems, setNewsItems] = useState<News[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<News | null>(null);
   const [formData, setFormData] = useState({
@@ -48,84 +44,23 @@ export default function AdminNews() {
     isFeatured: false,
   });
 
-  // 🔹 Create or Update
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const method = editItem ? "PATCH" : "POST";
-      const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
+  const fetchNews = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/news");
+      const data = await res.json();
+      setNewsItems(data);
+    } catch (error) {
+      console.error("Failed to fetch news:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      console.log('🔍 [NEWS MUTATION] Starting:', { method, url, data: formData });
-      const res = await apiRequest(method, url, formData);
-      console.log('🔍 [NEWS MUTATION] Response status:', res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('🔍 [NEWS MUTATION] Error response:', errorText);
-        throw new Error(`Save failed: ${res.status} ${errorText}`);
-      }
-      
-      const result = await res.json();
-      console.log('🔍 [NEWS MUTATION] Success result:', result);
-      return result;
-    },
-    onSuccess: async (result) => {
-      console.log('🔍 [NEWS MUTATION] onSuccess called with:', result);
-      await forceRefresh(["/api/news"], queryClient);
-      console.log('🔍 [NEWS MUTATION] Cache refreshed');
-      toast({
-        title: editItem ? "Article Updated" : "Article Created",
-        description: "News article saved successfully!",
-      });
-      setDialogOpen(false);
-      setEditItem(null);
-      resetForm();
-    },
-    onError: (error: Error) => {
-      console.error('🔍 [NEWS MUTATION] onError:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save article.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
-  // 🔹 Delete
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      console.log('🔍 [NEWS DELETE] Starting delete for ID:', id);
-      const res = await apiRequest("DELETE", `/api/news/${id}`);
-      console.log('🔍 [NEWS DELETE] Response status:', res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('🔍 [NEWS DELETE] Error response:', errorText);
-        throw new Error(`Delete failed: ${res.status} ${errorText}`);
-      }
-      
-      console.log('🔍 [NEWS DELETE] Success');
-      return id;
-    },
-    onSuccess: async (deletedId) => {
-      console.log('🔍 [NEWS DELETE] onSuccess called for ID:', deletedId);
-      await forceRefresh(["/api/news"], queryClient);
-      console.log('🔍 [NEWS DELETE] Cache refreshed');
-      toast({
-        title: "Article Deleted",
-        description: "News article removed successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error('🔍 [NEWS DELETE] onError:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete article.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title || !formData.excerpt || !formData.content) {
       toast({
         title: "Validation Error",
@@ -134,7 +69,37 @@ export default function AdminNews() {
       });
       return;
     }
-    saveMutation.mutate();
+
+    try {
+      const method = editItem ? "PATCH" : "POST";
+      const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
+      
+      const res = await apiRequest(method, url, formData);
+      const savedItem = await res.json();
+
+      if (editItem) {
+        setNewsItems(items => items.map(item => 
+          item.id === editItem.id ? savedItem : item
+        ));
+      } else {
+        setNewsItems(items => [savedItem, ...items]);
+      }
+
+      toast({
+        title: editItem ? "Article Updated" : "Article Created",
+        description: "News article saved successfully!",
+      });
+      
+      setDialogOpen(false);
+      setEditItem(null);
+      resetForm();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save article.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = (item: News) => {
@@ -149,9 +114,22 @@ export default function AdminNews() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this article?")) {
-      deleteMutation.mutate(id);
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this article?")) return;
+
+    try {
+      await apiRequest("DELETE", `/api/news/${id}`);
+      setNewsItems(items => items.filter(item => item.id !== id));
+      toast({
+        title: "Article Deleted",
+        description: "News article removed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete article.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -166,7 +144,6 @@ export default function AdminNews() {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">News Management</h1>
@@ -231,17 +208,21 @@ export default function AdminNews() {
               <Button 
                 className="w-full bg-primary hover:bg-primary/90" 
                 onClick={handleSave}
-                disabled={saveMutation.isPending}
               >
-                {saveMutation.isPending ? "Saving..." : editItem ? "Update Article" : "Save Article"}
+                {editItem ? "Update Article" : "Save Article"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* News Table */}
-      {newsItems.length === 0 ? (
+      {loading ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Loading news articles...</p>
+          </CardContent>
+        </Card>
+      ) : newsItems.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
@@ -279,9 +260,8 @@ export default function AdminNews() {
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDelete(item.id)}
-                      disabled={deleteMutation.isPending}
                     >
-                      <Trash className="w-4 h-4 mr-1" /> {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                      <Trash className="w-4 h-4 mr-1" /> Delete
                     </Button>
                   </TableCell>
                 </TableRow>
