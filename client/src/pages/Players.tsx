@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import type { Player } from "@shared/schema";
+import type { Player } from "@/types/schema";
 
 export default function Players() {
   const { data: players = [], isLoading, error } = useQuery<Player[]>({

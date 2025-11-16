@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
-import type { Event } from "@shared/schema";
+import type { Event } from "@/types/schema";
 
 export default function Events() {
   const { data: events = [], isLoading, error } = useQuery<Event[]>({

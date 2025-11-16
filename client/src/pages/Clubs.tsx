@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, User, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { Club } from "@shared/schema";
+import type { Club } from "@/types/schema";
 
 export default function Clubs() {
   const { data: clubs = [], isLoading, error } = useQuery<Club[]>({

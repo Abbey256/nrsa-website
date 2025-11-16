@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import type { Club, InsertClub } from "@shared/schema";
+import type { Club, InsertClub } from "@/types/schema";
 import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 

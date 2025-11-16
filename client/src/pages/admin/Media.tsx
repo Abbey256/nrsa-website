@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Media } from "@shared/schema";
+import type { Media } from "@/types/schema";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 

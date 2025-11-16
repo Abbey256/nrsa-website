@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import type { HeroSlide } from "@shared/schema";
+import type { HeroSlide } from "@/types/schema";
 import { useToast } from "@/hooks/use-toast";
 
 /**

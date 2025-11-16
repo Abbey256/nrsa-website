@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import type { Media } from "@shared/schema";
+import type { Media } from "@/types/schema";
 
 export default function Media() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");

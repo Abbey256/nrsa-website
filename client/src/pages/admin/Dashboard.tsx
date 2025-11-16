@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, Trophy, Image, Mail, Newspaper } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { News, Event, Player, Club, Media, Contact } from "@shared/schema";
+import type { News, Event, Player, Club, Media, Contact } from "@/types/schema";
 
 export default function AdminDashboard() {
   const { data: news = [] } = useQuery<News[]>({ queryKey: ["/api/news"] });

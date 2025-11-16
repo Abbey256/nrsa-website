@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Event } from "@shared/schema";
+import type { Event } from "@/types/schema";
 
 export default function AdminEvents() {
   const { toast } = useToast();

@@ -5,7 +5,7 @@ import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import type { News } from "@shared/schema";
+import type { News } from "@/types/schema";
 
 export default function News() {
   const [, navigate] = useLocation();
