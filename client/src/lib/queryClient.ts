@@ -42,3 +42,7 @@ export async function apiRequest(
 
   return res;
 }
+
+export function forceRefresh() {
+  // No-op function for compatibility
+}
