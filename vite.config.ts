@@ -2,27 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-export default defineConfig(async () => {
+export default defineConfig(() => {
   const plugins = [
     react({
       jsxRuntime: "automatic",
     }),
   ];
-
-  // ✅ Load Replit plugins only in development mode
-  if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
-    try {
-      const { default: runtimeErrorOverlay } = await import("@replit/vite-plugin-runtime-error-modal");
-      const { cartographer } = await import("@replit/vite-plugin-cartographer");
-      const { devBanner } = await import("@replit/vite-plugin-dev-banner");
-
-      plugins.push(runtimeErrorOverlay() as any);
-      plugins.push(cartographer() as any);
-      plugins.push(devBanner() as any);
-    } catch (err) {
-      console.warn("⚠️ Replit dev plugins not found — skipping (safe to ignore in production)");
-    }
-  }
 
   return {
     plugins,
@@ -39,6 +24,7 @@ export default defineConfig(async () => {
       emptyOutDir: true,
       rollupOptions: {
         onwarn: () => {},
+
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom'],
@@ -47,6 +33,9 @@ export default defineConfig(async () => {
       },
       chunkSizeWarningLimit: 1000,
       sourcemap: false,
+      commonjsOptions: {
+        include: [/node_modules/],
+      },
     },
     appType: 'spa',
     server: {
