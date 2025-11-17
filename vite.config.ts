@@ -27,9 +27,7 @@ export default defineConfig(() => {
       emptyOutDir: true,
       rollupOptions: {
         onwarn: () => {},
-        external: (id) => {
-          return id.includes('node_modules') && !id.includes('react');
-        },
+
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom'],
