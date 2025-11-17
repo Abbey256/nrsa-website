@@ -1,3 +1,5 @@
+import { QueryClient } from "@tanstack/react-query";
+
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 function buildUrl(url: string) {
@@ -43,10 +45,31 @@ export async function apiRequest(
   return res;
 }
 
-export function forceRefresh() {}
-
-export const queryClient = {
-  invalidateQueries: () => {},
-  setQueryData: () => {},
-  getQueryData: () => null,
+const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }): Promise<any> => {
+  const url = buildUrl(queryKey[0] as string);
+  const authHeaders = getAuthHeaders();
+  const res = await fetch(url, {
+    headers: authHeaders,
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error(`${res.status}: ${res.statusText}`);
+  }
+  return res.json();
 };
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: defaultQueryFn,
+      staleTime: 0,
+      gcTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+export function forceRefresh() {
+  queryClient.invalidateQueries();
+}
