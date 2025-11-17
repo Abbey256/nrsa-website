@@ -79,16 +79,20 @@ export async function setupVite(app: Express, server: Server) {
 
 // Serve React build files and handle SPA routing
 export function serveStatic(app: Express) {
-    const distPath = path.resolve(process.cwd(), "dist", "public");
+    const distPath = path.resolve(process.cwd(), "public_html");
     
-    // Serve static assets with aggressive caching
+    // Serve static assets with aggressive caching and correct MIME types
     app.use(express.static(distPath, {
         maxAge: '1y',
         etag: true,
         lastModified: true,
-        setHeaders: (res, path) => {
-            if (path.endsWith('.html')) {
+        setHeaders: (res, filePath) => {
+            if (filePath.endsWith('.html')) {
                 res.setHeader('Cache-Control', 'no-cache');
+            } else if (filePath.endsWith('.js')) {
+                res.setHeader('Content-Type', 'application/javascript');
+            } else if (filePath.endsWith('.css')) {
+                res.setHeader('Content-Type', 'text/css');
             }
         }
     }));
