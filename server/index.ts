@@ -14,6 +14,7 @@ import { registerAuthRoutes } from "./auth";
 import { registerUploadRoutes } from "./upload";
 import { setupVite, serveStatic, log } from "./vite";
 import { createTables } from "./db";
+import { initializeSupabase } from "./lib/supabase";
 
 // Create Express app
 const app = express();
