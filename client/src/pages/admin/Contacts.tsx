@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,81 +18,67 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Contact } from "@/types/schema";
 
 export default function AdminContacts() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
-  // Explicitly use apiRequest so Authorization headers (admin token) are included.
-  const { data: contacts = [], isLoading, isError } = useQuery<Contact[]>({
-    queryKey: ["/api/contacts"],
-    queryFn: async () => {
+  const fetchContacts = async () => {
+    try {
       const res = await apiRequest("GET", "/api/contacts");
-      return await res.json();
-    },
-  });
+      const data = await res.json();
+      setContacts(data);
+    } catch (error) {
+      console.error("Failed to fetch contacts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const deleteContact = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/contacts/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/contacts"], queryClient);
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await apiRequest("DELETE", `/api/contacts/${id}`);
+      setContacts(items => items.filter(item => item.id !== id));
       toast({
         title: "Message deleted",
         description: "The contact message has been removed successfully.",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete message.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
-  // Mark contact as read when viewing
-  const markRead = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
-      if (!res.ok) throw new Error('Failed to mark as read');
-      return await res.json();
-    },
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["/api/contacts"] });
-      const previousContacts = queryClient.getQueryData(["/api/contacts"]);
-      queryClient.setQueryData(["/api/contacts"], (old: Contact[] = []) => 
-        old.map(contact => contact.id === id ? { ...contact, isRead: true } : contact)
-      );
-      return { previousContacts };
-    },
-    onError: (error, id, context) => {
-      if (context?.previousContacts) {
-        queryClient.setQueryData(["/api/contacts"], context.previousContacts);
-      }
+  const markAsRead = async (id: number) => {
+    try {
+      await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
+      setContacts(items => items.map(item => 
+        item.id === id ? { ...item, isRead: true } : item
+      ));
+    } catch (error) {
       console.error("Failed to mark contact read:", error);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
-    },
-  });
+    }
+  };
 
   const handleViewMessage = (contact: Contact) => {
     setSelectedContact(contact);
     setViewDialogOpen(true);
 
     if (!contact.isRead) {
-      // fire-and-forget: mark message as read on server and refresh list
-      markRead.mutate(contact.id);
+      markAsRead(contact.id);
     }
   };
 
@@ -107,16 +93,10 @@ export default function AdminContacts() {
         </p>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Loading messages...</p>
-          </CardContent>
-        </Card>
-      ) : isError ? (
-        <Card>
-          <CardContent className="py-12 text-center text-red-700">
-            Failed to load messages. Check server logs and authentication.
           </CardContent>
         </Card>
       ) : contacts.length === 0 ? (
@@ -169,8 +149,7 @@ export default function AdminContacts() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => deleteContact.mutate(contact.id)}
-                        disabled={deleteContact.isPending}
+                        onClick={() => handleDelete(contact.id)}
                         data-testid={`button-delete-${contact.id}`}
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
@@ -266,10 +245,9 @@ export default function AdminContacts() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteContact.mutate(selectedContact.id);
+                    handleDelete(selectedContact.id);
                     setViewDialogOpen(false);
                   }}
-                  disabled={deleteContact.isPending}
                   data-testid="button-delete-from-dialog"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />

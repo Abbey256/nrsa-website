@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,26 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Media } from "@/types/schema";
-import axios from "axios";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminMedia() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
+  const [mediaItems, setMediaItems] = useState<Media[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploadMode, setUploadMode] = useState<"upload" | "external">("upload");
-
-  const { data: mediaItems = [] } = useQuery<Media[]>({
-    queryKey: ["/api/media"],
-    queryFn: async () => {
-      const res = await axios.get("/api/media");
-      return res.data;
-    },
-  });
-
   const [editingMedia, setEditingMedia] = useState<Media | null>(null);
   const [form, setForm] = useState({
     title: "",
@@ -50,76 +40,23 @@ export default function AdminMedia() {
     category: "",
   });
 
-  const saveMedia = useMutation({
-    mutationFn: async (mediaPayload: any) => {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Unauthorized - No token found");
+  const fetchMedia = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/media");
+      const data = await res.json();
+      setMediaItems(data);
+    } catch (error) {
+      console.error("Failed to fetch media:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
+  useEffect(() => {
+    fetchMedia();
+  }, []);
 
-      if (mediaPayload.id) {
-        const res = await axios.patch(`/api/media/${mediaPayload.id}`, mediaPayload, config);
-        return res.data;
-      } else {
-        const res = await axios.post("/api/media", mediaPayload, config);
-        return res.data;
-      }
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/media"], queryClient);
-      toast({
-        title: editingMedia ? "Media Updated" : "Media Created",
-        description: "Media item saved successfully!",
-      });
-      setEditingMedia(null);
-      setForm({ title: "", description: "", imageUrl: "", externalUrl: "", category: "" });
-      setIsDialogOpen(false);
-      setUploadMode("upload");
-    },
-    onError: (err: any) => {
-      console.error("Failed to save media:", err?.response?.data || err.message || err);
-      toast({
-        title: "Error",
-        description: err?.response?.data?.error || err.message || "Failed to save media.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete mutation with immediate cache refresh
-  const deleteMedia = useMutation({
-    mutationFn: async (id: number) => {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Unauthorized - No token found");
-
-      const res = await axios.delete(`/api/media/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status < 200 || res.status >= 300) {
-        throw new Error('Delete failed');
-      }
-      return id;
-    },
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["/api/media"] });
-      toast({
-        title: "Media Deleted",
-        description: "Media item removed successfully.",
-      });
-    },
-    onError: (err: any) => {
-      console.error("Failed to delete media:", err?.response?.data || err.message || err);
-      toast({
-        title: "Error",
-        description: err?.response?.data?.error || err.message || "Failed to delete media.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title || !form.category) {
       toast({
         title: "Validation Error",
@@ -159,11 +96,54 @@ export default function AdminMedia() {
       payload.imageUrl = form.imageUrl;
     }
 
-    if (editingMedia) {
-      payload.id = editingMedia.id;
-    }
+    try {
+      const method = editingMedia ? "PATCH" : "POST";
+      const url = editingMedia ? `/api/media/${editingMedia.id}` : "/api/media";
+      const res = await apiRequest(method, url, payload);
+      const savedMedia = await res.json();
 
-    saveMedia.mutate(payload);
+      if (editingMedia) {
+        setMediaItems(items => items.map(item => 
+          item.id === editingMedia.id ? savedMedia : item
+        ));
+      } else {
+        setMediaItems(items => [savedMedia, ...items]);
+      }
+
+      toast({
+        title: editingMedia ? "Media Updated" : "Media Created",
+        description: "Media item saved successfully!",
+      });
+      setEditingMedia(null);
+      setForm({ title: "", description: "", imageUrl: "", externalUrl: "", category: "" });
+      setIsDialogOpen(false);
+      setUploadMode("upload");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save media.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this media item?")) return;
+
+    try {
+      await apiRequest("DELETE", `/api/media/${id}`);
+      setMediaItems(items => items.filter(item => item.id !== id));
+      toast({
+        title: "Media Deleted",
+        description: "Media item removed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete media.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = (item: Media) => {
@@ -281,19 +261,20 @@ export default function AdminMedia() {
               data-testid="button-save-media"
               className="w-full bg-primary hover:bg-primary/90"
               onClick={handleSubmit}
-              disabled={saveMedia.isPending}
             >
-              {saveMedia.isPending
-                ? "Saving..."
-                : editingMedia
-                ? "Update Media"
-                : "Save Media"}
+              {editingMedia ? "Update Media" : "Save Media"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {mediaItems.length === 0 ? (
+      {loading ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Loading media...</p>
+          </CardContent>
+        </Card>
+      ) : mediaItems.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
@@ -346,12 +327,7 @@ export default function AdminMedia() {
                   data-testid={`button-delete-${item.id}`}
                   variant="destructive"
                   size="sm"
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this media item?")) {
-                      deleteMedia.mutate(item.id);
-                    }
-                  }}
-                  disabled={deleteMedia.isPending}
+                  onClick={() => handleDelete(item.id)}
                 >
                   <Trash className="w-4 h-4 mr-1" /> Delete
                 </Button>

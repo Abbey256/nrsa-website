@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Player } from "@/types/schema";
 
 export default function AdminPlayers() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [form, setForm] = useState({
@@ -37,20 +37,46 @@ export default function AdminPlayers() {
     biography: "",
   });
 
-  const { data: players = [], isLoading } = useQuery<Player[]>({
-    queryKey: ["/api/players"],
-  });
+  const fetchPlayers = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/players");
+      const data = await res.json();
+      setPlayers(data);
+    } catch (error) {
+      console.error("Failed to fetch players:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const savePlayer = useMutation({
-    mutationFn: async () => {
+  useEffect(() => {
+    fetchPlayers();
+  }, []);
+
+  const handleSave = async () => {
+    if (!form.name || !form.club || !form.state || !form.category) {
+      toast({
+        title: "Validation Error",
+        description: "Name, club, state, and category are required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
       const method = editingPlayer ? "PATCH" : "POST";
       const url = editingPlayer ? `/api/players/${editingPlayer.id}` : "/api/players";
       const res = await apiRequest(method, url, form);
-      if (!res.ok) throw new Error('Save failed');
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/players"], queryClient);
+      const savedPlayer = await res.json();
+
+      if (editingPlayer) {
+        setPlayers(items => items.map(item => 
+          item.id === editingPlayer.id ? savedPlayer : item
+        ));
+      } else {
+        setPlayers(items => [savedPlayer, ...items]);
+      }
+
       toast({
         title: editingPlayer ? "Player Updated" : "Player Added",
         description: "Player profile saved successfully!",
@@ -69,58 +95,39 @@ export default function AdminPlayers() {
         gamesPlayed: 0,
         biography: "",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to save player.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
-  const deletePlayer = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/players/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/players"], queryClient);
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this player?")) return;
+
+    try {
+      await apiRequest("DELETE", `/api/players/${id}`);
+      setPlayers(items => items.filter(item => item.id !== id));
       toast({
         title: "Player Deleted",
         description: "The player profile has been removed successfully.",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete player.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    if (!form.name || !form.club || !form.state || !form.category) {
-      toast({
-        title: "Validation Error",
-        description: "Name, club, state, and category are required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-    savePlayer.mutate();
-  };
 
-  const handleDelete = (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this player?")) return;
-    deletePlayer.mutate(id);
-  };
 
   const handleEdit = (player: Player) => {
     setEditingPlayer(player);
@@ -277,9 +284,8 @@ export default function AdminPlayers() {
               <Button
                 onClick={handleSave}
                 className="w-full bg-primary hover:bg-primary/90"
-                disabled={savePlayer.isPending}
               >
-                {savePlayer.isPending ? "Saving..." : editingPlayer ? "Update Player" : "Save Player"}
+                {editingPlayer ? "Update Player" : "Save Player"}
               </Button>
             </div>
           </DialogContent>
@@ -287,7 +293,7 @@ export default function AdminPlayers() {
       </div>
 
       {/* Players List */}
-      {isLoading ? (
+      {loading ? (
         <p className="text-center text-muted-foreground py-12">Loading players...</p>
       ) : players.length === 0 ? (
         <Card>
@@ -316,7 +322,6 @@ export default function AdminPlayers() {
                       size="sm"
                       variant="destructive"
                       onClick={() => handleDelete(player.id!)}
-                      disabled={deletePlayer.isPending}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import type { Affiliation } from "@/types/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -45,8 +45,8 @@ export default function AdminAffiliations() {
       if (!res.ok) throw new Error('Failed to save affiliation');
       return res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/affiliations"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/affiliations"], queryClient);
       toast({
         title: editingAffiliation ? "Affiliation Updated" : "Affiliation Created",
         description: "Affiliation saved successfully!",
@@ -94,8 +94,8 @@ export default function AdminAffiliations() {
         description: "Affiliation removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/affiliations"] });
+    onSettled: async () => {
+      await forceRefresh(["/api/affiliations"], queryClient);
     },
   });
 

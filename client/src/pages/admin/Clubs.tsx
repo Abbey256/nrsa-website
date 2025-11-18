@@ -1,7 +1,5 @@
 import React from "react";
-// src/pages/admin/AdminClubs.tsx
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +14,9 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import type { Club, InsertClub } from "@/types/schema";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * AdminClubs — Admin UI for Clubs with Add / Edit / Delete
@@ -29,48 +28,71 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
  */
 
 export default function AdminClubs() {
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch clubs
-  const { data: clubs = [], isLoading } = useQuery<Club[]>({
-    queryKey: ["/api/clubs"],
-  });
+  const fetchClubs = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/clubs");
+      const data = await res.json();
+      setClubs(data);
+    } catch (error) {
+      console.error("Failed to fetch clubs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // --- Add Club mutation ---
-  const addClub = useMutation({
-    mutationFn: async (newClub: InsertClub) => {
-      const res = await apiRequest("POST", "/api/clubs", newClub);
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/clubs"], queryClient);
-    },
-  });
+  useEffect(() => {
+    fetchClubs();
+  }, []);
 
-  // --- Update Club mutation (Edit) ---
-  const updateClub = useMutation({
-    mutationFn: async (payload: { id: string; data: Partial<Club> }) => {
-      const res = await apiRequest("PATCH", `/api/clubs/${payload.id}`, payload.data);
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/clubs"], queryClient);
-    },
-  });
+  const handleSubmitAdd = async () => {
+    if (!form.name || !form.city || !form.state || !form.managerName || !form.contactEmail || !form.contactPhone) {
+      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await apiRequest("POST", "/api/clubs", form);
+      const savedClub = await res.json();
+      setClubs(items => [savedClub, ...items]);
+      toast({ title: "Success", description: "Club added successfully!" });
+      setForm({ name: "", logoUrl: "", city: "", state: "", managerName: "", contactEmail: "", contactPhone: "", isRegistered: true });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
-  // --- Delete Club mutation ---
-  const deleteClub = useMutation({
-    mutationFn: async (id: string | number) => {
+  const handleSubmitEdit = async () => {
+    if (!editingClubId || !editForm) return;
+    if (!editForm.name || !editForm.city || !editForm.state || !editForm.managerName || !editForm.contactEmail || !editForm.contactPhone) {
+      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await apiRequest("PATCH", `/api/clubs/${editingClubId}`, editForm);
+      const savedClub = await res.json();
+      setClubs(items => items.map(item => (item as any).id === parseInt(editingClubId) ? savedClub : item));
+      toast({ title: "Success", description: "Club updated successfully!" });
+      setEditOpen(false);
+      setEditingClubId(null);
+      setEditForm(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this club? This cannot be undone.")) return;
+    try {
       await apiRequest("DELETE", `/api/clubs/${id}`);
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/clubs"], queryClient);
-    },
-    onError: (error: Error) => {
-      console.error('Delete club error:', error);
-    },
-  });
+      setClubs(items => items.filter(item => (item as any).id !== id));
+      toast({ title: "Success", description: "Club deleted successfully." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   // Form state for Add
   const [form, setForm] = useState({
@@ -93,24 +115,7 @@ export default function AdminClubs() {
     setForm((p) => ({ ...p, [key]: value }));
   };
 
-  const handleSubmitAdd = () => {
-    if (!form.name || !form.city || !form.state || !form.managerName || !form.contactEmail || !form.contactPhone) {
-      alert("Please fill all required fields.");
-      return;
-    }
-    addClub.mutate(form);
-    // clear form on success (best-effort)
-    setForm({
-      name: "",
-      logoUrl: "",
-      city: "",
-      state: "",
-      managerName: "",
-      contactEmail: "",
-      contactPhone: "",
-      isRegistered: true,
-    });
-  };
+
 
   // Begin Edit for a club
   const startEdit = (club: Club) => {
@@ -133,18 +138,7 @@ export default function AdminClubs() {
     setEditForm({ ...editForm, [key]: value });
   };
 
-  const handleSubmitEdit = () => {
-    if (!editingClubId || !editForm) return;
-    // Basic validation
-    if (!editForm.name || !editForm.city || !editForm.state || !editForm.managerName || !editForm.contactEmail || !editForm.contactPhone) {
-      alert("Please fill all required fields.");
-      return;
-    }
-    updateClub.mutate({ id: editingClubId, data: editForm });
-    setEditOpen(false);
-    setEditingClubId(null);
-    setEditForm(null);
-  };
+
 
   return (
     <div>
@@ -213,8 +207,8 @@ export default function AdminClubs() {
                 <Label>Registered</Label>
               </div>
 
-              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90" disabled={addClub.isPending}>
-                {addClub.isPending ? "Saving..." : "Save Club"}
+              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90">
+                Save Club
               </Button>
             </div>
           </DialogContent>
@@ -222,7 +216,7 @@ export default function AdminClubs() {
       </div>
 
       {/* Clubs List */}
-      {isLoading ? (
+      {loading ? (
         <div className="text-center py-20">Loading clubs...</div>
       ) : clubs.length === 0 ? (
         <Card>
@@ -240,7 +234,6 @@ export default function AdminClubs() {
                   size="icon"
                   variant="ghost"
                   onClick={() => startEdit(club)}
-                  disabled={updateClub.isPending}
                   aria-label={`Edit ${club.name}`}
                 >
                   <Edit3 className="w-4 h-4" />
@@ -249,13 +242,7 @@ export default function AdminClubs() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  onClick={() => {
-                    // confirm before deleting
-                    if (confirm(`Delete club "${club.name}"? This cannot be undone.`)) {
-                      deleteClub.mutate((club as any).id);
-                    }
-                  }}
-                  disabled={deleteClub.isPending}
+                  onClick={() => handleDelete((club as any).id)}
                   aria-label={`Delete ${club.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -328,8 +315,8 @@ export default function AdminClubs() {
 
               <div className="flex gap-2">
                 <Button onClick={() => { setEditOpen(false); setEditingClubId(null); setEditForm(null); }} variant="ghost">Cancel</Button>
-                <Button onClick={handleSubmitEdit} disabled={updateClub.isPending} className="bg-primary hover:bg-primary/90">
-                  {updateClub.isPending ? "Saving..." : "Save Changes"}
+                <Button onClick={handleSubmitEdit} className="bg-primary hover:bg-primary/90">
+                  Save Changes
                 </Button>
               </div>
             </div>

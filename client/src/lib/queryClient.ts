@@ -70,6 +70,13 @@ export const queryClient = new QueryClient({
   },
 });
 
-export function forceRefresh() {
-  queryClient.invalidateQueries();
+export function forceRefresh(queryKeys?: string[], client?: QueryClient) {
+  const targetClient = client || queryClient;
+  if (queryKeys && queryKeys.length > 0) {
+    queryKeys.forEach(key => {
+      targetClient.invalidateQueries({ queryKey: [key] });
+    });
+  } else {
+    targetClient.invalidateQueries();
+  }
 }

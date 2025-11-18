@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface Leader {
@@ -30,7 +29,8 @@ interface Leader {
 
 export default function AdminLeaders() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingLeader, setEditingLeader] = useState<Leader | null>(null);
   const [form, setForm] = useState({
@@ -41,72 +41,23 @@ export default function AdminLeaders() {
     order: 0,
   });
 
-  // --- Fetch leaders ---
-  const { data: leaders = [], isLoading, isError, error } = useQuery<Leader[]>({
-    queryKey: ["/api/leaders"],
-    queryFn: async () => {
-      // parse the JSON here - apiRequest returns a Response
+  const fetchLeaders = async () => {
+    try {
       const res = await apiRequest("GET", "/api/leaders");
-      return await res.json();
-    },
-  });
-
-  // --- Save leader (Add or Update) ---
-  const saveLeader = useMutation({
-    mutationFn: async () => {
-      const method = editingLeader ? "PATCH" : "POST";
-      const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
-      const res = await apiRequest(method, url, form);
-      if (!res.ok) throw new Error('Save failed');
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/leaders"], queryClient);
-      toast({
-        title: editingLeader ? "Leader Updated" : "Leader Added",
-        description: "Leader profile saved successfully!",
-      });
-      setOpen(false);
-      setEditingLeader(null);
-      setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save leader.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // --- Delete leader ---
-  const deleteLeader = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/leaders/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/leaders"], queryClient);
-      toast({
-        title: "Leader Deleted",
-        description: "The leader profile has been removed successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete leader.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+      const data = await res.json();
+      setLeaders(data);
+    } catch (error) {
+      console.error("Failed to fetch leaders:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSave = () => {
+  useEffect(() => {
+    fetchLeaders();
+  }, []);
+
+  const handleSave = async () => {
     if (!form.name || !form.position) {
       toast({
         title: "Validation Error",
@@ -115,13 +66,61 @@ export default function AdminLeaders() {
       });
       return;
     }
-    saveLeader.mutate();
+
+    try {
+      const method = editingLeader ? "PATCH" : "POST";
+      const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
+      const res = await apiRequest(method, url, form);
+      const savedLeader = await res.json();
+
+      if (editingLeader) {
+        setLeaders(items => items.map(item => 
+          item.id === editingLeader.id ? savedLeader : item
+        ));
+      } else {
+        setLeaders(items => [savedLeader, ...items]);
+      }
+
+      toast({
+        title: editingLeader ? "Leader Updated" : "Leader Added",
+        description: "Leader profile saved successfully!",
+      });
+      setOpen(false);
+      setEditingLeader(null);
+      setForm({ name: "", position: "", photoUrl: "", bio: "", order: 0 });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save leader.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this leader?")) return;
-    deleteLeader.mutate(id);
+
+    try {
+      await apiRequest("DELETE", `/api/leaders/${id}`);
+      setLeaders(items => items.filter(item => item.id !== id));
+      toast({
+        title: "Leader Deleted",
+        description: "The leader profile has been removed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete leader.",
+        variant: "destructive",
+      });
+    }
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+
 
   const handleEdit = (leader: Leader) => {
     setEditingLeader(leader);
@@ -181,14 +180,8 @@ export default function AdminLeaders() {
         </Dialog>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <p className="text-center py-12">Loading leaders...</p>
-      ) : isError ? (
-        <Card>
-          <CardContent className="py-12 text-center text-red-700">
-            Error loading leaders: {(error as Error)?.message || "Unknown error"}
-          </CardContent>
-        </Card>
       ) : leaders.length === 0 ? (
         <Card><CardContent className="py-12 text-center">No leaders added yet.</CardContent></Card>
       ) : (

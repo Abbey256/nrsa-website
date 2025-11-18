@@ -1,7 +1,5 @@
 import React from "react";
-// src/pages/admin/AdminMemberStates.tsx
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,49 +14,78 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import type { MemberState, InsertMemberState } from "@/types/schema";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminMemberState() {
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [states, setStates] = useState<MemberState[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const { data: states = [], isLoading } = useQuery<MemberState[]>({
-  queryKey: ["/api/member-states"],
-  queryFn: async () => {
-    const res = await fetch("/api/member-states");
-    if (!res.ok) throw new Error("Failed to fetch member states");
-    return res.json();
-  },
-});
+  const fetchStates = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/member-states");
+      const data = await res.json();
+      setStates(data);
+    } catch (error) {
+      console.error("Failed to fetch member states:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // --- Mutations ---
-  const addState = useMutation({
-    mutationFn: async (newState: InsertMemberState) => {
-      const res = await apiRequest("POST", "/api/member-states", newState);
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/member-states"], queryClient);
-    },
-  });
+  useEffect(() => {
+    fetchStates();
+  }, []);
 
-  const updateState = useMutation({
-    mutationFn: async (payload: { id: string; data: Partial<MemberState> }) => {
-      const res = await apiRequest("PATCH", `/api/member-states/${payload.id}`, payload.data);
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/member-states"], queryClient);
-    },
-  });
+  const handleSubmitAdd = async () => {
+    if (!form.name || !form.representativeName || !form.contactEmail || !form.contactPhone) {
+      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { useUpload, ...stateData } = form;
+      const res = await apiRequest("POST", "/api/member-states", stateData);
+      const savedState = await res.json();
+      setStates(items => [savedState, ...items]);
+      toast({ title: "Success", description: "Member state added successfully!" });
+      setForm({ name: "", logoUrl: "", representativeName: "", contactEmail: "", contactPhone: "", isRegistered: true, useUpload: true });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
-  const deleteState = useMutation({
-    mutationFn: async (id: string | number) => {
-      const res = await apiRequest("DELETE", `/api/member-states/${id}`);
-      return res.status === 204 ? null : res.json();
-    },
-    onSuccess: async () => await forceRefresh(["/api/member-states"], queryClient),
-  });
+  const handleSubmitEdit = async () => {
+    if (!editingId || !editForm) return;
+    if (!editForm.name || !editForm.representativeName || !editForm.contactEmail || !editForm.contactPhone) {
+      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { useUpload, ...dataToSave } = editForm;
+      const res = await apiRequest("PATCH", `/api/member-states/${editingId}`, dataToSave);
+      const savedState = await res.json();
+      setStates(items => items.map(item => item.id === parseInt(editingId) ? savedState : item));
+      toast({ title: "Success", description: "Member state updated successfully!" });
+      setEditOpen(false);
+      setEditingId(null);
+      setEditForm(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this member state? This cannot be undone.")) return;
+    try {
+      await apiRequest("DELETE", `/api/member-states/${id}`);
+      setStates(items => items.filter(item => item.id !== id));
+      toast({ title: "Success", description: "Member state deleted successfully." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
   // -------------------------------------
 
   const [form, setForm] = useState({
@@ -80,24 +107,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
     setForm((p) => ({ ...p, [key]: value }));
   };
 
-  const handleSubmitAdd = () => {
-    // ... (Add form submission logic)
-    if (!form.name || !form.representativeName || !form.contactEmail || !form.contactPhone) {
-      alert("Please fill all required fields.");
-      return;
-    }
-    const { useUpload, ...stateData } = form;
-    addState.mutate(stateData);
-    setForm({
-      name: "",
-      logoUrl: "",
-      representativeName: "",
-      contactEmail: "",
-      contactPhone: "",
-      isRegistered: true,
-      useUpload: true,
-    });
-  };
+
 
   const startEdit = (state: MemberState) => {
     setEditingId(String(state.id));
@@ -119,21 +129,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
     setEditForm((p) => (p ? { ...p, [key]: value } : null)); // Use functional update
   };
 
-  const handleSubmitEdit = () => {
-    if (!editingId || !editForm) return;
-    if (!editForm.name || !editForm.representativeName || !editForm.contactEmail || !editForm.contactPhone) {
-      alert("Please fill all required fields.");
-      return;
-    }
 
-    // Create payload, excluding the temporary 'useUpload' field
-    const { useUpload, ...dataToSave } = editForm;
-
-    updateState.mutate({ id: editingId, data: dataToSave });
-    setEditOpen(false);
-    setEditingId(null);
-    setEditForm(null);
-  };
 
   return (
     <div>
@@ -206,8 +202,8 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
                 <Label>Registered</Label>
               </div>
 
-              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90" disabled={addState.isPending}>
-                {addState.isPending ? "Saving..." : "Save Member State"}
+              <Button onClick={handleSubmitAdd} className="w-full bg-primary hover:bg-primary/90">
+                Save Member State
               </Button>
             </div>
           </DialogContent>
@@ -215,7 +211,7 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
       </div>
 
       {/* Member States List */}
-      {isLoading ? (
+      {loading ? (
         <div className="text-center py-20">Loading member states...</div>
       ) : states.length === 0 ? (
         <Card>
@@ -232,19 +228,13 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
                   size="icon"
                   variant="ghost"
                   onClick={() => startEdit(state)}
-                  disabled={updateState.isPending}
                 >
                   <Edit3 className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="destructive"
                   size="icon"
-                  onClick={() => {
-                    if (confirm(`Delete member state "${state.name}"? This cannot be undone.`)) {
-                      deleteState.mutate(state.id);
-                    }
-                  }}
-                  disabled={deleteState.isPending}
+                  onClick={() => handleDelete(state.id)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -318,8 +308,8 @@ const { data: states = [], isLoading } = useQuery<MemberState[]>({
 
               <div className="flex gap-2 justify-end">
                 <Button onClick={() => { setEditOpen(false); setEditingId(null); setEditForm(null); }} variant="ghost">Cancel</Button>
-                <Button onClick={handleSubmitEdit} disabled={updateState.isPending} className="bg-primary hover:bg-primary/90">
-                  {updateState.isPending ? "Saving..." : "Save Changes"}
+                <Button onClick={handleSubmitEdit} className="bg-primary hover:bg-primary/90">
+                  Save Changes
                 </Button>
               </div>
             </div>

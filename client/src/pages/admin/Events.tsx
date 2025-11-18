@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +15,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@/types/schema";
 
 export default function AdminEvents() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editEvent, setEditEvent] = useState<Event | null>(null);
   const [form, setForm] = useState({
@@ -38,22 +38,37 @@ export default function AdminEvents() {
     isFeatured: false,
   });
 
-  // Load events
-  const { data: events = [] } = useQuery<Event[]>({
-    queryKey: ["/api/events"],
-  });
+  const fetchEvents = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/events");
+      const data = await res.json();
+      setEvents(data);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Add or Edit Event
-  const saveEvent = useMutation({
-    mutationFn: async () => {
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const handleSave = async () => {
+    try {
       const method = editEvent ? "PATCH" : "POST";
       const url = editEvent ? `/api/events/${editEvent.id}` : "/api/events";
       const res = await apiRequest(method, url, form);
-      if (!res.ok) throw new Error('Save failed');
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/events"], queryClient);
+      const savedEvent = await res.json();
+
+      if (editEvent) {
+        setEvents(items => items.map(item => 
+          item.id === editEvent.id ? savedEvent : item
+        ));
+      } else {
+        setEvents(items => [savedEvent, ...items]);
+      }
+
       toast({
         title: editEvent ? "Event Updated" : "Event Added",
         description: "Event details saved successfully!",
@@ -72,38 +87,31 @@ export default function AdminEvents() {
         imageUrl: "",
         isFeatured: false,
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to save event.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
-  // Delete Event
-  const deleteEvent = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/events/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/events"], queryClient);
+  const handleDelete = async (id: number) => {
+    try {
+      await apiRequest("DELETE", `/api/events/${id}`);
+      setEvents(items => items.filter(item => item.id !== id));
       toast({
         title: "Event Deleted",
         description: "The event has been removed successfully.",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete event.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
   // Handle Form Changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -135,9 +143,7 @@ export default function AdminEvents() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
-    saveEvent.mutate();
-  };
+
 
   return (
     <div>
@@ -245,20 +251,21 @@ export default function AdminEvents() {
               <Button
                 className="w-full bg-primary hover:bg-primary/90"
                 onClick={handleSave}
-                disabled={saveEvent.isPending}
               >
-                {saveEvent.isPending
-                  ? "Saving..."
-                  : editEvent
-                  ? "Update Event"
-                  : "Save Event"}
+                {editEvent ? "Update Event" : "Save Event"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {events.length === 0 ? (
+      {loading ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Loading events...</p>
+          </CardContent>
+        </Card>
+      ) : events.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
@@ -284,10 +291,9 @@ export default function AdminEvents() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteEvent.mutate(event.id)}
-                    disabled={deleteEvent.isPending}
+                    onClick={() => handleDelete(event.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> {deleteEvent.isPending ? "Deleting..." : "Delete"}
+                    <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>
                 </div>
               </CardContent>

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, forceRefresh } from "@/lib/queryClient";
 import type { HeroSlide } from "@/types/schema";
 import { useToast } from "@/hooks/use-toast";
 
@@ -54,8 +54,8 @@ export default function AdminHeroSlides() {
       if (!res.ok) throw new Error('Failed to save slide');
       return res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
+    onSuccess: async () => {
+      await forceRefresh(["/api/hero-slides"], queryClient);
       toast({
         title: editSlide ? "Slide Updated" : "Slide Created",
         description: "Hero slide saved successfully!",
@@ -103,8 +103,8 @@ export default function AdminHeroSlides() {
         description: "Hero slide removed successfully.",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hero-slides"] });
+    onSettled: async () => {
+      await forceRefresh(["/api/hero-slides"], queryClient);
     },
   });
 

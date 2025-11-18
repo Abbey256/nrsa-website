@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, forceRefresh } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type Admin = {
@@ -43,7 +42,8 @@ type Admin = {
 
 export default function AdminManagement() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -55,57 +55,23 @@ export default function AdminManagement() {
   const currentAdmin = JSON.parse(localStorage.getItem("admin") || "{}");
   const isSuperAdmin = currentAdmin.role === "super-admin";
 
-  const { data: admins = [], isLoading } = useQuery<Admin[]>({
-    queryKey: ["/api/admins"],
-  });
+  const fetchAdmins = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/admins");
+      const data = await res.json();
+      setAdmins(data);
+    } catch (error) {
+      console.error("Failed to fetch admins:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const createAdmin = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/admins", form);
-      if (!res.ok) throw new Error('Create failed');
-      return res.json();
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/admins"], queryClient);
-      toast({
-        title: "Admin Created",
-        description: "New admin account created successfully!",
-      });
-      setOpen(false);
-      setForm({ name: "", email: "", password: "", role: "admin" });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create admin.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
-  const deleteAdmin = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("DELETE", `/api/admins/${id}`);
-      if (!res.ok) throw new Error('Delete failed');
-      return id;
-    },
-    onSuccess: async () => {
-      await forceRefresh(["/api/admins"], queryClient);
-      toast({
-        title: "Admin Deleted",
-        description: "Admin account removed successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete admin.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
       toast({
@@ -115,14 +81,46 @@ export default function AdminManagement() {
       });
       return;
     }
-    createAdmin.mutate();
-  };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this admin account?")) {
-      deleteAdmin.mutate(id);
+    try {
+      const res = await apiRequest("POST", "/api/admins", form);
+      const savedAdmin = await res.json();
+      setAdmins(items => [savedAdmin, ...items]);
+      toast({
+        title: "Admin Created",
+        description: "New admin account created successfully!",
+      });
+      setOpen(false);
+      setForm({ name: "", email: "", password: "", role: "admin" });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create admin.",
+        variant: "destructive",
+      });
     }
   };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this admin account?")) return;
+
+    try {
+      await apiRequest("DELETE", `/api/admins/${id}`);
+      setAdmins(items => items.filter(item => item.id !== id));
+      toast({
+        title: "Admin Deleted",
+        description: "Admin account removed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete admin.",
+        variant: "destructive",
+      });
+    }
+  };
+
+
 
   if (!isSuperAdmin) {
     return (
@@ -225,11 +223,10 @@ export default function AdminManagement() {
                   Cancel
                 </Button>
                 <Button 
-                  type="submit" 
-                  disabled={createAdmin.isPending}
+                  type="submit"
                   data-testid="button-submit-admin"
                 >
-                  {createAdmin.isPending ? "Creating..." : "Create Admin"}
+                  Create Admin
                 </Button>
               </div>
             </form>
@@ -237,7 +234,7 @@ export default function AdminManagement() {
         </Dialog>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Loading admins...</p>
@@ -285,7 +282,6 @@ export default function AdminManagement() {
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDelete(admin.id)}
-                        disabled={deleteAdmin.isPending}
                         data-testid={`button-delete-admin-${admin.id}`}
                       >
                         <Trash2 className="w-4 h-4 mr-1" /> Delete
