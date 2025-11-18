@@ -107,7 +107,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Explore NRSA</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Link href="/news">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-news">
                 <CardHeader>
@@ -155,6 +155,22 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <a href="https://skippers.nrsa.com.ng" target="_blank" rel="noopener noreferrer">
+              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-rankings">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">Player Rankings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    View official player rankings and performance statistics from competitions across Nigeria.
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
           </div>
         </div>
       </section>
