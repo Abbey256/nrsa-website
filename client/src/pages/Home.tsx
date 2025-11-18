@@ -124,17 +124,17 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Link href="/players">
+            <Link href="https://skippers.nrsa.com.ng" target="_blank" rel="noopener noreferrer">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-players">
                 <CardHeader>
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <Users className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-2xl">Our Athletes</CardTitle>
+                  <CardTitle className="text-2xl">Player Rankingss</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Meet Nigeria's top rope skipping athletes representing the nation in competitions worldwide.
+                    View official player rankings and performance statistics from competitions across Nigeria.
                   </p>
                 </CardContent>
               </Card>
