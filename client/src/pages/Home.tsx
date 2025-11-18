@@ -123,22 +123,40 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+            </div>
 
-             <a href="https://skippers.nrsa.com.ng" target="_blank" rel="noopener noreferrer">
-              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-players">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">Player Rankingss</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    View official player rankings and performance statistics from competitions across Nigeria.
-                  </p>
-                </CardContent>
-              </Card>
-              </a>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+  <Link href="/news">
+    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
+      ...
+    </Card>
+  </Link>
+
+  <a
+    href="https://skippers.nrsa.com.ng"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block"
+  >
+    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
+      <CardHeader>
+        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+          <Users className="w-6 h-6 text-primary" />
+        </div>
+        <CardTitle className="text-2xl">Player Rankings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">
+          View official player rankings and performance statistics from competitions across Nigeria.
+        </p>
+      </CardContent>
+    </Card>
+  </a>
+
+  <Link href="/events">
+    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
+    </Card>
+  </Link>
 
             <Link href="/events">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-events">
