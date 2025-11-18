@@ -35,7 +35,11 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   if (req.path.startsWith('/api/')) {
-    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600');
+    // Prevent ALL caching for API routes - critical for real-time data updates
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
   }
   next();
 });

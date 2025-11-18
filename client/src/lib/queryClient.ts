@@ -35,6 +35,7 @@ export async function apiRequest(
     headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+    cache: "no-store", // Prevent browser caching of API requests
   });
 
   return res;
@@ -46,6 +47,7 @@ const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }): P
   const res = await fetch(url, {
     headers: authHeaders,
     credentials: "include",
+    cache: "no-store", // Prevent browser caching of query requests
   });
   if (!res.ok) {
     throw new Error(`${res.status}: ${res.statusText}`);
