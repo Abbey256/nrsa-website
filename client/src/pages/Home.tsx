@@ -15,26 +15,27 @@ export default function Home() {
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+            
             {/* Text Content */}
             <div className="lg:col-span-3">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
                 About the <span className="text-primary">Association</span>
               </h2>
-              
+
               <div className="space-y-6 text-foreground/80 leading-relaxed">
                 <div>
                   <h3 className="text-2xl font-semibold text-primary mb-3">Our Mission</h3>
                   <p className="text-lg">
-                    To promote, develop, and regulate rope skipping across Nigeria, fostering athletic excellence 
-                    and providing opportunities for all Nigerians to participate in this dynamic sport.
+                    To promote, develop, and regulate rope skipping across Nigeria, fostering athletic 
+                    excellence and providing opportunities for all Nigerians to participate in this dynamic sport.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="text-2xl font-semibold text-primary mb-3">Our Vision</h3>
                   <p className="text-lg">
-                    To establish Nigeria as a leading force in international rope skipping, producing 
-                    world-class athletes and hosting premier competitions that showcase Nigerian talent.
+                    To establish Nigeria as a leading force in international rope skipping, producing world-class 
+                    athletes and hosting premier competitions that showcase Nigerian talent.
                   </p>
                 </div>
 
@@ -48,7 +49,7 @@ export default function Home() {
               </div>
 
               <Link href="/about">
-                <Button className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg" data-testid="button-learn-more">
+                <Button className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg">
                   Learn More <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
@@ -61,32 +62,34 @@ export default function Home() {
                   <CardTitle className="text-primary text-center">International Affiliations</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
+                  
+                  {/* IJRU */}
                   <div className="text-center">
                     <div className="inline-block px-6 py-3 bg-primary/10 rounded-lg mb-4">
                       <div className="text-3xl font-bold text-primary">IJRU</div>
                     </div>
                     <h4 className="font-semibold text-lg mb-2">International Jump Rope Union</h4>
                     <p className="text-sm text-muted-foreground">
-                      Global governing body setting international standards for rope skipping competition and excellence.
+                      Global governing body setting international standards for rope skipping.
                     </p>
                     <a 
                       href="https://ijru.sport" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-block mt-3 text-primary text-sm hover:underline"
-                      data-testid="link-ijru"
                     >
                       Visit IJRU.sport →
                     </a>
                   </div>
 
+                  {/* IRSO */}
                   <div className="border-t pt-6 text-center">
                     <div className="inline-block px-6 py-3 bg-primary/10 rounded-lg mb-4">
                       <div className="text-3xl font-bold text-primary">IRSO</div>
                     </div>
                     <h4 className="font-semibold text-lg mb-2">International Rope Skipping Organization</h4>
                     <p className="text-sm text-muted-foreground">
-                      Promoting rope skipping as a competitive sport and fostering international collaboration.
+                      Promoting rope skipping as a competitive global sport.
                     </p>
                   </div>
 
@@ -95,6 +98,7 @@ export default function Home() {
                       ✓ Proud Member
                     </span>
                   </div>
+
                 </CardContent>
               </Card>
             </div>
@@ -106,10 +110,12 @@ export default function Home() {
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Explore NRSA</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+            {/* Latest News */}
             <Link href="/news">
-              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-news">
+              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
                 <CardHeader>
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <Calendar className="w-6 h-6 text-primary" />
@@ -118,48 +124,37 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Stay updated with the latest news, competitions, and achievements from the rope skipping community.
+                    Stay updated with competition highlights and national announcements.
                   </p>
                 </CardContent>
               </Card>
             </Link>
-            </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-  <Link href="/news">
-    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
-      ...
-    </Card>
-  </Link>
+            {/* Player Rankings */}
+            <a
+              href="https://skippers.nrsa.com.ng"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Users className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">Player Rankings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Track national rankings and performance stats across Nigeria.
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
 
-  <a
-    href="https://skippers.nrsa.com.ng"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block"
-  >
-    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
-      <CardHeader>
-        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-          <Users className="w-6 h-6 text-primary" />
-        </div>
-        <CardTitle className="text-2xl">Player Rankings</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">
-          View official player rankings and performance statistics from competitions across Nigeria.
-        </p>
-      </CardContent>
-    </Card>
-  </a>
-
-  <Link href="/events">
-    <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
-    </Card>
-  </Link>
-
+            {/* Events */}
             <Link href="/events">
-              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full" data-testid="card-events">
+              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
                 <CardHeader>
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <Trophy className="w-6 h-6 text-primary" />
@@ -168,11 +163,29 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Discover upcoming championships, training camps, and rope skipping events across Nigeria.
+                    Explore championships, camps, and national competitions.
                   </p>
                 </CardContent>
               </Card>
             </Link>
+
+            {/* About NRSA */}
+            <Link href="/about">
+              <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <ChevronRight className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">About NRSA</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Learn more about our structure, leadership, and national programs.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
           </div>
         </div>
       </section>
