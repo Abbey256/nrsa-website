@@ -16,6 +16,4 @@ ADMIN_EMAIL=admin@nrsa.com.ng
 ADMIN_PASSWORD=adminnrsa.passme5@00121
 ADMIN_NAME=NRSA Administrator
 ```
-
-4. Set custom domain: `api.nrsa.com.ng`
 5. Deploy
