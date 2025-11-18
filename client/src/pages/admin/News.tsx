@@ -118,13 +118,24 @@ export default function AdminNews() {
     if (!window.confirm("Are you sure you want to delete this article?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/news/${id}`);
+      console.log('🔍 Deleting news ID:', id);
+      const res = await apiRequest("DELETE", `/api/news/${id}`);
+      console.log('🔍 Delete response:', res.status, res.statusText);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('🔍 Delete failed:', errorText);
+        throw new Error(`Delete failed: ${res.status} ${errorText}`);
+      }
+      
+      console.log('🔍 Delete successful, updating UI');
       setNewsItems(items => items.filter(item => item.id !== id));
       toast({
         title: "Article Deleted",
         description: "News article removed successfully.",
       });
     } catch (error: any) {
+      console.error('🔍 Delete error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete article.",
