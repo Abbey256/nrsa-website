@@ -44,9 +44,9 @@ export function Footer() {
                 { label: "About", path: "/about" },
                 { label: "News", path: "/news" },
                 { label: "Events", path: "/events" },
-                { label: "Players", path: "/players" },
-                { label: "Clubs", path: "/clubs" },
                 { label: "Players", path: "https://skippers.nrsa.com.ng" },
+                { label: "Clubs", path: "/clubs" },
+            
               ].map((item) => (
                 <Link
                   key={item.path}
