@@ -47,7 +47,15 @@ export default function AdminContacts() {
 
   const handleDelete = async (id: number) => {
     try {
-      await apiRequest("DELETE", `/api/contacts/${id}`);
+      const res = await fetch(`/api/contacts/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setContacts(items => items.filter(item => item.id !== id));
       toast({
         title: "Message deleted",
@@ -64,7 +72,16 @@ export default function AdminContacts() {
 
   const markAsRead = async (id: number) => {
     try {
-      await apiRequest("PATCH", `/api/contacts/${id}`, { isRead: true });
+      const res = await fetch(`/api/contacts/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ isRead: true }),
+      });
+      if (!res.ok) throw new Error('Update failed');
       setContacts(items => items.map(item => 
         item.id === id ? { ...item, isRead: true } : item
       ));

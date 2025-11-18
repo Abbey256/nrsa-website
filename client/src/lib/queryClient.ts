@@ -24,7 +24,7 @@ export async function apiRequest(
 ): Promise<Response> {
   const authHeaders = getAuthHeaders();
   const headers = {
-    ...(data ? { "Content-Type": "application/json" } : {}),
+    "Content-Type": "application/json",
     ...authHeaders,
   };
 
@@ -36,11 +36,6 @@ export async function apiRequest(
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
-
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
 
   return res;
 }

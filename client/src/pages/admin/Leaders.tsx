@@ -70,7 +70,15 @@ export default function AdminLeaders() {
     try {
       const method = editingLeader ? "PATCH" : "POST";
       const url = editingLeader ? `/api/leaders/${editingLeader.id}` : "/api/leaders";
-      const res = await apiRequest(method, url, form);
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
       const savedLeader = await res.json();
 
       if (editingLeader) {
@@ -101,7 +109,15 @@ export default function AdminLeaders() {
     if (!window.confirm("Are you sure you want to delete this leader?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/leaders/${id}`);
+      const res = await fetch(`/api/leaders/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setLeaders(items => items.filter(item => item.id !== id));
       toast({
         title: "Leader Deleted",

@@ -83,7 +83,15 @@ export default function AdminManagement() {
     }
 
     try {
-      const res = await apiRequest("POST", "/api/admins", form);
+      const res = await fetch("/api/admins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
       const savedAdmin = await res.json();
       setAdmins(items => [savedAdmin, ...items]);
       toast({
@@ -105,7 +113,15 @@ export default function AdminManagement() {
     if (!window.confirm("Are you sure you want to delete this admin account?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/admins/${id}`);
+      const res = await fetch(`/api/admins/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setAdmins(items => items.filter(item => item.id !== id));
       toast({
         title: "Admin Deleted",

@@ -99,7 +99,15 @@ export default function AdminMedia() {
     try {
       const method = editingMedia ? "PATCH" : "POST";
       const url = editingMedia ? `/api/media/${editingMedia.id}` : "/api/media";
-      const res = await apiRequest(method, url, payload);
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
       const savedMedia = await res.json();
 
       if (editingMedia) {
@@ -131,7 +139,15 @@ export default function AdminMedia() {
     if (!confirm("Are you sure you want to delete this media item?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/media/${id}`);
+      const res = await fetch(`/api/media/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setMediaItems(items => items.filter(item => item.id !== id));
       toast({
         title: "Media Deleted",

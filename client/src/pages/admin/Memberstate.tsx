@@ -46,7 +46,15 @@ export default function AdminMemberState() {
     }
     try {
       const { useUpload, ...stateData } = form;
-      const res = await apiRequest("POST", "/api/member-states", stateData);
+      const res = await fetch("/api/member-states", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(stateData),
+      });
       const savedState = await res.json();
       setStates(items => [savedState, ...items]);
       toast({ title: "Success", description: "Member state added successfully!" });
@@ -64,7 +72,15 @@ export default function AdminMemberState() {
     }
     try {
       const { useUpload, ...dataToSave } = editForm;
-      const res = await apiRequest("PATCH", `/api/member-states/${editingId}`, dataToSave);
+      const res = await fetch(`/api/member-states/${editingId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(dataToSave),
+      });
       const savedState = await res.json();
       setStates(items => items.map(item => item.id === parseInt(editingId) ? savedState : item));
       toast({ title: "Success", description: "Member state updated successfully!" });
@@ -79,7 +95,15 @@ export default function AdminMemberState() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this member state? This cannot be undone.")) return;
     try {
-      await apiRequest("DELETE", `/api/member-states/${id}`);
+      const res = await fetch(`/api/member-states/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setStates(items => items.filter(item => item.id !== id));
       toast({ title: "Success", description: "Member state deleted successfully." });
     } catch (error: any) {

@@ -66,39 +66,52 @@ export default function AdminPlayers() {
     try {
       const method = editingPlayer ? "PATCH" : "POST";
       const url = editingPlayer ? `/api/players/${editingPlayer.id}` : "/api/players";
-      const res = await apiRequest(method, url, form);
-      const savedPlayer = await res.json();
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
+      
+      if (res.ok) {
+        const savedPlayer = await res.json();
 
-      if (editingPlayer) {
-        setPlayers(items => items.map(item => 
-          item.id === editingPlayer.id ? savedPlayer : item
-        ));
+        if (editingPlayer) {
+          setPlayers(items => items.map(item => 
+            item.id === editingPlayer.id ? savedPlayer : item
+          ));
+        } else {
+          setPlayers(items => [savedPlayer, ...items]);
+        }
+
+        toast({
+          title: editingPlayer ? "Player Updated" : "Player Added",
+          description: "Player profile saved successfully!",
+        });
+        setOpen(false);
+        setEditingPlayer(null);
+        setForm({
+          name: "",
+          photoUrl: "",
+          club: "",
+          state: "",
+          category: "",
+          totalPoints: 0,
+          achievements: "",
+          awardsWon: 0,
+          gamesPlayed: 0,
+          biography: "",
+        });
       } else {
-        setPlayers(items => [savedPlayer, ...items]);
+        throw new Error('Save failed');
       }
-
-      toast({
-        title: editingPlayer ? "Player Updated" : "Player Added",
-        description: "Player profile saved successfully!",
-      });
-      setOpen(false);
-      setEditingPlayer(null);
-      setForm({
-        name: "",
-        photoUrl: "",
-        club: "",
-        state: "",
-        category: "",
-        totalPoints: 0,
-        achievements: "",
-        awardsWon: 0,
-        gamesPlayed: 0,
-        biography: "",
-      });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to save player.",
+        description: "Failed to save player.",
         variant: "destructive",
       });
     }
@@ -108,16 +121,27 @@ export default function AdminPlayers() {
     if (!window.confirm("Are you sure you want to delete this player?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/players/${id}`);
-      setPlayers(items => items.filter(item => item.id !== id));
-      toast({
-        title: "Player Deleted",
-        description: "The player profile has been removed successfully.",
+      const res = await fetch(`/api/players/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
       });
+      if (res.ok || res.status === 204) {
+        setPlayers(items => items.filter(item => item.id !== id));
+        toast({
+          title: "Player Deleted",
+          description: "The player profile has been removed successfully.",
+        });
+      } else {
+        throw new Error('Delete failed');
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete player.",
+        description: "Failed to delete player.",
         variant: "destructive",
       });
     }

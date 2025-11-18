@@ -58,39 +58,52 @@ export default function AdminEvents() {
     try {
       const method = editEvent ? "PATCH" : "POST";
       const url = editEvent ? `/api/events/${editEvent.id}` : "/api/events";
-      const res = await apiRequest(method, url, form);
-      const savedEvent = await res.json();
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
+      
+      if (res.ok) {
+        const savedEvent = await res.json();
+        
+        if (editEvent) {
+          setEvents(items => items.map(item => 
+            item.id === editEvent.id ? savedEvent : item
+          ));
+        } else {
+          setEvents(items => [savedEvent, ...items]);
+        }
 
-      if (editEvent) {
-        setEvents(items => items.map(item => 
-          item.id === editEvent.id ? savedEvent : item
-        ));
+        toast({
+          title: editEvent ? "Event Updated" : "Event Added",
+          description: "Event details saved successfully!",
+        });
+        setIsDialogOpen(false);
+        setEditEvent(null);
+        setForm({
+          title: "",
+          description: "",
+          venue: "",
+          city: "",
+          state: "",
+          eventDate: "",
+          registrationDeadline: "",
+          registrationLink: "",
+          imageUrl: "",
+          isFeatured: false,
+        });
       } else {
-        setEvents(items => [savedEvent, ...items]);
+        throw new Error('Save failed');
       }
-
-      toast({
-        title: editEvent ? "Event Updated" : "Event Added",
-        description: "Event details saved successfully!",
-      });
-      setIsDialogOpen(false);
-      setEditEvent(null);
-      setForm({
-        title: "",
-        description: "",
-        venue: "",
-        city: "",
-        state: "",
-        eventDate: "",
-        registrationDeadline: "",
-        registrationLink: "",
-        imageUrl: "",
-        isFeatured: false,
-      });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to save event.",
+        description: "Failed to save event.",
         variant: "destructive",
       });
     }
@@ -98,16 +111,27 @@ export default function AdminEvents() {
 
   const handleDelete = async (id: number) => {
     try {
-      await apiRequest("DELETE", `/api/events/${id}`);
-      setEvents(items => items.filter(item => item.id !== id));
-      toast({
-        title: "Event Deleted",
-        description: "The event has been removed successfully.",
+      const res = await fetch(`/api/events/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
       });
+      if (res.ok || res.status === 204) {
+        setEvents(items => items.filter(item => item.id !== id));
+        toast({
+          title: "Event Deleted",
+          description: "The event has been removed successfully.",
+        });
+      } else {
+        throw new Error('Delete failed');
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete event.",
+        description: "Failed to delete event.",
         variant: "destructive",
       });
     }

@@ -54,7 +54,15 @@ export default function AdminClubs() {
       return;
     }
     try {
-      const res = await apiRequest("POST", "/api/clubs", form);
+      const res = await fetch("/api/clubs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
       const savedClub = await res.json();
       setClubs(items => [savedClub, ...items]);
       toast({ title: "Success", description: "Club added successfully!" });
@@ -71,7 +79,15 @@ export default function AdminClubs() {
       return;
     }
     try {
-      const res = await apiRequest("PATCH", `/api/clubs/${editingClubId}`, editForm);
+      const res = await fetch(`/api/clubs/${editingClubId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(editForm),
+      });
       const savedClub = await res.json();
       setClubs(items => items.map(item => (item as any).id === parseInt(editingClubId) ? savedClub : item));
       toast({ title: "Success", description: "Club updated successfully!" });
@@ -86,7 +102,15 @@ export default function AdminClubs() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this club? This cannot be undone.")) return;
     try {
-      await apiRequest("DELETE", `/api/clubs/${id}`);
+      const res = await fetch(`/api/clubs/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error('Delete failed');
       setClubs(items => items.filter(item => (item as any).id !== id));
       toast({ title: "Success", description: "Club deleted successfully." });
     } catch (error: any) {

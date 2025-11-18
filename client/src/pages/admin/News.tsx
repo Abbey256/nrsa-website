@@ -17,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type News = {
@@ -44,11 +43,24 @@ export default function AdminNews() {
     isFeatured: false,
   });
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("adminToken");
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
+
   const fetchNews = async () => {
     try {
-      const res = await apiRequest("GET", "/api/news");
-      const data = await res.json();
-      setNewsItems(data);
+      const res = await fetch("/api/news", {
+        headers: getAuthHeaders(),
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNewsItems(data);
+      }
     } catch (error) {
       console.error("Failed to fetch news:", error);
     } finally {
@@ -74,29 +86,39 @@ export default function AdminNews() {
       const method = editItem ? "PATCH" : "POST";
       const url = editItem ? `/api/news/${editItem.id}` : "/api/news";
       
-      const res = await apiRequest(method, url, formData);
-      const savedItem = await res.json();
-
-      if (editItem) {
-        setNewsItems(items => items.map(item => 
-          item.id === editItem.id ? savedItem : item
-        ));
-      } else {
-        setNewsItems(items => [savedItem, ...items]);
-      }
-
-      toast({
-        title: editItem ? "Article Updated" : "Article Created",
-        description: "News article saved successfully!",
+      const res = await fetch(url, {
+        method,
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify(formData),
       });
-      
-      setDialogOpen(false);
-      setEditItem(null);
-      resetForm();
+
+      if (res.ok) {
+        const savedItem = await res.json();
+        
+        if (editItem) {
+          setNewsItems(items => items.map(item => 
+            item.id === editItem.id ? savedItem : item
+          ));
+        } else {
+          setNewsItems(items => [savedItem, ...items]);
+        }
+
+        toast({
+          title: editItem ? "Article Updated" : "Article Created",
+          description: "News article saved successfully!",
+        });
+        
+        setDialogOpen(false);
+        setEditItem(null);
+        resetForm();
+      } else {
+        throw new Error("Save failed");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to save article.",
+        description: "Failed to save article.",
         variant: "destructive",
       });
     }
@@ -118,27 +140,25 @@ export default function AdminNews() {
     if (!window.confirm("Are you sure you want to delete this article?")) return;
 
     try {
-      console.log('🔍 Deleting news ID:', id);
-      const res = await apiRequest("DELETE", `/api/news/${id}`);
-      console.log('🔍 Delete response:', res.status, res.statusText);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('🔍 Delete failed:', errorText);
-        throw new Error(`Delete failed: ${res.status} ${errorText}`);
-      }
-      
-      console.log('🔍 Delete successful, updating UI');
-      setNewsItems(items => items.filter(item => item.id !== id));
-      toast({
-        title: "Article Deleted",
-        description: "News article removed successfully.",
+      const res = await fetch(`/api/news/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+        credentials: "include",
       });
+
+      if (res.ok) {
+        setNewsItems(items => items.filter(item => item.id !== id));
+        toast({
+          title: "Article Deleted",
+          description: "News article removed successfully.",
+        });
+      } else {
+        throw new Error("Delete failed");
+      }
     } catch (error: any) {
-      console.error('🔍 Delete error:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete article.",
+        description: "Failed to delete article.",
         variant: "destructive",
       });
     }
