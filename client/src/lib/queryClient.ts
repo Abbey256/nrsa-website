@@ -75,8 +75,10 @@ export function forceRefresh(queryKeys?: string[], client?: QueryClient) {
   if (queryKeys && queryKeys.length > 0) {
     queryKeys.forEach(key => {
       targetClient.invalidateQueries({ queryKey: [key] });
+      targetClient.refetchQueries({ queryKey: [key] });
     });
   } else {
     targetClient.invalidateQueries();
+    targetClient.refetchQueries();
   }
 }
