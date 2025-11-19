@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import React from "react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { Link } from "wouter";
