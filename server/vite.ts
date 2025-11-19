@@ -80,28 +80,30 @@ export async function setupVite(app: Express, server: Server) {
 // Serve React build files and handle SPA routing
 export function serveStatic(app: Express) {
     const distPath = path.resolve(process.cwd(), "public_html");
-    
-    // Serve static assets with aggressive caching and correct MIME types
+
+    // Serve static files with NO caching
     app.use(express.static(distPath, {
-        maxAge: '1y',
-        etag: true,
-        lastModified: true,
+        etag: false,
+        lastModified: false,
+        maxAge: 0,
+        cacheControl: false,
         setHeaders: (res, filePath) => {
-            if (filePath.endsWith('.html')) {
-                res.setHeader('Cache-Control', 'no-cache');
-            } else if (filePath.endsWith('.js')) {
-                res.setHeader('Content-Type', 'application/javascript');
-            } else if (filePath.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
+            res.setHeader("Cache-Control", "no-store");
+            if (filePath.endsWith(".js")) {
+                res.setHeader("Content-Type", "application/javascript");
+            } else if (filePath.endsWith(".css")) {
+                res.setHeader("Content-Type", "text/css");
             }
         }
     }));
 
-    // SPA fallback for React Router
-    app.get('*', (req, res, next) => {
-        if (req.path.startsWith('/api/')) {
+    // SPA fallback (also no caching)
+    app.get("*", (req, res, next) => {
+        if (req.path.startsWith("/api/")) {
             return next();
         }
-        res.sendFile(path.join(distPath, 'index.html'));
+        res.setHeader("Cache-Control", "no-store");
+        res.sendFile(path.join(distPath, "index.html"));
     });
 }
+
