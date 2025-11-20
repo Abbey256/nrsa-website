@@ -27,6 +27,15 @@ export function registerAllRoutes(app: Express): void {
     res.json({ status: "API is working", timestamp: new Date().toISOString() });
   });
 
+  // Cache test endpoint
+  app.get("/api/cache-test", (req, res) => {
+    res.json({ 
+      message: "NEW VERSION DEPLOYED - 4 CARDS WORKING!", 
+      timestamp: Date.now(),
+      version: "v2.0-4cards"
+    });
+  });
+
   // Database connection test
   app.get("/api/db-test", async (req, res) => {
     try {
