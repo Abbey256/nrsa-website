@@ -1,5 +1,8 @@
 export const dynamic = 'force-dynamic';
 import React from "react";
+
+// Force cache bust - update this timestamp when deploying
+const BUILD_TIMESTAMP = Date.now();
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
