@@ -114,6 +114,10 @@ export default function Home() {
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Explore NRSA</h2>
+          {/* Cache bust indicator - remove after confirming */}
+          <div className="text-center mb-4 text-xs text-muted-foreground">
+            Version: 4-CARDS-FIX-{Date.now()}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 

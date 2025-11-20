@@ -95,6 +95,15 @@ registerRoutes(app);
 
 // Serve React build in production
 if (process.env.NODE_ENV === "production") {
+    // Add no-cache headers for HTML files to prevent stale content
+    app.use((req, res, next) => {
+        if (req.path === '/' || req.path.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+        next();
+    });
     serveStatic(app);
 }
 
