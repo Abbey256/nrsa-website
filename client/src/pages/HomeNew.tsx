@@ -1,17 +1,11 @@
-export const dynamic = 'force-dynamic';
 import React from "react";
-
-// Force cache bust - update this timestamp when deploying
-const BUILD_TIMESTAMP = Date.now();
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Trophy, ChevronRight } from "lucide-react";
 
-export default function Home() {
-  // Force immediate render with timestamp
-  const forceUpdate = Date.now();
+export default function HomeNew() {
   return (
     <div className="min-h-screen">
       {/* Hero Carousel */}
@@ -112,18 +106,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quick Links */}
+      {/* Quick Links - NEW 4 CARDS VERSION */}
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Explore NRSA</h2>
-          {/* Cache bust indicator - remove after confirming */}
-          <div className="text-center mb-4 text-xs text-muted-foreground">
-            🔥 NEW VERSION LOADED: {forceUpdate} 🔥
-          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">🔥 NEW 4 CARDS - WORKING! 🔥</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-            {/* Latest News */}
+            {/* Card 1: Latest News */}
             <Link href="/news">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
                 <CardHeader>
@@ -140,7 +130,7 @@ export default function Home() {
               </Card>
             </Link>
 
-            {/* Player Rankings */}
+            {/* Card 2: Player Rankings */}
             <a
               href="https://skippers.nrsa.com.ng"
               target="_blank"
@@ -162,7 +152,7 @@ export default function Home() {
               </Card>
             </a>
 
-            {/* Events */}
+            {/* Card 3: Events */}
             <Link href="/events">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
                 <CardHeader>
@@ -179,7 +169,7 @@ export default function Home() {
               </Card>
             </Link>
 
-            {/* About NRSA */}
+            {/* Card 4: About NRSA */}
             <Link href="/about">
               <Card className="cursor-pointer hover-elevate active-elevate-2 transition-all h-full">
                 <CardHeader>

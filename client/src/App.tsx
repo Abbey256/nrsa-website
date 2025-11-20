@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Home from "@/pages/Home";
+import HomeNew from "@/pages/HomeNew";
 import About from "@/pages/About";
 import Competitions from "@/pages/Competitions";
 import News from "@/pages/News";
@@ -102,6 +103,9 @@ export default function App() {
 
             {/* Public Routes */}
             <Route path="/">
+              <PageWithLayout><HomeNew /></PageWithLayout>
+            </Route>
+            <Route path="/old">
               <PageWithLayout><Home /></PageWithLayout>
             </Route>
             <Route path="/about">
