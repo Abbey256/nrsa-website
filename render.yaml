@@ -3,7 +3,7 @@ services:
     name: nrsa-website
     env: node
     plan: starter
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: rm -rf node_modules/.vite && rm -rf dist && rm -rf .vite && npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
